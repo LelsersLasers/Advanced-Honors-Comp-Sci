@@ -1,0 +1,2 @@
+[console_scripts]
+mahotas-features = mahotas.features_cli:main
