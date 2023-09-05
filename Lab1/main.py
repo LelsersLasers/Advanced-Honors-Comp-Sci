@@ -13,6 +13,13 @@ import time
 - Face dectect
 - Video
 
+TODO:
+- Face mapping order
+    - Command + stable as face size changes
+- Smoothing and blurring
+- Forground extraction?
+- Save video fourcc
+
 """
 
 #------------------------------------------------------------------------------#
@@ -40,12 +47,9 @@ class Face:
         # rect outline
         cv2.rectangle(image, (self.x, self.y), (self.x+self.w, self.y+self.h), color, 2)
         
-def detect_largest_faces(image, conf):
+def detect_faces(image, conf):
     faces = detect_faces_dnn(image, conf)
-    faces.sort(key=Face.calc_area, reverse=True) # TODO: 
-    
-    # if len(faces) < 2:
-    #     raise Exception(f'Not enough faces detected. {len(faces)} detected, at least 2 required.')
+    faces.sort(key=Face.calc_area, reverse=True)
     
     return faces
     
@@ -70,6 +74,17 @@ def detect_faces_dnn(image, conf):
     return detected_faces
 
 #------------------------------------------------------------------------------#
+def swap_faces(original_image, output_image, faces):
+    for i, face in enumerate(faces):
+        try:    
+            face_crop = original_image[face.y:face.y+face.h, face.x:face.x+face.w]
+            next_face = faces[(i+1) % len(faces)]
+            face_resized = cv2.resize(face_crop, (next_face.w, next_face.h))
+            
+            output_image[next_face.y:next_face.y+next_face.h, next_face.x:next_face.x+next_face.w] = face_resized
+        except:
+            pass
+
 def video_detection(orginal_video, save, conf):
     if not orginal_video.isOpened():
         raise Exception("Could not open video")
@@ -83,6 +98,8 @@ def video_detection(orginal_video, save, conf):
 
         output_video = cv2.VideoWriter(save, cv2.VideoWriter_fourcc(*fourcc), fps, (width, height))
 
+    print("Press q to quit")
+
     while orginal_video.isOpened():
         ret, frame = orginal_video.read()
 
@@ -90,18 +107,8 @@ def video_detection(orginal_video, save, conf):
             break
 
         output_frame = frame.copy()
-
-        faces = detect_largest_faces(frame, conf)
-
-        try:
-            for i, face in enumerate(faces):    
-                face_crop = frame[face.y:face.y+face.h, face.x:face.x+face.w]
-                next_face = faces[(i+1) % len(faces)]
-                face_resized = cv2.resize(face_crop, (next_face.w, next_face.h))
-                
-                output_frame[next_face.y:next_face.y+next_face.h, next_face.x:next_face.x+next_face.w] = face_resized
-        except:
-            pass
+        faces = detect_faces(frame, conf)
+        swap_faces(frame, output_frame, faces)
 
         if save is not None:
             output_video.write(output_frame)
@@ -118,17 +125,14 @@ def video_detection(orginal_video, save, conf):
         output_video.release()
 
     cv2.destroyAllWindows()
-#------------------------------------------------------------------------------#
 
 def image_detection(original_image, output_image, save, conf):
-    faces = detect_largest_faces(original_image, conf)
-
-    for i, face in enumerate(faces):    
-        face_crop = original_image[face.y:face.y+face.h, face.x:face.x+face.w]
-        next_face = faces[(i+1) % len(faces)]
-        face_resized = cv2.resize(face_crop, (next_face.w, next_face.h))
-        
-        output_image[next_face.y:next_face.y+next_face.h, next_face.x:next_face.x+next_face.w] = face_resized
+    faces = detect_faces(original_image, conf)
+    
+    if len(faces) < 2:
+        raise Exception(f'Not enough faces detected. {len(faces)} detected, at least 2 required.')
+    
+    swap_faces(original_image, output_image, faces)
 
     for face in faces:
         face.draw(original_image)
@@ -179,6 +183,6 @@ elif input_type == "camera":
     time.sleep(0.1)
     video_detection(original_video, save, conf)
 else:
-    raise KeyError
+    raise Exception("Invalid input type. Valid types are: image, video, camera")
     
     
