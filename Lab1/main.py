@@ -1,6 +1,8 @@
 import numpy as np
 import argparse
 import cv2
+import sys
+import time
 
 #------------------------------------------------------------------------------#
 """
@@ -40,10 +42,10 @@ class Face:
         
 def detect_largest_faces(image, conf):
     faces = detect_faces_dnn(image, conf)
-    faces.sort(key=Face.calc_area, reverse=True)
+    faces.sort(key=Face.calc_area, reverse=True) # TODO: 
     
-    if len(faces) < 2:
-        raise Exception(f'Not enough faces detected. {len(faces)} detected, at least 2 required.')
+    # if len(faces) < 2:
+    #     raise Exception(f'Not enough faces detected. {len(faces)} detected, at least 2 required.')
     
     return faces
     
@@ -72,43 +74,94 @@ def detect_faces_dnn(image, conf):
 #------------------------------------------------------------------------------#
 ap = argparse.ArgumentParser()
 
-ap.add_argument("-i", "--image", required = True, help = "Path to image")
+# ap.add_argument("-i", "--image", required = True, help = "Path to image")
 # ap.add_argument("-i", "--input", required = False, help = "Input type (image, video, or camera)")
 
-# ap.add_argument("-v", "--video", required = True, help = "Path to video")
+ap.add_argument("-v", "--video", required = True, help = "Path to video")
 
 ap.add_argument("-c", "--conf", required = False, help = "Confidence threshold for face detection", default=0.8, type=float)
 ap.add_argument("-s", "--save", required = False, help = "Save output to path", default=None)
 # TODO: command for face mapping order
 args = vars(ap.parse_args())
 
-original_image = cv2.imread(args["image"])
-output_image = original_image.copy()
+# original_image = cv2.imread(args["image"])
+# output_image = original_image.copy()
+
+orginal_video = cv2.VideoCapture(args["video"])
+time.sleep(0.1)
+
+if not orginal_video.isOpened():
+    raise Exception("Could not open video")
 
 conf = float(args["conf"])
 save = args["save"]
+
+if save is not None:
+    fps = orginal_video.get(cv2.CAP_PROP_FPS)
+    width = int(orginal_video.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(orginal_video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    fourcc = int(orginal_video.get(cv2.CAP_PROP_FOURCC)).to_bytes(4, byteorder=sys.byteorder).decode()
+
+    output_video = cv2.VideoWriter(save, cv2.VideoWriter_fourcc(*fourcc), fps, (width, height))
+
+
+while orginal_video.isOpened():
+    ret, frame = orginal_video.read()
+
+    if not ret:
+        break
+
+    output_frame = frame.copy()
+
+    faces = detect_largest_faces(frame, conf)
+
+    for i, face in enumerate(faces):    
+        face_crop = frame[face.y:face.y+face.h, face.x:face.x+face.w]
+        next_face = faces[(i+1) % len(faces)]
+        face_resized = cv2.resize(face_crop, (next_face.w, next_face.h))
+        
+        output_frame[next_face.y:next_face.y+next_face.h, next_face.x:next_face.x+next_face.w] = face_resized
+
+    if save is not None:
+        output_video.write(output_frame)
+
+    cv2.imshow("Output", output_frame)
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+    
+orginal_video.release()
+
+if save is not None:
+    output_video.release()
+
+cv2.destroyAllWindows()
+
+
 #------------------------------------------------------------------------------#
 
 
-faces = detect_largest_faces(original_image, conf)
+# faces = detect_largest_faces(original_image, conf)
 
-for i, face in enumerate(faces):    
-    face_crop = original_image[face.y:face.y+face.h, face.x:face.x+face.w]
-    next_face = faces[(i+1) % len(faces)]
-    face_resized = cv2.resize(face_crop, (next_face.w, next_face.h))
+# for i, face in enumerate(faces):    
+#     face_crop = original_image[face.y:face.y+face.h, face.x:face.x+face.w]
+#     next_face = faces[(i+1) % len(faces)]
+#     face_resized = cv2.resize(face_crop, (next_face.w, next_face.h))
     
-    output_image[next_face.y:next_face.y+next_face.h, next_face.x:next_face.x+next_face.w] = face_resized
+#     output_image[next_face.y:next_face.y+next_face.h, next_face.x:next_face.x+next_face.w] = face_resized
 
-for face in faces:
-    face.draw(original_image)
+# for face in faces:
+#     face.draw(original_image)
 
-if save is not None:
-    cv2.imwrite(save, output_image)
+# if save is not None:
+#     cv2.imwrite(save, output_image)
 
 
-cv2.imshow("Original", original_image)
-cv2.imshow("Output", output_image)
+# cv2.imshow("Original", original_image)
+# cv2.imshow("Output", output_image)
 
-cv2.waitKey(10_000)
+# cv2.waitKey(10_000)
     
     
