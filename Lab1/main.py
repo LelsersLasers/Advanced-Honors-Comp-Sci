@@ -13,6 +13,9 @@ import time
 - Face dectect
 - Video
 
+TODO: different output video types
+
+
 """
 
 #------------------------------------------------------------------------------#
@@ -88,6 +91,7 @@ args = vars(ap.parse_args())
 # output_image = original_image.copy()
 
 orginal_video = cv2.VideoCapture(args["video"])
+# orginal_video = cv2.VideoCapture(0)
 time.sleep(0.1)
 
 if not orginal_video.isOpened():
@@ -101,11 +105,11 @@ if save is not None:
     width = int(orginal_video.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(orginal_video.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    fourcc = int(orginal_video.get(cv2.CAP_PROP_FOURCC)).to_bytes(4, byteorder=sys.byteorder).decode()
+    # fourcc = int(orginal_video.get(cv2.CAP_PROP_FOURCC)).to_bytes(4, byteorder=sys.byteorder).decode()
 
-    output_video = cv2.VideoWriter(save, cv2.VideoWriter_fourcc(*fourcc), fps, (width, height))
+    output_video = cv2.VideoWriter(save, cv2.VideoWriter_fourcc(*"mp4v"), fps, (width, height))
 
-
+print("Press 'q' to quit")
 while orginal_video.isOpened():
     ret, frame = orginal_video.read()
 
@@ -117,11 +121,14 @@ while orginal_video.isOpened():
     faces = detect_largest_faces(frame, conf)
 
     for i, face in enumerate(faces):    
-        face_crop = frame[face.y:face.y+face.h, face.x:face.x+face.w]
-        next_face = faces[(i+1) % len(faces)]
-        face_resized = cv2.resize(face_crop, (next_face.w, next_face.h))
-        
-        output_frame[next_face.y:next_face.y+next_face.h, next_face.x:next_face.x+next_face.w] = face_resized
+        try:
+            face_crop = frame[face.y:face.y+face.h, face.x:face.x+face.w]
+            next_face = faces[(i+1) % len(faces)]
+            face_resized = cv2.resize(face_crop, (next_face.w, next_face.h))
+            
+            output_frame[next_face.y:next_face.y+next_face.h, next_face.x:next_face.x+next_face.w] = face_resized
+        except:
+            pass
 
     if save is not None:
         output_video.write(output_frame)
