@@ -100,12 +100,34 @@ def detect_faces_dnn(image, conf):
     return detected_faces
 
 #------------------------------------------------------------------------------#
-def swap_faces(original_image, output_image, faces):
+def combine_with_mask(image1, image2, mask):
+    # When mask = true => image2, else image1
+    inverse_mask = cv2.bitwise_not(mask)
+    result = cv2.bitwise_and(image1, image1, mask=inverse_mask)
+    image2_part = cv2.bitwise_and(image2, image2, mask=mask)
+    final_result = cv2.add(result, image2_part)
+
+    return final_result
+
+def swap_faces(original_image, output_image, faces, oval):
     for i, face in enumerate(faces):
         try:    
             face_crop = original_image[face.y:face.y+face.h, face.x:face.x+face.w]
             next_face = faces[(i+1) % len(faces)]
             face_resized = cv2.resize(face_crop, (next_face.w, next_face.h))
+
+            if oval:
+                oval_mask = np.zeros(output_image.shape[:2], np.uint8)
+                cv2.ellipse(oval_mask, (int(next_face.center_x), int(next_face.center_y)), (int(next_face.w / 2), int(next_face.h / 2)), 0, 0, 360, (255, 255, 255), -1)
+                # TODO:
+            else:
+                output_image[next_face.y:next_face.y+next_face.h, next_face.x:next_face.x+next_face.w] = face_resized
+
+
+            # oval_mask = np.zeros(face_resized.shape[:2], np.uint8)
+            # cv2.ellipse(oval_mask, (int(next_face.w / 2), int(next_face.h / 2)), (int(next_face.w / 2), int(next_face.h / 2)), 0, 0, 360, (255, 255, 255), -1)
+
+            # face_resized = cv2.bitwise_and(face_resized, face_resized, mask=oval_mask)
 
             # Grapcut 2
             # mask = np.zeros(face_resized.shape[:2], np.uint8)
@@ -121,7 +143,6 @@ def swap_faces(original_image, output_image, faces):
             # face_grapcut = face_resized * mask2[:, :, np.newaxis]
             # cv2.imshow("face_grapcut", face_grapcut)
             
-            output_image[next_face.y:next_face.y+next_face.h, next_face.x:next_face.x+next_face.w] = face_resized
         except:
             pass
 
@@ -134,10 +155,12 @@ def blur_edges(output_image, faces, blur_radius):
     for face in faces:
         cv2.rectangle(mask, (face.x, face.y), (face.x+face.w, face.y+face.h), (255, 255, 255), blur_radius * 2)
 
-    inverse_mask = cv2.bitwise_not(mask)
-    result = cv2.bitwise_and(output_image, output_image, mask=inverse_mask)
-    blurred_part = cv2.bitwise_and(blurred_image, blurred_image, mask=mask)
-    final_result = cv2.add(result, blurred_part)
+    # inverse_mask = cv2.bitwise_not(mask)
+    # result = cv2.bitwise_and(output_image, output_image, mask=inverse_mask)
+    # blurred_part = cv2.bitwise_and(blurred_image, blurred_image, mask=mask)
+    # final_result = cv2.add(result, blurred_part)
+
+    final_result = combine_with_mask(output_image, blurred_image, mask)
 
     return final_result
 
@@ -150,7 +173,7 @@ def double_blur_edges(output_image, faces, blur):
 
     return output_image
 
-def video_detection(orginal_video, save, conf, debug, blur):
+def video_detection(orginal_video, save, conf, debug, blur, oval):
     if not orginal_video.isOpened():
         raise Exception("Could not open video")
     
@@ -171,7 +194,7 @@ def video_detection(orginal_video, save, conf, debug, blur):
 
         output_frame = frame.copy()
         faces = detect_faces(frame, conf)
-        swap_faces(frame, output_frame, faces)
+        swap_faces(frame, output_frame, faces, oval)
         if blur is not None:
             output_frame = double_blur_edges(output_frame, faces, blur)
 
@@ -196,13 +219,13 @@ def video_detection(orginal_video, save, conf, debug, blur):
 
     cv2.destroyAllWindows()
 
-def image_detection(original_image, output_image, save, conf, debug, blur):
+def image_detection(original_image, output_image, save, conf, debug, blur, oval):
     faces = detect_faces(original_image, conf)
     
     if len(faces) < 2:
         raise Exception(f'Not enough faces detected. {len(faces)} detected, at least 2 required.')
     
-    swap_faces(original_image, output_image, faces)
+    swap_faces(original_image, output_image, faces, oval)
 
     if blur is not None:
         output_image = double_blur_edges(output_image, faces, blur)
@@ -231,10 +254,9 @@ ap.add_argument("-p", "--path", required = False, help = "path to image or video
 
 ap.add_argument("-c", "--confidence", required = False, help = "confidence threshold for face detection", default=0.8, type=float)
 ap.add_argument("-s", "--save", required = False, help = "save output to path", default=None)
-
-# If `-d` flag is present, debug is true
 ap.add_argument("-d", "--debug", required = False, help = "draw debug outlines", action="store_true")
 ap.add_argument("-b", "--blur", required = False, help = "blur edges radius", default = None)
+ap.add_argument("-o", "--oval", required = False, help = "cut out faces as ovals instead of rectangles", action="store_true")
 # TODO: command for face mapping order
 args = vars(ap.parse_args())
 
@@ -248,8 +270,9 @@ elif args["path"] is not None:
 conf = float(args["confidence"])
 save = args["save"]
 debug = args["debug"]
-blur = args["blur"]
+oval = args["oval"]
 
+blur = args["blur"]
 if blur is not None:
     blur = int(blur)
 
@@ -259,13 +282,13 @@ print("Press q to quit")
 if input_type == "image":
     original_image = cv2.imread(path)
     output_image = original_image.copy()
-    image_detection(original_image, output_image, save, conf, debug, blur)
+    image_detection(original_image, output_image, save, conf, debug, blur, oval)
 elif input_type == "video":
     original_video = cv2.VideoCapture(path)
-    video_detection(original_video, save, conf, debug, blur)
+    video_detection(original_video, save, conf, debug, blur, oval)
 elif input_type == "camera":
     original_video = cv2.VideoCapture(0)
     time.sleep(0.1)
-    video_detection(original_video, save, conf, debug, blur)
+    video_detection(original_video, save, conf, debug, blur, oval)
     
     
