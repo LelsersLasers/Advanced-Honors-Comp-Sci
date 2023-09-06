@@ -24,12 +24,12 @@ TODO:
     - Create mask for the outline of the pasted face
     - Used blurred image on masked areas, and original on non-masked areas
     - Make argparse option
-        - `-b` -> no blur
-- Forground extraction
-    - Expand the face rect by ~20 percent in all directions
-        - Make argparse option
+        - `-b 5` -> blur with 5px radius
+- Forground extraction?
+    - Expand the face rect by ~40 percent in all directions
+        - Make argparse option?
     - https://www.geeksforgeeks.org/python-foreground-extraction-in-an-image-using-grabcut-algorithm/
-- Save video fourcc
+- Save video - fourcc
 
 """
 
@@ -80,7 +80,19 @@ def detect_faces_dnn(image, conf):
             y1 = int(detections[0, 0, i, 4] * screen_size[1])
             x2 = int(detections[0, 0, i, 5] * screen_size[0])
             y2 = int(detections[0, 0, i, 6] * screen_size[1])
-            detected_faces.append(Face([x1, y1, x2-x1, y2-y1]))
+
+            # Grapcut 1
+            w = x2 - x1
+            h = y2 - y1
+
+            expanded_w = int(w * 1.4)
+            expanded_h = int(h * 1.4)
+
+            x = max(0, x1 - int((expanded_w - w) / 2))
+            y = max(0, y1 - int((expanded_h - h) / 2))
+
+            detected_faces.append(Face((x, y, expanded_w, expanded_h)))
+            # detected_faces.append(Face((x1, y1, w, h)))
     
     return detected_faces
 
@@ -91,6 +103,21 @@ def swap_faces(original_image, output_image, faces):
             face_crop = original_image[face.y:face.y+face.h, face.x:face.x+face.w]
             next_face = faces[(i+1) % len(faces)]
             face_resized = cv2.resize(face_crop, (next_face.w, next_face.h))
+
+            # Grapcut2
+            mask = np.zeros(face_resized.shape[:2], np.uint8)
+            bgdModel = np.zeros((1,65), np.float64)
+            fgdModel = np.zeros((1,65), np.float64)
+            rect = (1, 1, next_face.w, next_face.h)
+
+            cv2.grabCut(face_resized, mask, rect, bgdModel, fgdModel, 5, cv2.GC_INIT_WITH_RECT)
+
+            # Use cv2.GC_PR_FGD to get the foreground
+            mask2 = np.where((mask==cv2.GC_PR_FGD)|(mask == cv2.GC_FGD),0,1).astype('uint8')
+
+            face_grapcut = face_resized * mask2[:, :, np.newaxis]
+
+            cv2.imshow("face_grapcut", face_grapcut)
             
             output_image[next_face.y:next_face.y+next_face.h, next_face.x:next_face.x+next_face.w] = face_resized
         except:
