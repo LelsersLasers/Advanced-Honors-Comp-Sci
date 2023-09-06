@@ -6,18 +6,29 @@ import time
 
 #------------------------------------------------------------------------------#
 """
-- Image basics: saving loading
-- Drawing: rectangle
+- Image basics: saving/loading
+- Drawing: rectangle in debug mode
 - Image processing: crop + resize
 - Smoothing and blurring: TODO
 - Face dectect
-- Video
+- Video/camera
+- Grabcut forground extraction: TODO
 
 TODO:
 - Face mapping order
     - Command + stable as face size changes
+    - Map each face to a number and the number to the center of the face
+    - Organize faces that minimizes the total distance between the new centers of the face and the old centers of the face
 - Smoothing and blurring
-- Forground extraction?
+    - Create blurred version of output frame
+    - Create mask for the outline of the pasted face
+    - Used blurred image on masked areas, and original on non-masked areas
+    - Make argparse option
+        - `-b` -> no blur
+- Forground extraction
+    - Expand the face rect by ~20 percent in all directions
+        - Make argparse option
+    - https://www.geeksforgeeks.org/python-foreground-extraction-in-an-image-using-grabcut-algorithm/
 - Save video fourcc
 
 """
@@ -85,7 +96,7 @@ def swap_faces(original_image, output_image, faces):
         except:
             pass
 
-def video_detection(orginal_video, save, conf):
+def video_detection(orginal_video, save, conf, debug):
     if not orginal_video.isOpened():
         raise Exception("Could not open video")
     
@@ -110,6 +121,10 @@ def video_detection(orginal_video, save, conf):
         faces = detect_faces(frame, conf)
         swap_faces(frame, output_frame, faces)
 
+        if debug:
+            for face in faces:
+                face.draw(output_frame)
+
         if save is not None:
             output_video.write(output_frame)
 
@@ -126,7 +141,7 @@ def video_detection(orginal_video, save, conf):
 
     cv2.destroyAllWindows()
 
-def image_detection(original_image, output_image, save, conf):
+def image_detection(original_image, output_image, save, conf, debug):
     faces = detect_faces(original_image, conf)
     
     if len(faces) < 2:
@@ -134,14 +149,14 @@ def image_detection(original_image, output_image, save, conf):
     
     swap_faces(original_image, output_image, faces)
 
-    for face in faces:
-        face.draw(original_image)
+    if debug:
+        for face in faces:
+            face.draw(output_image)
 
     if save is not None:
         cv2.imwrite(save, output_image)
 
 
-    cv2.imshow("Original", original_image)
     cv2.imshow("Output", output_image)
 
     cv2.waitKey(10_000)
@@ -152,12 +167,15 @@ def image_detection(original_image, output_image, save, conf):
 ap = argparse.ArgumentParser()
 
 
-ap.add_argument("-i", "--input", required = True, help = "Input type (image, video, or camera)")
+ap.add_argument("-i", "--input", required = True, help = "input type", choices=["image", "video", "camera"])
 
-ap.add_argument("-p", "--path", required = False, help = "Path to image or video. Not required for camera", default=None)
+ap.add_argument("-p", "--path", required = False, help = "path to image or video (not required for camera)", default=None)
 
-ap.add_argument("-c", "--conf", required = False, help = "Confidence threshold for face detection", default=0.8, type=float)
-ap.add_argument("-s", "--save", required = False, help = "Save output to path", default=None)
+ap.add_argument("-c", "--confidence", required = False, help = "confidence threshold for face detection", default=0.8, type=float)
+ap.add_argument("-s", "--save", required = False, help = "save output to path", default=None)
+
+# If `-d` flag is present, debug is true
+ap.add_argument("-d", "--debug", required = False, help = "draw debug outlines", action="store_true")
 # TODO: command for face mapping order
 args = vars(ap.parse_args())
 
@@ -168,21 +186,20 @@ elif args["path"] is not None:
     path = args["path"]
 
 
-conf = float(args["conf"])
+conf = float(args["confidence"])
 save = args["save"]
+debug = args["debug"]
 
 if input_type == "image":
     original_image = cv2.imread(path)
     output_image = original_image.copy()
-    image_detection(original_image, output_image, save, conf)
+    image_detection(original_image, output_image, save, conf, debug)
 elif input_type == "video":
     original_video = cv2.VideoCapture(path)
-    video_detection(original_video, save, conf)
+    video_detection(original_video, save, conf, debug)
 elif input_type == "camera":
     original_video = cv2.VideoCapture(0)
     time.sleep(0.1)
-    video_detection(original_video, save, conf)
-else:
-    raise Exception("Invalid input type. Valid types are: image, video, camera")
+    video_detection(original_video, save, conf, debug)
     
     
