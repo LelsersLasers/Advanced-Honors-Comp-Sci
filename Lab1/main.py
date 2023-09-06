@@ -12,20 +12,23 @@ import time
 - Smoothing and blurring: TODO
 - Face dectect
 - Video/camera
-- Grabcut forground extraction: TODO
+- Grabcut forground extraction: TODO?
 
 TODO:
 - Face mapping order
     - Command + stable as face size changes
     - Map each face to a number and the number to the center of the face
     - Organize faces that minimizes the total distance between the new centers of the face and the old centers of the face
-- Smoothing and blurring
+- Cut faces out as ovals
+- Smoothing and blurring: WIP
     - Create blurred version of output frame
     - Create mask for the outline of the pasted face
     - Used blurred image on masked areas, and original on non-masked areas
     - Make argparse option
-        - `-b 5` -> blur with 5px radius
-- Forground extraction?
+        - `-b X` -> blur with X px radius
+    - Make it blur in "layers"
+        - Blur the edges with a very strong blur, then blur the surrounding area with a weaker blur
+- Forground extraction: Worth it? (Very slow, and iffy)
     - Expand the face rect by ~40 percent in all directions
         - Make argparse option?
     - https://www.geeksforgeeks.org/python-foreground-extraction-in-an-image-using-grabcut-algorithm/
@@ -81,18 +84,18 @@ def detect_faces_dnn(image, conf):
             x2 = int(detections[0, 0, i, 5] * screen_size[0])
             y2 = int(detections[0, 0, i, 6] * screen_size[1])
 
-            # Grapcut 1
             w = x2 - x1
             h = y2 - y1
 
-            expanded_w = int(w * 1.4)
-            expanded_h = int(h * 1.4)
+            # Grapcut 1
+            # expanded_w = int(w * 1.4)
+            # expanded_h = int(h * 1.4)
 
-            x = max(0, x1 - int((expanded_w - w) / 2))
-            y = max(0, y1 - int((expanded_h - h) / 2))
+            # x = max(0, x1 - int((expanded_w - w) / 2))
+            # y = max(0, y1 - int((expanded_h - h) / 2))
 
-            detected_faces.append(Face((x, y, expanded_w, expanded_h)))
-            # detected_faces.append(Face((x1, y1, w, h)))
+            # detected_faces.append(Face((x, y, expanded_w, expanded_h)))
+            detected_faces.append(Face((x1, y1, w, h)))
     
     return detected_faces
 
@@ -104,26 +107,50 @@ def swap_faces(original_image, output_image, faces):
             next_face = faces[(i+1) % len(faces)]
             face_resized = cv2.resize(face_crop, (next_face.w, next_face.h))
 
-            # Grapcut2
-            mask = np.zeros(face_resized.shape[:2], np.uint8)
-            bgdModel = np.zeros((1,65), np.float64)
-            fgdModel = np.zeros((1,65), np.float64)
-            rect = (1, 1, next_face.w, next_face.h)
+            # Grapcut 2
+            # mask = np.zeros(face_resized.shape[:2], np.uint8)
+            # bgdModel = np.zeros((1,65), np.float64)
+            # fgdModel = np.zeros((1,65), np.float64)
+            # rect = (1, 1, next_face.w, next_face.h)
 
-            cv2.grabCut(face_resized, mask, rect, bgdModel, fgdModel, 5, cv2.GC_INIT_WITH_RECT)
+            # cv2.grabCut(face_resized, mask, rect, bgdModel, fgdModel, 5, cv2.GC_INIT_WITH_RECT)
 
-            # Use cv2.GC_PR_FGD to get the foreground
-            mask2 = np.where((mask==cv2.GC_PR_FGD)|(mask == cv2.GC_FGD),0,1).astype('uint8')
+            # # Use cv2.GC_PR_FGD to get the foreground
+            # mask2 = np.where((mask==cv2.GC_PR_FGD)|(mask == cv2.GC_FGD),0,1).astype('uint8')
 
-            face_grapcut = face_resized * mask2[:, :, np.newaxis]
-
-            cv2.imshow("face_grapcut", face_grapcut)
+            # face_grapcut = face_resized * mask2[:, :, np.newaxis]
+            # cv2.imshow("face_grapcut", face_grapcut)
             
             output_image[next_face.y:next_face.y+next_face.h, next_face.x:next_face.x+next_face.w] = face_resized
         except:
             pass
 
-def video_detection(orginal_video, save, conf, debug):
+def blur_edges(output_image, faces, blur_radius):
+    # blurred_image = cv2.blur(output_image, (51, 51))
+    blurred_image = cv2.medianBlur(output_image, blur_radius)
+
+    mask = np.zeros(output_image.shape[:2], np.uint8)
+
+    for face in faces:
+        cv2.rectangle(mask, (face.x, face.y), (face.x+face.w, face.y+face.h), (255, 255, 255), blur_radius * 2)
+
+    inverse_mask = cv2.bitwise_not(mask)
+    result = cv2.bitwise_and(output_image, output_image, mask=inverse_mask)
+    blurred_part = cv2.bitwise_and(blurred_image, blurred_image, mask=mask)
+    final_result = cv2.add(result, blurred_part)
+
+    return final_result
+
+def double_blur_edges(output_image, faces, blur):
+    blur_first = blur if blur % 2 == 1 else blur + 1
+    blur_second = blur * 2 if (blur * 2) % 2 == 1 else blur * 2 + 1
+
+    output_image = blur_edges(output_image, faces, blur_first)
+    output_image = blur_edges(output_image, faces, blur_second)
+
+    return output_image
+
+def video_detection(orginal_video, save, conf, debug, blur):
     if not orginal_video.isOpened():
         raise Exception("Could not open video")
     
@@ -136,8 +163,6 @@ def video_detection(orginal_video, save, conf, debug):
 
         output_video = cv2.VideoWriter(save, cv2.VideoWriter_fourcc(*fourcc), fps, (width, height))
 
-    print("Press q to quit")
-
     while orginal_video.isOpened():
         ret, frame = orginal_video.read()
 
@@ -147,6 +172,9 @@ def video_detection(orginal_video, save, conf, debug):
         output_frame = frame.copy()
         faces = detect_faces(frame, conf)
         swap_faces(frame, output_frame, faces)
+        if blur is not None:
+            output_frame = double_blur_edges(output_frame, faces, blur)
+
 
         if debug:
             for face in faces:
@@ -168,13 +196,16 @@ def video_detection(orginal_video, save, conf, debug):
 
     cv2.destroyAllWindows()
 
-def image_detection(original_image, output_image, save, conf, debug):
+def image_detection(original_image, output_image, save, conf, debug, blur):
     faces = detect_faces(original_image, conf)
     
     if len(faces) < 2:
         raise Exception(f'Not enough faces detected. {len(faces)} detected, at least 2 required.')
     
     swap_faces(original_image, output_image, faces)
+
+    if blur is not None:
+        output_image = double_blur_edges(output_image, faces, blur)
 
     if debug:
         for face in faces:
@@ -203,6 +234,7 @@ ap.add_argument("-s", "--save", required = False, help = "save output to path", 
 
 # If `-d` flag is present, debug is true
 ap.add_argument("-d", "--debug", required = False, help = "draw debug outlines", action="store_true")
+ap.add_argument("-b", "--blur", required = False, help = "blur edges radius", default = None)
 # TODO: command for face mapping order
 args = vars(ap.parse_args())
 
@@ -216,17 +248,24 @@ elif args["path"] is not None:
 conf = float(args["confidence"])
 save = args["save"]
 debug = args["debug"]
+blur = args["blur"]
+
+if blur is not None:
+    blur = int(blur)
+
+
+print("Press q to quit")
 
 if input_type == "image":
     original_image = cv2.imread(path)
     output_image = original_image.copy()
-    image_detection(original_image, output_image, save, conf, debug)
+    image_detection(original_image, output_image, save, conf, debug, blur)
 elif input_type == "video":
     original_video = cv2.VideoCapture(path)
-    video_detection(original_video, save, conf, debug)
+    video_detection(original_video, save, conf, debug, blur)
 elif input_type == "camera":
     original_video = cv2.VideoCapture(0)
     time.sleep(0.1)
-    video_detection(original_video, save, conf, debug)
+    video_detection(original_video, save, conf, debug, blur)
     
     
