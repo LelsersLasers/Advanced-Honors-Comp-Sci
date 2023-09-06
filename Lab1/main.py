@@ -6,12 +6,30 @@ import time
 
 #------------------------------------------------------------------------------#
 """
-- Image basics: saving loading
-- Drawing: rectangle
+- Image basics: saving/loading
+- Drawing: rectangle in debug mode
 - Image processing: crop + resize
 - Smoothing and blurring: TODO
 - Face dectect
-- Video
+- Video/camera
+- Grabcut forground extraction: TODO
+
+TODO:
+- Face mapping order
+    - Command + stable as face size changes
+    - Map each face to a number and the number to the center of the face
+    - Organize faces that minimizes the total distance between the new centers of the face and the old centers of the face
+- Smoothing and blurring
+    - Create blurred version of output frame
+    - Create mask for the outline of the pasted face
+    - Used blurred image on masked areas, and original on non-masked areas
+    - Make argparse option
+        - `-b` -> no blur
+- Forground extraction
+    - Expand the face rect by ~20 percent in all directions
+        - Make argparse option
+    - https://www.geeksforgeeks.org/python-foreground-extraction-in-an-image-using-grabcut-algorithm/
+- Save video fourcc
 
 """
 
@@ -40,12 +58,9 @@ class Face:
         # rect outline
         cv2.rectangle(image, (self.x, self.y), (self.x+self.w, self.y+self.h), color, 2)
         
-def detect_largest_faces(image, conf):
+def detect_faces(image, conf):
     faces = detect_faces_dnn(image, conf)
-    faces.sort(key=Face.calc_area, reverse=True) # TODO: 
-    
-    # if len(faces) < 2:
-    #     raise Exception(f'Not enough faces detected. {len(faces)} detected, at least 2 required.')
+    faces.sort(key=Face.calc_area, reverse=True)
     
     return faces
     
@@ -70,7 +85,18 @@ def detect_faces_dnn(image, conf):
     return detected_faces
 
 #------------------------------------------------------------------------------#
-def video_detection(orginal_video, save, conf):
+def swap_faces(original_image, output_image, faces):
+    for i, face in enumerate(faces):
+        try:    
+            face_crop = original_image[face.y:face.y+face.h, face.x:face.x+face.w]
+            next_face = faces[(i+1) % len(faces)]
+            face_resized = cv2.resize(face_crop, (next_face.w, next_face.h))
+            
+            output_image[next_face.y:next_face.y+next_face.h, next_face.x:next_face.x+next_face.w] = face_resized
+        except:
+            pass
+
+def video_detection(orginal_video, save, conf, debug):
     if not orginal_video.isOpened():
         raise Exception("Could not open video")
     
@@ -83,6 +109,8 @@ def video_detection(orginal_video, save, conf):
 
         output_video = cv2.VideoWriter(save, cv2.VideoWriter_fourcc(*fourcc), fps, (width, height))
 
+    print("Press q to quit")
+
     while orginal_video.isOpened():
         ret, frame = orginal_video.read()
 
@@ -90,18 +118,12 @@ def video_detection(orginal_video, save, conf):
             break
 
         output_frame = frame.copy()
+        faces = detect_faces(frame, conf)
+        swap_faces(frame, output_frame, faces)
 
-        faces = detect_largest_faces(frame, conf)
-
-        try:
-            for i, face in enumerate(faces):    
-                face_crop = frame[face.y:face.y+face.h, face.x:face.x+face.w]
-                next_face = faces[(i+1) % len(faces)]
-                face_resized = cv2.resize(face_crop, (next_face.w, next_face.h))
-                
-                output_frame[next_face.y:next_face.y+next_face.h, next_face.x:next_face.x+next_face.w] = face_resized
-        except:
-            pass
+        if debug:
+            for face in faces:
+                face.draw(output_frame)
 
         if save is not None:
             output_video.write(output_frame)
@@ -118,26 +140,23 @@ def video_detection(orginal_video, save, conf):
         output_video.release()
 
     cv2.destroyAllWindows()
-#------------------------------------------------------------------------------#
 
-def image_detection(original_image, output_image, save, conf):
-    faces = detect_largest_faces(original_image, conf)
+def image_detection(original_image, output_image, save, conf, debug):
+    faces = detect_faces(original_image, conf)
+    
+    if len(faces) < 2:
+        raise Exception(f'Not enough faces detected. {len(faces)} detected, at least 2 required.')
+    
+    swap_faces(original_image, output_image, faces)
 
-    for i, face in enumerate(faces):    
-        face_crop = original_image[face.y:face.y+face.h, face.x:face.x+face.w]
-        next_face = faces[(i+1) % len(faces)]
-        face_resized = cv2.resize(face_crop, (next_face.w, next_face.h))
-        
-        output_image[next_face.y:next_face.y+next_face.h, next_face.x:next_face.x+next_face.w] = face_resized
-
-    for face in faces:
-        face.draw(original_image)
+    if debug:
+        for face in faces:
+            face.draw(output_image)
 
     if save is not None:
         cv2.imwrite(save, output_image)
 
 
-    cv2.imshow("Original", original_image)
     cv2.imshow("Output", output_image)
 
     cv2.waitKey(10_000)
@@ -148,12 +167,15 @@ def image_detection(original_image, output_image, save, conf):
 ap = argparse.ArgumentParser()
 
 
-ap.add_argument("-i", "--input", required = True, help = "Input type (image, video, or camera)")
+ap.add_argument("-i", "--input", required = True, help = "input type", choices=["image", "video", "camera"])
 
-ap.add_argument("-p", "--path", required = False, help = "Path to image or video. Not required for camera", default=None)
+ap.add_argument("-p", "--path", required = False, help = "path to image or video (not required for camera)", default=None)
 
-ap.add_argument("-c", "--conf", required = False, help = "Confidence threshold for face detection", default=0.8, type=float)
-ap.add_argument("-s", "--save", required = False, help = "Save output to path", default=None)
+ap.add_argument("-c", "--confidence", required = False, help = "confidence threshold for face detection", default=0.8, type=float)
+ap.add_argument("-s", "--save", required = False, help = "save output to path", default=None)
+
+# If `-d` flag is present, debug is true
+ap.add_argument("-d", "--debug", required = False, help = "draw debug outlines", action="store_true")
 # TODO: command for face mapping order
 args = vars(ap.parse_args())
 
@@ -164,21 +186,20 @@ elif args["path"] is not None:
     path = args["path"]
 
 
-conf = float(args["conf"])
+conf = float(args["confidence"])
 save = args["save"]
+debug = args["debug"]
 
 if input_type == "image":
     original_image = cv2.imread(path)
     output_image = original_image.copy()
-    image_detection(original_image, output_image, save, conf)
+    image_detection(original_image, output_image, save, conf, debug)
 elif input_type == "video":
     original_video = cv2.VideoCapture(path)
-    video_detection(original_video, save, conf)
+    video_detection(original_video, save, conf, debug)
 elif input_type == "camera":
     original_video = cv2.VideoCapture(0)
     time.sleep(0.1)
-    video_detection(original_video, save, conf)
-else:
-    raise KeyError
+    video_detection(original_video, save, conf, debug)
     
     
