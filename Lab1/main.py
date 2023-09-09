@@ -117,17 +117,23 @@ def swap_faces(original_image, output_image, faces, oval):
             face_resized = cv2.resize(face_crop, (next_face.w, next_face.h))
 
             if oval:
-                oval_mask = np.zeros(output_image.shape[:2], np.uint8)
-                cv2.ellipse(oval_mask, (int(next_face.center_x), int(next_face.center_y)), (int(next_face.w / 2), int(next_face.h / 2)), 0, 0, 360, (255, 255, 255), -1)
-                # TODO:
+                # oval_mask = np.zeros(output_image.shape[:2], np.uint8)
+                # cv2.ellipse(oval_mask, (int(next_face.center_x), int(next_face.center_y)), (int(next_face.w / 2), int(next_face.h / 2)), 0, 0, 360, (255, 255, 255), -1)
+                # # TODO:
+
+                # cv2.imshow("oval_mask", oval_mask)
+
+                # oval_face = np.zeros(output_image.shape[:2], np.uint8)
+
+                oval_mask = np.zeros(face_resized.shape[:2], np.uint8)
+                cv2.ellipse(oval_mask, (int(next_face.w / 2), int(next_face.h / 2)), (int(next_face.w / 2), int(next_face.h / 2)), 0, 0, 360, (255, 255, 255), -1)
+                face_resized = cv2.bitwise_and(face_resized, face_resized, mask=oval_mask)
+
+                output_image[next_face.y:next_face.y+next_face.h, next_face.x:next_face.x+next_face.w] = combine_with_mask(output_image[next_face.y:next_face.y+next_face.h, next_face.x:next_face.x+next_face.w], face_resized, oval_mask)
             else:
                 output_image[next_face.y:next_face.y+next_face.h, next_face.x:next_face.x+next_face.w] = face_resized
 
 
-            # oval_mask = np.zeros(face_resized.shape[:2], np.uint8)
-            # cv2.ellipse(oval_mask, (int(next_face.w / 2), int(next_face.h / 2)), (int(next_face.w / 2), int(next_face.h / 2)), 0, 0, 360, (255, 255, 255), -1)
-
-            # face_resized = cv2.bitwise_and(face_resized, face_resized, mask=oval_mask)
 
             # Grapcut 2
             # mask = np.zeros(face_resized.shape[:2], np.uint8)
