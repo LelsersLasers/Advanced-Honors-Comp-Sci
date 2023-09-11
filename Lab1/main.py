@@ -27,7 +27,9 @@ TODO:
     - Used blurred image on masked areas, and original on non-masked areas
     - Make argparse option
         - `-r` or `--radius` for blur radius in blur function
-        - `-b` or `--blur` for blur size in blur edges
+        - `-t` or `--thickness` for blur thickness for mask
+        - `-b` or `--blur` to enable blurring
+            - Or maybe for how many "layers"?
     - Make it blur in "layers"
         - Blur the edges with a very strong blur, then blur the surrounding area with a weaker blur
 - Forground extraction: Worth it? (Very slow, and iffy)
@@ -45,6 +47,7 @@ net = cv2.dnn.readNetFromCaffe(configFile, modelFile)
 
 
 class Face:
+    # TODO: change to not take a tuple
     def __init__(self, face):
         self.x = face[0]
         self.y = face[1]
@@ -59,6 +62,9 @@ class Face:
 
     def __str__(self):
         return f"Face at {self.center}"
+    
+    def __repr__(self):
+        return f"Face(({self.x}, {self.y}, {self.w}, {self.h}))"
 
     def draw(self, image, color=(255, 0, 0)):
         # rect outline
@@ -109,7 +115,7 @@ def detect_faces_dnn(image, conf):
 
 # ---------------------------------------------------------------------------- #
 def combine_with_mask(image1, image2, mask):
-    # When mask = true => image2, else image1
+    # Where mask == true => image2, else image1
     inverse_mask = cv2.bitwise_not(mask)
     result = cv2.bitwise_and(image1, image1, mask=inverse_mask)
     image2_part = cv2.bitwise_and(image2, image2, mask=mask)
@@ -218,14 +224,11 @@ def blur_edges(output_image, faces, blur_thickness, blur_radius, oval):
     return final_result
 
 
-# def double_blur_edges(output_image, faces, blur):
-#     blur_first = blur if blur % 2 == 1 else blur + 1
-#     blur_second = blur * 2 if (blur * 2) % 2 == 1 else blur * 2 + 1
+def double_blur_edges(output_image, faces, blur_thickness, blur_radius, oval):
+    output_image = blur_edges(output_image, faces, blur_thickness, blur_radius, oval)
+    output_image = blur_edges(output_image, faces, blur_thickness // 2, blur_radius * 2, oval)    
 
-#     output_image = blur_edges(output_image, faces, blur_first)
-#     output_image = blur_edges(output_image, faces, blur_second)
-
-#     return output_image
+    return output_image
 
 
 def video_detection(
@@ -259,7 +262,7 @@ def video_detection(
         faces = detect_faces(frame, conf)
         swap_faces(frame, output_frame, faces, oval)
         if blur:
-            output_frame = blur_edges(
+            output_frame = double_blur_edges(
                 output_frame, faces, blur_thickness, blur_radius, oval
             )
 
@@ -304,7 +307,7 @@ def image_detection(
     swap_faces(original_image, output_image, faces, oval)
 
     if blur:
-        output_image = blur_edges(
+        output_image = double_blur_edges(
             output_image, faces, blur_thickness, blur_radius, oval
         )
 
