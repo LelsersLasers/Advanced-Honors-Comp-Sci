@@ -73,22 +73,37 @@ class Face:
             image, (self.x, self.y), (self.x + self.w, self.y + self.h), color, 2
         )
 
-
+def dist_between(v1, v2):
+    dist_vec = np.array(v1) - np.array(v2)
+    return np.sqrt(dist_vec[0] ** 2 + dist_vec[1] ** 2)
 def detect_faces(image, conf, face_mappings = None):
     faces = detect_faces_dnn(image, conf)
-    # faces.sort(key=Face.calc_area, reverse=True) # consistent ordering for pictures
+    faces.sort(key=Face.calc_area, reverse=True) # consistent ordering for pictures
 
     # face_mappings = dict[int, tuple[Face, tuple[float, float]]]
 
     if face_mappings is None:
         face_mappings = { i: (faces[i], faces[i].center_tuple()) for i in range(len(faces)) }
     else:
+        # every combination of faces and face_mappings
+        # all_combinations = []
+        # for i, face in enumerate(faces):
+        #     for key, value in face_mappings.items():
+        #         all_combinations.append((i, key, face, value))
+
+        # # sort by distance between centers
+        # all_combinations.sort(key=lambda x: dist_between(x[2].center_tuple(), x[3][1]))
+                              
+
+
+
         # Try to match the faces in the new frame to the faces in the old frame
         # by minimizing the distances between the centers of the faces
         found_faces_idxs = []
         found_faces_keys = []
 
         while len(found_faces_idxs) < min(len(faces), len(face_mappings)):
+
             closest_face_idx = None
             closest_face_key = None
             closest_dist = float("inf")
@@ -100,7 +115,9 @@ def detect_faces(image, conf, face_mappings = None):
                 for i, face in enumerate(faces):
                     if i in found_faces_idxs:
                         continue
-                    dist = np.linalg.norm(np.array(value[1]) - np.array(face.center_tuple()))
+                    # dist = np.linalg.norm(np.array(value[1]) - np.array(face.center_tuple()))
+                    dist_vec = np.array(value[1]) - np.array(face.center_tuple())
+                    dist = np.sqrt(dist_vec[0] ** 2 + dist_vec[1] ** 2)
                     if dist < closest_dist:
                         closest_face_idx = i
                         closest_face_key = key
@@ -134,8 +151,8 @@ def detect_faces(image, conf, face_mappings = None):
                 new_face_mappings[i] = value
             face_mappings = new_face_mappings
 
-    print(len(face_mappings))
-    # face_mappings = { i: (faces[i], faces[i].center_tuple()) for i in range(len(faces)) }
+    # print(len(face_mappings))
+    face_mappings = { i: (faces[i], faces[i].center_tuple()) for i in range(len(faces)) }
     return face_mappings
 
 
@@ -353,11 +370,8 @@ def video_detection(orginal_video, args):
 
         if args["debug"]:
             for value in face_mappings.values():
-                face, center = value
+                face = value[0]
                 face.draw(output_frame)
-
-                draw_center = (int(center[0]), int(center[1]))
-                cv2.ellipse(output_frame, draw_center, (5, 5), 0, 0, 360, (0, 0, 255), -1)
 
             # fps text (bottom left)
             font                   = cv2.FONT_HERSHEY_SIMPLEX
@@ -407,7 +421,7 @@ def image_detection(original_image, args):
 
     if args["debug"]:
         for value in face_mappings.values():
-            face, _center = value
+            face = value[0]
             face.draw(output_image)
 
     if args["save"] is not None:
