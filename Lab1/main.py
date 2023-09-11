@@ -78,6 +78,8 @@ def detect_faces(image, conf, face_mappings = None):
     faces = detect_faces_dnn(image, conf)
     # faces.sort(key=Face.calc_area, reverse=True) # consistent ordering for pictures
 
+    # face_mappings = dict[int, tuple[Face, tuple[float, float]]]
+
     if face_mappings is None:
         face_mappings = { i: (faces[i], faces[i].center_tuple()) for i in range(len(faces)) }
     else:
@@ -95,10 +97,10 @@ def detect_faces(image, conf, face_mappings = None):
                 if key in found_faces_keys:
                     continue
             
-                face, center = value
-
                 for i, face in enumerate(faces):
-                    dist = np.linalg.norm(np.array(center) - np.array(face.center_tuple()))
+                    if i in found_faces_idxs:
+                        continue
+                    dist = np.linalg.norm(np.array(value[1]) - np.array(face.center_tuple()))
                     if dist < closest_dist:
                         closest_face_idx = i
                         closest_face_key = key
@@ -110,12 +112,14 @@ def detect_faces(image, conf, face_mappings = None):
             face_mappings[closest_face_key] = (faces[closest_face_idx], faces[closest_face_idx].center_tuple())
 
         if len(faces) > len(face_mappings):
+            # added faces
             idx = len(face_mappings)
             for i, face in enumerate(faces):
                 if i not in found_faces_idxs:
                     face_mappings[idx] = (face, face.center_tuple())
                     idx += 1
         elif len(faces) < len(face_mappings):
+            # lost faces
             keys_to_delete = []
             for key, value in face_mappings.items():
                 if key not in found_faces_keys:
@@ -124,13 +128,14 @@ def detect_faces(image, conf, face_mappings = None):
             for key in keys_to_delete:
                 del face_mappings[key]
 
-            # squish keys together
+            # squish keys together to make them sequential
             new_face_mappings = {}
             for i, value in enumerate(face_mappings.values()):
                 new_face_mappings[i] = value
             face_mappings = new_face_mappings
 
-
+    print(len(face_mappings))
+    # face_mappings = { i: (faces[i], faces[i].center_tuple()) for i in range(len(faces)) }
     return face_mappings
 
 
@@ -180,7 +185,7 @@ def combine_with_mask(image1, image2, mask):
 
 def swap_faces(original_image, output_image, face_mappings, oval):
     for key, value in face_mappings.items():
-        face, _center = value
+        face = value[0]
         try:
             face_crop = original_image[
                 face.y : face.y + face.h, face.x : face.x + face.w
@@ -252,7 +257,7 @@ def blur_edges(output_image, face_mappings, blur_thickness, blur_radius, oval):
     mask = np.zeros(output_image.shape[:2], np.uint8)
 
     for value in face_mappings.values():
-        face, _center = value
+        face = value[0]
         if oval:
             cv2.ellipse(
                 mask,
@@ -332,7 +337,7 @@ def video_detection(orginal_video, args):
         delta = t1 - t0
         t0 = t1
 
-        time.sleep(0.1)
+        time.sleep(0.02)
 
         output_frame = frame.copy()
         face_mappings = detect_faces(frame, args["confidence"], face_mappings)
