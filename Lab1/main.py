@@ -29,6 +29,7 @@ TODO:
             - Or maybe for how many "layers"?
     - Make it blur in "layers": TODO - improve
         - Blur the edges with a very strong blur, then blur the surrounding area with a weaker blur
+    - TODO: murders FPS
 - Forground extraction: Worth it? (Very slow, and iffy)
     - Expand the face rect by ~40 percent in all directions
         - Make argparse option?
@@ -75,7 +76,7 @@ class Face:
 
 def detect_faces(image, conf, face_mappings = None):
     faces = detect_faces_dnn(image, conf)
-    faces.sort(key=Face.calc_area, reverse=True) # consistent ordering for pictures
+    # faces.sort(key=Face.calc_area, reverse=True) # consistent ordering for pictures
 
     if face_mappings is None:
         face_mappings = { i: (faces[i], faces[i].center_tuple()) for i in range(len(faces)) }
@@ -114,13 +115,14 @@ def detect_faces(image, conf, face_mappings = None):
                 if i not in found_faces_idxs:
                     face_mappings[idx] = (face, face.center_tuple())
                     idx += 1
-            print("FRED")
         elif len(faces) < len(face_mappings):
+            keys_to_delete = []
             for key, value in face_mappings.items():
                 if key not in found_faces_keys:
-                    del face_mappings[key]
+                    keys_to_delete.append(key)
 
-            print("JOE")
+            for key in keys_to_delete:
+                del face_mappings[key]
 
             # squish keys together
             new_face_mappings = {}
@@ -330,6 +332,8 @@ def video_detection(orginal_video, args):
         delta = t1 - t0
         t0 = t1
 
+        time.sleep(0.1)
+
         output_frame = frame.copy()
         face_mappings = detect_faces(frame, args["confidence"], face_mappings)
         swap_faces(frame, output_frame, face_mappings, args["oval"])
@@ -344,8 +348,11 @@ def video_detection(orginal_video, args):
 
         if args["debug"]:
             for value in face_mappings.values():
-                face, _center = value
+                face, center = value
                 face.draw(output_frame)
+
+                draw_center = (int(center[0]), int(center[1]))
+                cv2.ellipse(output_frame, draw_center, (5, 5), 0, 0, 360, (0, 0, 255), -1)
 
             # fps text (bottom left)
             font                   = cv2.FONT_HERSHEY_SIMPLEX
