@@ -1,7 +1,7 @@
 import numpy as np
 import argparse
 import cv2
-import sys
+# import sys
 import time
 
 # ---------------------------------------------------------------------------- #
@@ -9,18 +9,15 @@ import time
 - Image basics: saving/loading
 - Drawing: rectangle in debug mode
 - Image processing: crop + resize
-- Smoothing and blurring: TODO
+- Smoothing and blurring
 - Face dectect
 - Video/camera
-- Grabcut forground extraction: TODO?
 
 TODO:
 - Face mapping order
     - Command + stable as face size changes
     - Map each face to a number and the number to the center of the face
     - Organize faces that minimizes the total distance between the new centers of the face and the old centers of the face
-- Cut faces out as ovals
-    - +Play nice with blurring
 - Smoothing and blurring: WIP
     - Create blurred version of output frame
     - Create mask for the outline of the pasted face
@@ -30,13 +27,14 @@ TODO:
         - `-t` or `--thickness` for blur thickness for mask
         - `-b` or `--blur` to enable blurring
             - Or maybe for how many "layers"?
-    - Make it blur in "layers"
+    - Make it blur in "layers": TODO - improve
         - Blur the edges with a very strong blur, then blur the surrounding area with a weaker blur
 - Forground extraction: Worth it? (Very slow, and iffy)
     - Expand the face rect by ~40 percent in all directions
         - Make argparse option?
     - https://www.geeksforgeeks.org/python-foreground-extraction-in-an-image-using-grabcut-algorithm/
 - Save video - fourcc
+- WRITE UP
 
 """
 
@@ -58,6 +56,9 @@ class Face:
 
     def calc_area(self):
         return self.w * self.h
+    
+    def center_tuple(self):
+        return (self.center_x, self.center_y)
 
     def __str__(self):
         return f"Face at {self.center}"
@@ -72,11 +73,63 @@ class Face:
         )
 
 
-def detect_faces(image, conf):
+def detect_faces(image, conf, face_mappings = None):
     faces = detect_faces_dnn(image, conf)
-    faces.sort(key=Face.calc_area, reverse=True)
+    faces.sort(key=Face.calc_area, reverse=True) # consistent ordering for pictures
 
-    return faces
+    if face_mappings is None:
+        face_mappings = { i: (faces[i], faces[i].center_tuple()) for i in range(len(faces)) }
+    else:
+        # Try to match the faces in the new frame to the faces in the old frame
+        # by minimizing the distances between the centers of the faces
+        found_faces_idxs = []
+        found_faces_keys = []
+
+        while len(found_faces_idxs) < min(len(faces), len(face_mappings)):
+            closest_face_idx = None
+            closest_face_key = None
+            closest_dist = float("inf")
+
+            for key, value in face_mappings.items():
+                if key in found_faces_keys:
+                    continue
+            
+                face, center = value
+
+                for i, face in enumerate(faces):
+                    dist = np.linalg.norm(np.array(center) - np.array(face.center_tuple()))
+                    if dist < closest_dist:
+                        closest_face_idx = i
+                        closest_face_key = key
+                        closest_dist = dist
+
+            found_faces_idxs.append(closest_face_idx)
+            found_faces_keys.append(closest_face_idx)
+
+            face_mappings[closest_face_key] = (faces[closest_face_idx], faces[closest_face_idx].center_tuple())
+
+        if len(faces) > len(face_mappings):
+            idx = len(face_mappings)
+            for i, face in enumerate(faces):
+                if i not in found_faces_idxs:
+                    face_mappings[idx] = (face, face.center_tuple())
+                    idx += 1
+            print("FRED")
+        elif len(faces) < len(face_mappings):
+            for key, value in face_mappings.items():
+                if key not in found_faces_keys:
+                    del face_mappings[key]
+
+            print("JOE")
+
+            # squish keys together
+            new_face_mappings = {}
+            for i, value in enumerate(face_mappings.values()):
+                new_face_mappings[i] = value
+            face_mappings = new_face_mappings
+
+
+    return face_mappings
 
 
 def detect_faces_dnn(image, conf):
@@ -123,13 +176,14 @@ def combine_with_mask(image1, image2, mask):
     return final_result
 
 
-def swap_faces(original_image, output_image, faces, oval):
-    for i, face in enumerate(faces):
+def swap_faces(original_image, output_image, face_mappings, oval):
+    for key, value in face_mappings.items():
+        face, _center = value
         try:
             face_crop = original_image[
                 face.y : face.y + face.h, face.x : face.x + face.w
             ]
-            next_face = faces[(i + 1) % len(faces)]
+            next_face = face_mappings[(key + 1) % len(face_mappings)][0]
             face_resized = cv2.resize(face_crop, (next_face.w, next_face.h))
 
             if oval:
@@ -186,7 +240,7 @@ def swap_faces(original_image, output_image, faces, oval):
             pass
 
 
-def blur_edges(output_image, faces, blur_thickness, blur_radius, oval):
+def blur_edges(output_image, face_mappings, blur_thickness, blur_radius, oval):
     # blurred_image = cv2.blur(output_image, (51, 51))
 
     if blur_radius % 2 == 0:
@@ -195,7 +249,8 @@ def blur_edges(output_image, faces, blur_thickness, blur_radius, oval):
 
     mask = np.zeros(output_image.shape[:2], np.uint8)
 
-    for face in faces:
+    for value in face_mappings.values():
+        face, _center = value
         if oval:
             cv2.ellipse(
                 mask,
@@ -221,10 +276,10 @@ def blur_edges(output_image, faces, blur_thickness, blur_radius, oval):
     return final_result
 
 
-def double_blur_edges(output_image, faces, blur_thickness, blur_radius, oval):
-    output_image = blur_edges(output_image, faces, blur_thickness, blur_radius, oval)
+def double_blur_edges(output_image, face_mappings, blur_thickness, blur_radius, oval):
+    output_image = blur_edges(output_image, face_mappings, blur_thickness, blur_radius, oval)
     output_image = blur_edges(
-        output_image, faces, blur_thickness // 2, blur_radius * 2, oval
+        output_image, face_mappings, blur_thickness // 2, blur_radius * 2, oval
     )
 
     return output_image
@@ -259,27 +314,48 @@ def video_detection(orginal_video, args):
 
         output_video = cv2.VideoWriter(args["save"], cv2.VideoWriter_fourcc(*fourcc), fps, (width, height))
 
+    face_mappings = None
+
+    t0 = time.time()
+    t1 = time.time()
+    delta = 1 / 20
+
     while orginal_video.isOpened():
         ret, frame = orginal_video.read()
 
         if not ret:
             break
 
+        t1 = time.time()
+        delta = t1 - t0
+        t0 = t1
+
         output_frame = frame.copy()
-        faces = detect_faces(frame, args["confidence"])
-        swap_faces(frame, output_frame, faces, args["oval"])
+        face_mappings = detect_faces(frame, args["confidence"], face_mappings)
+        swap_faces(frame, output_frame, face_mappings, args["oval"])
         if args["blur"]:
             output_frame = double_blur_edges(
                 output_frame,
-                faces,
+                face_mappings,
                 args["blur_thickness"],
                 args["blur_radius"],
                 args["oval"],
             )
 
         if args["debug"]:
-            for face in faces:
+            for value in face_mappings.values():
+                face, _center = value
                 face.draw(output_frame)
+
+            # fps text (bottom left)
+            font                   = cv2.FONT_HERSHEY_SIMPLEX
+            bottomLeftCornerOfText = (5, output_frame.shape[0] - 5)
+            fontScale              = 0.5
+            fontColor              = (0, 0, 255)
+            thickness              = 1
+            lineType               = 2
+            text                   = "FPS: %.2f" % (1 / delta)
+            cv2.putText(output_frame, text, bottomLeftCornerOfText, font, fontScale, fontColor, thickness, lineType)
 
         if args["save"] is not None:
             output_video.write(output_frame)
@@ -299,26 +375,27 @@ def video_detection(orginal_video, args):
 
 def image_detection(original_image, args):
     output_image = original_image.copy()
-    faces = detect_faces(original_image, args["confidence"])
+    face_mappings = detect_faces(original_image, args["confidence"])
 
-    if len(faces) < 2:
+    if len(face_mappings) < 2:
         raise Exception(
-            f"Not enough faces detected. {len(faces)} detected, at least 2 required."
+            f"Not enough faces detected. {len(face_mappings)} detected, at least 2 required."
         )
 
-    swap_faces(original_image, output_image, faces, args["oval"])
+    swap_faces(original_image, output_image, face_mappings, args["oval"])
 
     if args["blur"]:
         output_image = double_blur_edges(
             output_image,
-            faces,
+            face_mappings,
             args["blur_thickness"],
             args["blur_radius"],
             args["oval"],
         )
 
     if args["debug"]:
-        for face in faces:
+        for value in face_mappings.values():
+            face, _center = value
             face.draw(output_image)
 
     if args["save"] is not None:
