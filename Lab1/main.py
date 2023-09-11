@@ -180,6 +180,9 @@ def swap_faces(original_image, output_image, faces, oval):
             # cv2.imshow("face_grapcut", face_grapcut)
 
         except:
+            # TODO: improve this wording
+            # This can happen when the detected face dimensions are weird
+            # Mostly will happen with videos/camera feed or when confidence is low
             pass
 
 
@@ -236,15 +239,25 @@ def video_detection(orginal_video, args):
         width = int(orginal_video.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(orginal_video.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-        fourcc = (
-            int(orginal_video.get(cv2.CAP_PROP_FOURCC))
-            .to_bytes(4, byteorder=sys.byteorder)
-            .decode()
-        )
+        # fourcc = (
+        #     int(orginal_video.get(cv2.CAP_PROP_FOURCC))
+        #     .to_bytes(4, byteorder=sys.byteorder)
+        #     .decode()
+        # )
 
-        output_video = cv2.VideoWriter(
-            args["save"], cv2.VideoWriter_fourcc(*fourcc), fps, (width, height)
-        )
+        extension_to_fourcc = {
+            "avi": "XVID",
+            "mp4": "mp4v",
+            "mov": "mp4v",
+            "mkv": "XVID",
+        }
+        extension = args["save"].split(".")[-1]
+        fourcc = extension_to_fourcc.get(extension, None)
+
+        if fourcc is None:
+            raise Exception("Invalid save extension. Must be avi, mp4, mov, or mkv.")
+
+        output_video = cv2.VideoWriter(args["save"], cv2.VideoWriter_fourcc(*fourcc), fps, (width, height))
 
     while orginal_video.isOpened():
         ret, frame = orginal_video.read()
