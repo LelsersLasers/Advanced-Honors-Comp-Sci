@@ -47,12 +47,11 @@ net = cv2.dnn.readNetFromCaffe(configFile, modelFile)
 
 
 class Face:
-    # TODO: change to not take a tuple
-    def __init__(self, face):
-        self.x = face[0]
-        self.y = face[1]
-        self.w = face[2]
-        self.h = face[3]
+    def __init__(self, x, y, w, h):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
 
         self.center_x = self.x + self.w / 2
         self.center_y = self.y + self.h / 2
@@ -64,7 +63,7 @@ class Face:
         return f"Face at {self.center}"
     
     def __repr__(self):
-        return f"Face(({self.x}, {self.y}, {self.w}, {self.h}))"
+        return f"Face({self.x}, {self.y}, {self.w}, {self.h})"
 
     def draw(self, image, color=(255, 0, 0)):
         # rect outline
@@ -107,8 +106,8 @@ def detect_faces_dnn(image, conf):
             # x = max(0, x1 - int((expanded_w - w) / 2))
             # y = max(0, y1 - int((expanded_h - h) / 2))
 
-            # detected_faces.append(Face((x, y, expanded_w, expanded_h)))
-            detected_faces.append(Face((x1, y1, w, h)))
+            # detected_faces.append(Face(x, y, expanded_w, expanded_h))
+            detected_faces.append(Face(x1, y1, w, h))
 
     return detected_faces
 
