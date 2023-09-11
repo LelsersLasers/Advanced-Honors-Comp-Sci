@@ -61,7 +61,7 @@ class Face:
 
     def __str__(self):
         return f"Face at {self.center}"
-    
+
     def __repr__(self):
         return f"Face({self.x}, {self.y}, {self.w}, {self.h})"
 
@@ -213,11 +213,6 @@ def blur_edges(output_image, faces, blur_thickness, blur_radius, oval):
                 blur_thickness,
             )
 
-    # inverse_mask = cv2.bitwise_not(mask)
-    # result = cv2.bitwise_and(output_image, output_image, mask=inverse_mask)
-    # blurred_part = cv2.bitwise_and(blurred_image, blurred_image, mask=mask)
-    # final_result = cv2.add(result, blurred_part)
-
     final_result = combine_with_mask(output_image, blurred_image, mask)
 
     return final_result
@@ -225,18 +220,18 @@ def blur_edges(output_image, faces, blur_thickness, blur_radius, oval):
 
 def double_blur_edges(output_image, faces, blur_thickness, blur_radius, oval):
     output_image = blur_edges(output_image, faces, blur_thickness, blur_radius, oval)
-    output_image = blur_edges(output_image, faces, blur_thickness // 2, blur_radius * 2, oval)    
+    output_image = blur_edges(
+        output_image, faces, blur_thickness // 2, blur_radius * 2, oval
+    )
 
     return output_image
 
 
-def video_detection(
-    orginal_video, save, conf, debug, blur, blur_thickness, blur_radius, oval
-):
+def video_detection(orginal_video, args):
     if not orginal_video.isOpened():
         raise Exception("Could not open video")
 
-    if save is not None:
+    if args["save"] is not None:
         fps = orginal_video.get(cv2.CAP_PROP_FPS)
         width = int(orginal_video.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(orginal_video.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -248,7 +243,7 @@ def video_detection(
         )
 
         output_video = cv2.VideoWriter(
-            save, cv2.VideoWriter_fourcc(*fourcc), fps, (width, height)
+            args["save"], cv2.VideoWriter_fourcc(*fourcc), fps, (width, height)
         )
 
     while orginal_video.isOpened():
@@ -258,18 +253,22 @@ def video_detection(
             break
 
         output_frame = frame.copy()
-        faces = detect_faces(frame, conf)
-        swap_faces(frame, output_frame, faces, oval)
-        if blur:
+        faces = detect_faces(frame, args["confidence"])
+        swap_faces(frame, output_frame, faces, args["oval"])
+        if args["blur"]:
             output_frame = double_blur_edges(
-                output_frame, faces, blur_thickness, blur_radius, oval
+                output_frame,
+                faces,
+                args["blur_thickness"],
+                args["blur_radius"],
+                args["oval"],
             )
 
-        if debug:
+        if args["debug"]:
             for face in faces:
                 face.draw(output_frame)
 
-        if save is not None:
+        if args["save"] is not None:
             output_video.write(output_frame)
 
         cv2.imshow("Output", output_frame)
@@ -279,43 +278,38 @@ def video_detection(
 
     orginal_video.release()
 
-    if save is not None:
+    if args["save"] is not None:
         output_video.release()
 
     cv2.destroyAllWindows()
 
 
-def image_detection(
-    original_image,
-    output_image,
-    save,
-    conf,
-    debug,
-    blur,
-    blur_thickness,
-    blur_radius,
-    oval,
-):
-    faces = detect_faces(original_image, conf)
+def image_detection(original_image, args):
+    output_image = original_image.copy()
+    faces = detect_faces(original_image, args["confidence"])
 
     if len(faces) < 2:
         raise Exception(
             f"Not enough faces detected. {len(faces)} detected, at least 2 required."
         )
 
-    swap_faces(original_image, output_image, faces, oval)
+    swap_faces(original_image, output_image, faces, args["oval"])
 
-    if blur:
+    if args["blur"]:
         output_image = double_blur_edges(
-            output_image, faces, blur_thickness, blur_radius, oval
+            output_image,
+            faces,
+            args["blur_thickness"],
+            args["blur_radius"],
+            args["oval"],
         )
 
-    if debug:
+    if args["debug"]:
         for face in faces:
             face.draw(output_image)
 
-    if save is not None:
-        cv2.imwrite(save, output_image)
+    if args["save"] is not None:
+        cv2.imwrite(args["save"], output_image)
 
     cv2.imshow("Output", output_image)
 
@@ -330,6 +324,7 @@ ap = argparse.ArgumentParser()
 
 
 # TODO: use type=
+# TODO: clean, clarify, and expand wordings/help messages
 ap.add_argument(
     "-i",
     "--input",
@@ -358,14 +353,20 @@ ap.add_argument(
 ap.add_argument(
     "-d", "--debug", required=False, help="draw debug outlines", action="store_true"
 )
-# TODO: clean wording for blur
 ap.add_argument(
     "-b", "--blur", required=False, help="enable blurring", action="store_true"
 )
 ap.add_argument(
-    "-t", "--blur-thickness", required=False, help="blur thickness", default=40
+    "-t",
+    "--blur-thickness",
+    required=False,
+    help="blur thickness",
+    default=40,
+    type=int,
 )
-ap.add_argument("-r", "--blur-radius", required=False, help="blur strength", default=21)
+ap.add_argument(
+    "-r", "--blur-radius", required=False, help="blur strength", default=21, type=int
+)
 
 ap.add_argument(
     "-o",
@@ -374,51 +375,26 @@ ap.add_argument(
     help="cut out faces as ovals instead of rectangles",
     action="store_true",
 )
-# TODO: command for face mapping order
+# TODO: command for face mapping order?
 args = vars(ap.parse_args())
 
-input_type = str(args["input"])
-if (input_type == "image" or input_type == "video") and args["path"] is None:
+if (args["input"] == "image" or args["input"] == "video") and args["path"] is None:
     raise Exception("An image or video requires a path")
-elif args["path"] is not None:
-    path = args["path"]
-
-
-conf = float(args["confidence"])
-save = args["save"]
-debug = args["debug"]
-oval = args["oval"]
-
-blur = args["blur"]
-blur_thickness = int(args["blur_thickness"])
-blur_radius = int(args["blur_radius"])
 
 
 print("Press q to quit")
 
-# TODO: clean stuff argparse results into a struct or something
-if input_type == "image":
-    original_image = cv2.imread(path)
+if args["input"] == "image":
+    original_image = cv2.imread(args["path"])
     output_image = original_image.copy()
-    image_detection(
-        original_image,
-        output_image,
-        save,
-        conf,
-        debug,
-        blur,
-        blur_thickness,
-        blur_radius,
-        oval,
-    )
-elif input_type == "video":
-    original_video = cv2.VideoCapture(path)
-    video_detection(
-        original_video, save, conf, debug, blur, blur_thickness, blur_radius, oval
-    )
-elif input_type == "camera":
-    original_video = cv2.VideoCapture(0)
+    image_detection(original_image, args)
+elif args["input"] == "video":
+    original_video = cv2.VideoCapture(args["path"])
+    video_detection(original_video, args)
+elif args["input"] == "camera":
+    if args["path"] is None:
+        original_video = cv2.VideoCapture(0)
+    else:
+        original_video = cv2.VideoCapture(args["path"])
     time.sleep(0.1)
-    video_detection(
-        original_video, save, conf, debug, blur, blur_thickness, blur_radius, oval
-    )
+    video_detection(original_video, args)
