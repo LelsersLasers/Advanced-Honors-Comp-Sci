@@ -19,7 +19,8 @@ import time
     - Map each face to a number and the number to the center of the face
     - Organize faces that minimizes the total distance between the new centers of the face and the old centers of the face
     - Give face a wait period of ~0.5 seconds before removing it from the mapping
-    - TODO: command
+    - TODO: only do for video/camera?
+    - TODO: only mutate face_mappings instead of also returning it?
 - Smoothing and blurring: WIP
     - Create blurred version of output frame
     - Create mask for the outline of the pasted face
@@ -35,6 +36,10 @@ import time
 - Save video - fourcc
     - Fixed?
 - Delta vs save FPS?
+    - If not save, then always use live delta
+    - Else use 1/output_fps
+    - Make clear in FPS text in bottom left
+    - Drop frames if delta is too high??
 - WRITE UP
 - COMMENTS
 - Rewrite and reorganize the whole thing
@@ -85,7 +90,6 @@ def dist_between(v1, v2):
 
 class FaceMappingData:
     # TODO: should extend face
-    MAX_TIME_SINCE_LAST_SEEN = 0.4
 
     def __init__(self, face, last_center) -> None:
         self.face = face
@@ -93,29 +97,13 @@ class FaceMappingData:
         self.time_since_last_seen = 0.0
 
 
-def detect_faces(image, conf, face_mappings=None, delta=0.0):
-    faces = detect_faces_dnn(image, conf)
+def detect_faces(image, confidence, face_mappings=None, wait_time=0.0, delta=0.0):
+    faces = detect_faces_dnn(image, confidence)
     # faces.sort(key=Face.calc_area, reverse=True) # consistent ordering for pictures
 
-    # # face_mappings = dict[int, tuple[Face, tuple[float, float]]]
-    # face_mappings = dict[int, FaceMappingData]
-
     if face_mappings is None:
-        # face_mappings = { i: (faces[i], faces[i].center_tuple()) for i in range(len(faces)) }
-        # face_mappings = { i: FaceMappingData(faces[i], faces[i].center_tuple()) for _ in faces }
         face_mappings = {}
-    # else:
-    # every combination of faces and face_mappings
-    # all_combinations = []
-    # for i, face in enumerate(faces):
-    #     for key, value in face_mappings.items():
-    #         all_combinations.append((i, key, face, value))
 
-    # # sort by distance between centers
-    # all_combinations.sort(key=lambda x: dist_between(x[2].center_tuple(), x[3][1]))
-
-    # Try to match the faces in the new frame to the faces in the old frame
-    # by minimizing the distances between the centers of the faces
     found_faces_idxs = []
     found_faces_keys = []
 
@@ -132,7 +120,6 @@ def detect_faces(image, conf, face_mappings=None, delta=0.0):
             for i, face in enumerate(faces):
                 if i in found_faces_idxs:
                     continue
-                # dist = np.linalg.norm(np.array(value[1]) - np.array(face.center_tuple()))
                 dist_vec = np.array(face_mapping_data.last_center) - np.array(face.center_tuple())
                 dist = np.sqrt(dist_vec[0] ** 2 + dist_vec[1] ** 2)
                 if dist < closest_dist:
@@ -149,17 +136,17 @@ def detect_faces(image, conf, face_mappings=None, delta=0.0):
 
     if len(faces) > len(face_mappings):
         # added faces
-        # idx = len(face_mappings)
         for i, face in enumerate(faces):
             if i not in found_faces_idxs:
                 not_added = True
                 while not_added:
+                    # TODO: 100 is techinally the max faces
+                    # lower numbers = higher chance of collision = more likely to loop
+                    # could use sys.maxsize instead?
                     key = np.random.randint(0, 100)
                     if key not in face_mappings.keys():
                         not_added = False
                         face_mappings[key] = FaceMappingData(face, face.center_tuple())
-                # face_mappings[idx] = FaceMappingData(face, face.center_tuple())
-                # idx += 1
     elif len(faces) < len(face_mappings):
         # lost faces
         keys_to_delete = []
@@ -169,24 +156,16 @@ def detect_faces(image, conf, face_mappings=None, delta=0.0):
 
         for key in keys_to_delete:
             face_mapping_data = face_mappings[key]
-            if face_mapping_data.time_since_last_seen > FaceMappingData.MAX_TIME_SINCE_LAST_SEEN:
+            if face_mapping_data.time_since_last_seen > wait_time:
                 del face_mappings[key]
             else:
                 face_mapping_data.time_since_last_seen += delta
 
-        # squish keys together to make them sequential
-        # new_face_mappings = {}
-        # for i, face_mapping_data in enumerate(face_mappings.values()):
-        #     new_face_mappings[i] = face_mapping_data
-        # face_mappings = new_face_mappings
-
-    # print(len(face_mappings))
     print(", ".join([str(k) for k in face_mappings.keys()]))
-    # face_mappings = { i: (faces[i], faces[i].center_tuple()) for i in range(len(faces)) }
     return face_mappings
 
 
-def detect_faces_dnn(image, conf):
+def detect_faces_dnn(image, confidence_threshold):
     blob = cv2.dnn.blobFromImage(image, 1.0, (300, 300), [104, 117, 123], False, False)
 
     net.setInput(blob)
@@ -197,7 +176,7 @@ def detect_faces_dnn(image, conf):
 
     for i in range(detections.shape[2]):
         confidence = detections[0, 0, i, 2]
-        if confidence > conf:
+        if confidence > confidence_threshold:
             x1 = int(detections[0, 0, i, 3] * screen_size[0])
             y1 = int(detections[0, 0, i, 4] * screen_size[1])
             x2 = int(detections[0, 0, i, 5] * screen_size[0])
@@ -231,7 +210,6 @@ def combine_with_mask(image1, image2, mask):
 
 
 def swap_faces(original_image, output_image, face_mappings, oval):
-
     keys = list(face_mappings.keys())
     for i, face_mapping_data in enumerate(face_mappings.values()):
         face = face_mapping_data.face
@@ -294,8 +272,6 @@ def swap_faces(original_image, output_image, face_mappings, oval):
 
 
 def blur_edges(output_image, face_mappings, blur_thickness, blur_radius, oval):
-    # blurred_image = cv2.blur(output_image, (51, 51))
-
     if blur_radius % 2 == 0:
         blur_radius += 1
     blurred_image = cv2.medianBlur(output_image, blur_radius)
@@ -388,7 +364,9 @@ def video_detection(orginal_video, args):
         # time.sleep(0.02)
 
         output_frame = frame.copy()
-        face_mappings = detect_faces(frame, args["confidence"], face_mappings, delta)
+        face_mappings = detect_faces(
+            frame, args["confidence"], face_mappings, args["wait_time"], delta
+        )
         swap_faces(frame, output_frame, face_mappings, args["oval"])
         if args["blur"]:
             output_frame = double_blur_edges(
@@ -406,7 +384,7 @@ def video_detection(orginal_video, args):
 
                 last_seen = face_mapping_data.time_since_last_seen
                 if last_seen > 0:
-                    ratio = last_seen / FaceMappingData.MAX_TIME_SINCE_LAST_SEEN
+                    ratio = last_seen / args["wait_time"]
                     color = int(255 * (1 - ratio))
 
                     cv2.ellipse(
@@ -531,13 +509,20 @@ ap.add_argument(
     type=int,
 )
 ap.add_argument("-r", "--blur-radius", required=False, help="blur strength", default=21, type=int)
-
 ap.add_argument(
     "-o",
     "--oval",
     required=False,
     help="cut out faces as ovals instead of rectangles",
     action="store_true",
+)
+ap.add_argument(
+    "-w",
+    "--wait-time",
+    required=False,
+    help="how long to wait before removing a face (only for `-i video/camera)`",
+    default=0.4,
+    type=float,
 )
 # TODO: command for face mapping order?
 args = vars(ap.parse_args())
