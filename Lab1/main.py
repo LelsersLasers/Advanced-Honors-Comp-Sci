@@ -350,9 +350,10 @@ def video_detection(orginal_video, args):
 
     face_mappings = None
 
-    t0 = time.time()
-    t1 = time.time()
-    delta = 1 / 20
+    if args["save"] is None:
+        t0 = time.time()
+        t1 = time.time()
+        delta = 1 / 30
 
     while orginal_video.isOpened():
         ret, frame = orginal_video.read()
@@ -360,9 +361,12 @@ def video_detection(orginal_video, args):
         if not ret:
             break
 
-        t1 = time.time()
-        delta = t1 - t0
-        t0 = t1
+        if args["save"] is None:
+            t1 = time.time()
+            delta = t1 - t0
+            t0 = t1
+        else:
+            delta = 1 / fps
 
         # time.sleep(0.02)
 
@@ -408,7 +412,7 @@ def video_detection(orginal_video, args):
             fontColor = (0, 0, 255)
             thickness = 1
             lineType = 2
-            text = "FPS: %.2f" % (1 / delta)
+            text = "Output FPS: %.2f" % (1 / delta)
             cv2.putText(
                 output_frame,
                 text,
