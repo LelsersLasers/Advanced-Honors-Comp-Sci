@@ -209,13 +209,17 @@ def combine_with_mask(image1, image2, mask):
     return final_result
 
 
-def swap_faces(original_image, output_image, face_mappings, oval):
+def swap_faces(original_image, output_image, face_mappings, oval, mapping_order_offset):
     keys = list(face_mappings.keys())
+    # when mapping_order_offset == len(face_mappings), then no swaps happen
+    if mapping_order_offset == len(face_mappings):
+        mapping_order_offset += 1
+
     for i, face_mapping_data in enumerate(face_mappings.values()):
         face = face_mapping_data.face
         try:
             face_crop = original_image[face.y : face.y + face.h, face.x : face.x + face.w]
-            next_key = keys[(i + 1) % len(keys)]
+            next_key = keys[(i + mapping_order_offset) % len(keys)]
             next_face = face_mappings[next_key].face
             face_resized = cv2.resize(face_crop, (next_face.w, next_face.h))
 
@@ -367,7 +371,7 @@ def video_detection(orginal_video, args):
         face_mappings = detect_faces(
             frame, args["confidence"], face_mappings, args["wait_time"], delta
         )
-        swap_faces(frame, output_frame, face_mappings, args["oval"])
+        swap_faces(frame, output_frame, face_mappings, args["oval"], args["mapping_order_offset"])
         if args["blur"]:
             output_frame = double_blur_edges(
                 output_frame,
@@ -442,7 +446,9 @@ def image_detection(original_image, args):
             f"Not enough faces detected. {len(face_mappings)} detected, at least 2 required."
         )
 
-    swap_faces(original_image, output_image, face_mappings, args["oval"])
+    swap_faces(
+        original_image, output_image, face_mappings, args["oval"], args["mapping_order_offset"]
+    )
 
     if args["blur"]:
         output_image = double_blur_edges(
@@ -524,7 +530,14 @@ ap.add_argument(
     default=0.4,
     type=float,
 )
-# TODO: command for face mapping order?
+ap.add_argument(
+    "-m",
+    "--mapping-order-offset",
+    required=False,
+    help="face mapping offset order",
+    default=1,
+    type=int,
+)
 args = vars(ap.parse_args())
 
 if (args["input"] == "image" or args["input"] == "video") and args["path"] is None:
