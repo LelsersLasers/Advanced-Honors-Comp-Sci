@@ -108,7 +108,6 @@ def detect_faces(image, confidence, face_mappings=None, wait_time=0.0, delta=0.0
     found_faces_keys = []
 
     while len(found_faces_idxs) < min(len(faces), len(face_mappings)):
-
         closest_face_idx = None
         closest_face_key = None
         closest_dist = float("inf")
@@ -161,7 +160,7 @@ def detect_faces(image, confidence, face_mappings=None, wait_time=0.0, delta=0.0
             else:
                 face_mapping_data.time_since_last_seen += delta
 
-    print(", ".join([str(k) for k in face_mappings.keys()]))
+    # print(", ".join([str(k) for k in face_mappings.keys()]))
     return face_mappings
 
 
@@ -424,17 +423,23 @@ def video_detection(orginal_video, args):
         if args["save"] is not None:
             output_video.write(output_frame)
 
-        cv2.imshow("Output", output_frame)
+        if not args["quiet"]:
+            cv2.imshow("Output", output_frame)
 
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            break
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
+        else:
+            print(".", end="", flush=True)
 
     orginal_video.release()
 
     if args["save"] is not None:
         output_video.release()
 
-    cv2.destroyAllWindows()
+    if not args["quiet"]:
+        cv2.destroyAllWindows()
+    else:
+        print("")
 
 
 def image_detection(original_image, args):
@@ -467,9 +472,9 @@ def image_detection(original_image, args):
     if args["save"] is not None:
         cv2.imwrite(args["save"], output_image)
 
-    cv2.imshow("Output", output_image)
-
-    cv2.waitKey(10_000)
+    if not args["quiet"]:
+        cv2.imshow("Output", output_image)
+        cv2.waitKey(0)
 
 
 # ---------------------------------------------------------------------------- #
@@ -538,13 +543,21 @@ ap.add_argument(
     default=1,
     type=int,
 )
+ap.add_argument(
+    "-q",
+    "--quiet",
+    required=False,
+    help="no output window",
+    action="store_true",
+)
 args = vars(ap.parse_args())
 
 if (args["input"] == "image" or args["input"] == "video") and args["path"] is None:
     raise Exception("An image or video requires a path")
 
 
-print("Press q to quit")
+if not args["quiet"]:
+    print("Press q to quit")
 
 if args["input"] == "image":
     original_image = cv2.imread(args["path"])
