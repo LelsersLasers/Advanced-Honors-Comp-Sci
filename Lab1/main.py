@@ -33,6 +33,7 @@ import time
     - Make it blur in "layers": TODO - improve
         - Blur the edges with a very strong blur, then blur the surrounding area with a weaker blur
     - TODO: murders FPS
+        - Double blur is even worse
 - Save video - fourcc
     - Fixed?
 - Delta vs save FPS?
@@ -310,9 +311,9 @@ def blur_edges(output_image, face_mappings, blur_thickness, blur_radius, oval):
 
 def double_blur_edges(output_image, face_mappings, blur_thickness, blur_radius, oval):
     output_image = blur_edges(output_image, face_mappings, blur_thickness, blur_radius, oval)
-    output_image = blur_edges(
-        output_image, face_mappings, blur_thickness // 2, blur_radius * 2, oval
-    )
+    # output_image = blur_edges(
+    #     output_image, face_mappings, blur_thickness // 2, blur_radius * 2, oval
+    # )
 
     return output_image
 
@@ -523,7 +524,7 @@ ap.add_argument(
     default=40,
     type=int,
 )
-ap.add_argument("-r", "--blur-radius", required=False, help="blur strength", default=21, type=int)
+ap.add_argument("-r", "--blur-radius", required=False, help="blur strength (higher = lower fps)", default=15, type=int)
 ap.add_argument(
     "-o",
     "--oval",
