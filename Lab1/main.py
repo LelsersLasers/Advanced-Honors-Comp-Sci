@@ -143,6 +143,7 @@ def detect_faces(image, confidence, face_mappings=None, wait_time=0.0, delta=0.0
                     # TODO: 100 is techinally the max faces
                     # lower numbers = higher chance of collision = more likely to loop
                     # could use sys.maxsize instead?
+                    # or just use an array!
                     key = np.random.randint(0, 100)
                     if key not in face_mappings.keys():
                         not_added = False
@@ -327,11 +328,6 @@ def video_detection(orginal_video, args):
         width = int(orginal_video.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(orginal_video.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-        # fourcc = (
-        #     int(orginal_video.get(cv2.CAP_PROP_FOURCC))
-        #     .to_bytes(4, byteorder=sys.byteorder)
-        #     .decode()
-        # )
 
         extension_to_fourcc = {
             "avi": "XVID",
