@@ -7,6 +7,7 @@ import time
 
 # ---------------------------------------------------------------------------- #
 """
+Chapters:
 - Image basics: saving/loading
 - Drawing: rectangle in debug mode
 - Image processing: crop + resize
@@ -14,40 +15,20 @@ import time
 - Face dectect
 - Video/camera
 
-- Face mapping order: WIP
-    - Command + stable as face size changes
-    - Map each face to a number and the number to the center of the face
-    - Organize faces that minimizes the total distance between the new centers of the face and the old centers of the face
-    - Give face a wait period of ~0.5 seconds before removing it from the mapping
-    - TODO: only do for video/camera?
-    - TODO: only mutate face_mappings instead of also returning it?
-- Smoothing and blurring: WIP
-    - Create blurred version of output frame
-    - Create mask for the outline of the pasted face
-    - Used blurred image on masked areas, and original on non-masked areas
-    - Make argparse option
-        - `-r` or `--radius` for blur radius in blur function
-        - `-t` or `--thickness` for blur thickness for mask
-        - `-b` or `--blur` to enable blurring
-            - Or maybe for how many "layers"?
-    - Make it blur in "layers": TODO - improve
-        - Blur the edges with a very strong blur, then blur the surrounding area with a weaker blur
+TODO:
+- Smoothing and blurring:
     - TODO: murders FPS
-        - Double blur is even worse
+    - TODO: change wording, flags
 - Save video - fourcc
     - Fixed?
-- Delta vs save FPS?
-    - If not save, then always use live delta
-    - Else use 1/output_fps
-    - Make clear in FPS text in bottom left
-    - Drop frames if delta is too high??
-- WRITE UP
-- COMMENTS
-- Rewrite and reorganize the whole thing
+- Delta vs save FPS
+    - TODO: works right?
+- TODO: WRITE UP
+- TODO: COMMENTS
 
 Millan's bad ideas:
 - Multiplayer
-- Live updae settings in pygame window
+- Live update settings in pygame window
 
 """
 
