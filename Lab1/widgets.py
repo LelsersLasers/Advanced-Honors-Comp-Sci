@@ -1,3 +1,7 @@
+# Please just trust it works (we think)
+# TODO: comments, comments, comments
+# TODO: either use type hints or don't
+
 import pygame
 import tkinter
 from tkinter import filedialog
@@ -40,7 +44,7 @@ hoverEffects = {
 }
 # ---------------------------------------------------------------------------- #
 class DrawTemplate:
-    def __init__(self, pt: list[int, int], w: int, h: int):
+    def __init__(self, pt: tuple[int, int], w: int, h: int):
         self.pt = pt
         self.w = w
         self.h = h
@@ -104,7 +108,7 @@ class Image(DrawTemplate):
             win.blit(self.image, self.pt)
     
 class Button(DrawTemplate):
-    def __init__(self, text: Text, rect: Rect, value, hoverEffect: str = None):
+    def __init__(self, text: Text, rect: Rect, value, hoverEffect: str | None = None):
         super().__init__(rect.pt, rect.w, rect.h)
         self.text = text
         self.rect = rect
@@ -130,10 +134,10 @@ class Button(DrawTemplate):
         self.hover = hover
 
 class SingleSelectButton(Button):
-    def __init__(self, text: Text, rect: Rect, value, hoverEffect: str = None):
+    def __init__(self, text: Text, rect: Rect, value, hoverEffect: str | None = None):
         super().__init__(text, rect, value, hoverEffect)
         self.selected = False
-        self.others = []
+        self.others: list[SingleSelectButton] = []
         self.currentValue = None
 
     def draw(self, win):
@@ -167,7 +171,7 @@ class SingleSelectButton(Button):
 class FileBrowser(Button):
     imageFiles = ["*.jpg", "*.jpeg", "*.jpe", "*.png", "*.bmp", "*.dib", "*.webp", "*.avif", "*.pbm", "*.pgm", "*.ppm", "*.pxm", "*.pnm", "*.pfm", "*.sr", "*.ras", "*.tiff", "*.tif", "*.exr", "*.hdr", "*.pic"]
     videoFiles = ["*.mp4", "*.avi", "*.mov", "*.mkv"]
-    def __init__(self, text: Text, rect: Rect, value, hoverEffect: str = None):
+    def __init__(self, text: Text, rect: Rect, value, hoverEffect: str | None = None):
         super().__init__(text, rect, value, hoverEffect)
         self.filePath = ""
         self.label_file_explorer = None

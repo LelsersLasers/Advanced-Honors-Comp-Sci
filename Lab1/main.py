@@ -7,7 +7,7 @@ import pygame
 import widgets
 
 # ---------------------------------------------------------------------------- #
-def setupPygame(fontPath) -> pygame.Surface:
+def setupPygame(fontPath):
     pygame.init()
     win = pygame.display.set_mode((700, 700), pygame.SRCALPHA)
     pygame.display.set_caption("Face Swap Pro Plus Platinum Edition Deluxe")

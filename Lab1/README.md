@@ -13,6 +13,8 @@ The project is in `Advanced-Honors-Comp-Sci/Lab1/`
 - `saves/`
 	- Saved output from the program
 	- Already contains some examples
+- `resources/`
+	- Font and images used by pygame GUI
 - `/`
 	- python files for the program and README
 
