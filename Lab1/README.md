@@ -39,6 +39,7 @@ The project is in `Advanced-Honors-Comp-Sci/Lab1/`
 ## Usage
 
 To run the program, run `main.py`.
+Press any key to skip the title screen (or wait 6 seconds).
 After that, interact with the pygame window to continue using the program.
 The pygame window will launch an OpenCV once `Continue` is clicked on.
 You can continue to use the pygame window to change the parameters of the OpenCV in realtime.
