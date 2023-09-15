@@ -4,7 +4,8 @@ import time
 import face_detect
 
 def combine_with_mask(image1, image2, mask):
-    # Where mask == true => image2, else image1
+    """Returns an image that is image2 where mask == true, otherwise image1"""
+
     inverse_mask = cv2.bitwise_not(mask)
     result = cv2.bitwise_and(image1, image1, mask=inverse_mask)
     image2_part = cv2.bitwise_and(image2, image2, mask=mask)
@@ -13,6 +14,7 @@ def combine_with_mask(image1, image2, mask):
     return final_result
 
 def swap_faces(original_image, output_image, face_orderings, oval, order_offset):
+    """Modifies output_image to swap faces according to face_orderings"""
 
     # when mapping_order_offset == len(face_mappings), then no swaps happen
     if order_offset == len(face_orderings):
@@ -44,6 +46,7 @@ def swap_faces(original_image, output_image, face_orderings, oval, order_offset)
             pass
 
 def blur_edges(output_image, face_orderings, blur_thickness, blur_radius, oval):
+    """Returns an image with blurred connections between the pasted faces and the background"""
     if len(face_orderings) == 0:
         return output_image
     
@@ -73,6 +76,8 @@ def blur_edges(output_image, face_orderings, blur_thickness, blur_radius, oval):
 
 
 def video_detection(original_video, args):
+    """Sets up and then continuously runs the face swap on the video"""
+
     if not original_video.isOpened():
         raise Exception("Could not open video")
     
@@ -148,7 +153,7 @@ def video_detection(original_video, args):
             t0 = t1
 
         if not args["quiet"]:
-            cv2.imshow("Face Swap", output_frame)
+            cv2.imshow("Face Swap Pro Plus Platinum Edition Deluxe", output_frame)
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
@@ -166,6 +171,8 @@ def video_detection(original_video, args):
         print("")
 
 def image_detection(original_image, args):
+    """Sets up and then runs the face swap on the image"""
+
     output_image = original_image.copy()
     faces = face_detect.detect_faces(original_image, args["confidence"])
 
@@ -186,5 +193,5 @@ def image_detection(original_image, args):
         cv2.imwrite(args["save"], output_image)
 
     if not args["quiet"]:
-        cv2.imshow("Face Swap", output_image)
+        cv2.imshow("Face Swap Pro Plus Platinum Edition Deluxe", output_image)
         cv2.waitKey(0)

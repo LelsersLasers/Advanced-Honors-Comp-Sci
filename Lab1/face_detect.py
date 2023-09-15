@@ -6,6 +6,8 @@ net = cv2.dnn.readNetFromCaffe(config_file, model_file)
 
 
 class DetectedFace:
+    """Dimensions for a detected face"""
+
     def __init__(self, x, y, w, h):
         self.x = x
         self.y = y
@@ -34,6 +36,8 @@ class DetectedFace:
         cv2.rectangle(output_image, (self.x, self.y), (self.x2, self.y2), (255, 0, 0), 2)
 
 class FaceOrderingData:
+    """Data for a face that is being tracked between frames"""
+
     def __init__(self, face):
         self.face = face
         self.last_center = face.get_center_tuple()
@@ -42,15 +46,19 @@ class FaceOrderingData:
     def draw_debug(self, output_image, wait_time):
         self.face.draw_debug(output_image)
         if self.time_since_seen > 0:
+            # white->black = seen recently->not seen recently
             ratio = self.time_since_seen / wait_time
             color_intensity = int(255 * (1 - ratio))
             color = (color_intensity, color_intensity, color_intensity)
             cv2.circle(output_image, self.face.get_center_tuple_int(), 5, color, -1)
 
 def dist_between(p1, p2):
+    """Returns the distance between two points"""
     return ((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)**0.5
 
 def detect_faces(image, confidence_threshold):
+    """Uses a deep neural network to detect faces in an image and returns a list of DetectedFaces"""
+
     blob = cv2.dnn.blobFromImage(image, 1.0, (300, 300), [104, 117, 123], False, False)
 
     net.setInput(blob)
@@ -76,6 +84,8 @@ def detect_faces(image, confidence_threshold):
     return detected_faces
 
 def detect_faces_and_update_ordering(image, confidence_threshold, face_orderings, wait_time, delta):
+    """Detects faces in an image and updates the ordering list"""
+
     detected_faces = detect_faces(image, confidence_threshold)
 
     used_detected_faces_idxs = []
