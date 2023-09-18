@@ -31,27 +31,30 @@ def createWidgets(win, font):
     buttons = {
         "open": [],
         "run": [],
-        "image": []
+        "live": []
     }
     texts = {
         "open": [],
         "run": [],
-        "image": []
+        "live": []
     }
     rects = {
         "open": [],
         "run": [],
-        "image": []
+        "live": []
     }
 
     # create title screen
     text = widgets.Text(["center", "center"], "Face Swap Pro Plus Platinum Edition Deluxe", font, "nord6")
     text.centerX(0, 700)
-    text.centerY(0, 700)
+    text.centerY(200, 700)
     texts["open"].append(text)
 
+    image = widgets.Image([125, 50], 450, 450, "resources/TitleImage.jpg")
+    rects["open"].append(image)
+
     # create menu screen
-    text = widgets.Text(["center", 25], "Face Swap Pro Plus Platinum Edition Deluxe", font, "nord6")
+    text = widgets.Text(["center", 50], "Face Swap Pro Plus Platinum Edition Deluxe", font, "nord6")
     text.centerX(0, 700)
     texts["run"].append(text)
 
@@ -104,9 +107,9 @@ def createWidgets(win, font):
 
     rect = widgets.Rect([0, 500], 50, 50, "nord8", 5)
     text = widgets.Text([0, 500], "Save File:", font, "nord6")
-    image = widgets.Image([0, 500], 45, 45, "checkMark.png")
+    image = widgets.Image([0, 500], 45, 45, "resources/checkMark.png")
 
-    checkMark = widgets.CheckMark(text, rect, False, image, 15)
+    checkMark = widgets.CheckMark(text, rect, False, image, 15, "save")
     checkMark.centerX(0, 700)
     buttons["run"].append(checkMark)
 
@@ -123,8 +126,92 @@ def createWidgets(win, font):
     rect = widgets.Rect([275, 710], 150, 60, "nord4", borderRadius=5)
     text.centerX(275, 150)
     text.centerY(710, 60)
-    button = widgets.StateButton(text, rect, "image", "white")
+    button = widgets.StateButton(text, rect, "live", "white")
     buttons["run"].append(button)
+
+    # live value changes
+    text = widgets.Text([0, 50], "Settings", font, "nord6")
+    text.centerX(0, 700)
+    texts["live"].append(text)
+
+    rect = widgets.Rect([10, 125], 680, 6, "nord3", borderRadius=2)
+    rects["live"].append(rect)
+    
+    """
+    Settings to make:
+    [X] confidence (float) (default = 0.8)
+    [X] blur (bool)
+    [X] blur thickness (int) (default = 40)
+    [X] blur radius (int) (default = 15)
+    [X] oval (bool)
+    [ ] wait-time (float) (default = 0.4) (only for video and camera)
+    [ ] order-offset (int) (default = 1)
+    [ ] quiet (bool)
+
+    """
+
+    text = widgets.Text([0, 150], "Confidence", font, "nord6")
+    text.centerX(0, 700)
+    texts["live"].append(text)
+
+    slider = widgets.Slider([280, 200], 200, 75, "confidence", "confidence", font, minVal = 0, maxVal = 1, step = 0.1, color = "nord3", handleColor = "nord6", initial = 0.8, roundDig=2, circleHandle = False)
+    buttons["live"].append(slider)
+
+    rect = widgets.Rect([0, 300], 50, 50, "nord8", 5)
+    text = widgets.Text([0, 300], "Blur:", font, "nord6")
+    image = widgets.Image([0, 300], 45, 45, "resources/checkMark.png")
+
+    checkMark = widgets.CheckMark(text, rect, False, image, 15, "blur")
+    checkMark.centerX(0, 700)
+    buttons["live"].append(checkMark)
+
+    text = widgets.Text([0, 400], "Blur Thickness", font, "nord6")
+    text.centerX(0, 700)
+    texts["live"].append(text)
+
+    slider = widgets.Slider([280, 450], 200, 75, "blur thickness", "blur", font, minVal = 0, maxVal = 100, step = 1, color = "nord3", handleColor = "nord6", initial=40, circleHandle = False)
+    buttons["live"].append(slider)
+
+    text = widgets.Text([0, 550], "Blur Radius", font, "nord6")
+    text.centerX(0, 700)
+    texts["live"].append(text)
+
+    slider = widgets.Slider([280, 600], 200, 75, "blur radius", "blur", font, minVal = 0, maxVal = 100, step = 1, color = "nord3", handleColor = "nord6", initial = 15, circleHandle = False)
+    buttons["live"].append(slider)
+
+    buttons["live"][-3].setSetting(buttons["live"])
+
+    rect = widgets.Rect([0, 700], 50, 50, "nord8", 5)
+    text = widgets.Text([0, 700], "Oval:", font, "nord6")
+    image = widgets.Image([0, 700], 45, 45, "resources/checkMark.png")
+
+    checkMark = widgets.CheckMark(text, rect, False, image, 15, "oval")
+    checkMark.centerX(0, 700)
+    buttons["live"].append(checkMark)
+
+    text = widgets.Text([0, 775], "Wait Time:", font, "nord6")
+    text.centerX(0, 700)
+    texts["live"].append(text)
+
+    slider = widgets.Slider([280, 825], 200, 75, "wait-time", "wait-time", font, minVal = 0, maxVal = 1, step = 0.1, color = "nord3", handleColor = "nord6", initial = 0.4, roundDig=2, circleHandle = False)
+    buttons["live"].append(slider)
+
+    text = widgets.Text([0, 925], "Order Offset:", font, "nord6")
+    text.centerX(0, 700)
+    texts["live"].append(text)
+
+    slider = widgets.Slider([280, 975], 200, 75, "order-offset", "order-offset", font, minVal = 0, maxVal = 10, step = 1, color = "nord3", handleColor = "nord6", initial = 1, circleHandle = False)
+    buttons["live"].append(slider)
+
+    rect = widgets.Rect([10, 1075], 680, 6, "nord4", borderRadius=2)
+    rects["live"].append(rect)
+
+    text = widgets.Text([0, 1085], "Stop", font, "nord6")
+    rect = widgets.Rect([275, 1085], 150, 60, "nord4", borderRadius=5)
+    text.centerX(275, 150)
+    text.centerY(1085, 60)
+    button = widgets.StateButton(text, rect, "run", "white")
+    buttons["live"].append(button)
 
     return rects, texts, buttons
 # ---------------------------------------------------------------------------- #
@@ -134,17 +221,31 @@ def getSingleSelectValue(buttons):
             return button.currentValue
 # ---------------------------------------------------------------------------- #
 def main():
-    win, font = setupPygame("AnnieUseYourTelescope-Regular.ttf")
+    # create objs for app
+    win, font = setupPygame("resources/AnnieUseYourTelescope-Regular.ttf")
     rects, texts, buttons = createWidgets(win, font)
 
     run = True
+
+    # Mouse button double click
     downL = False
+
+    # which list to draw and interact with
     state = "open"
+
+    # button selects
     textSelected = False
+    sliderSelected = False
+
+    # for graphics and scrolling
     winSize = win.get_size()
+
+    # for title screen
     openCounter = 0
-    openThreshold = 2
+    openThreshold = 6
     firstFrame = True
+
+    # to make sure it is the same on all computers
     currentTime = time.time()
     delta = time.time()
     while run:
@@ -157,7 +258,7 @@ def main():
                     downL = True
 
                     for button in buttons[state]:
-                        if button.collide(widgets.DrawTemplate(mouse, 1, 1)):
+                        if button.collide(widgets.DrawTemplate(mouse, 1, 1)) and button.possible:
                             if isinstance(button, widgets.SingleSelectButton):
                                 button.setOthers()
                                 for button in buttons[state]:
@@ -168,13 +269,16 @@ def main():
                                 button.browseFiles()
                             elif isinstance(button, widgets.CheckMark):
                                 button.flipValue()
-                                for bttn in buttons[state]:
-                                    if isinstance(bttn, widgets.TextInput):
-                                        bttn.setSave(button.value)
+                                button.setSetting(buttons[state])
                             elif isinstance(button, widgets.TextInput):
                                 button.setSelected(True)
                                 if button.selected:
                                     textSelected = True
+                            elif isinstance(button, widgets.StateButton):
+                                state = button.value
+                                # TODO: make it start/stop cv2 stuff
+                            elif isinstance(button, widgets.Slider):
+                                button.selected = not button.selected
                             
                             break
                         if isinstance(button, widgets.TextInput):
@@ -201,17 +305,13 @@ def main():
                                 button.rerender()
                 
                 elif event.type == pygame.MOUSEWHEEL:
-                    y = event.y
+                    y = event.y * 2
                     if event.flipped:
                         y *= -1
                     
                     if (y < 0 and buttons[state][-1].pt[1] + buttons[state][-1].h + 25 > winSize[1]) or (y > 0 and texts[state][0].pt[1] < 25):
                         for button in buttons[state]:
-                            button.pt[1] += y
-                            if not isinstance(button, widgets.TextInput):
-                                button.text.pt[1] += y
-                            elif isinstance(button, widgets.CheckMark):
-                                button.image.pt[1] += y
+                            button.move(y)
                         for rect in rects[state]:
                             rect.pt[1] += y
                         for text in texts[state]:
@@ -237,10 +337,11 @@ def main():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
+                if event.type in [pygame.KEYDOWN, pygame.KEYUP, pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP, pygame.MOUSEWHEEL]:
+                    state = "run"
             
             time.sleep(0.01)
 
-            print(openCounter, delta, firstFrame)
             if openCounter >= openThreshold:
                 state = "run"
 

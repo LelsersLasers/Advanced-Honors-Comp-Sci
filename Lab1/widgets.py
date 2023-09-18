@@ -23,7 +23,13 @@ colors = {
     "nord13": "#D08770",
     "nord14": "#EBCB8B",
     "nord15": "#A3BE8C",
-    "nord16": "#B48EAD"
+    "nord16": "#B48EAD",
+    "transparent": (
+        0,
+        0,
+        0,
+        127
+    )
 }
 # ---------------------------------------------------------------------------- #
 class HoverEffect:
@@ -73,6 +79,7 @@ class Text:
         win.blit(self.text_render, self.pt)
     
     def render(self, text):
+        self.text = text
         render = self.font.render(text, True, self.color)
         self.w = render.get_width()
         self.h = render.get_height()
@@ -96,6 +103,15 @@ class Rect(DrawTemplate):
         if self.color is not None:
             pygame.draw.rect(win, self.color, self.getRect(), self.width, self.borderRadius)
 
+class Circle(DrawTemplate):
+    def __init__(self, pt: tuple[int, int], radius: int, color: str, width: int = 0):
+        super().__init__(pt, radius, radius, width)
+        self.color = color
+
+    def draw(self, win):
+        if self.color is not None:
+            pygame.draw.circle(win, self.color, self.pt, self.w, self.width)
+
 class Image(DrawTemplate):
     def __init__(self, pt, w, h, path):
         super().__init__(pt, w, h)
@@ -108,19 +124,30 @@ class Image(DrawTemplate):
             win.blit(self.image, self.pt)
     
 class Button(DrawTemplate):
-    def __init__(self, text: Text, rect: Rect, value, hoverEffect: str | None = None):
+    def __init__(self, text: Text, rect: Rect, value, hoverEffect: str | None = None, setting: str | None = None):
         super().__init__(rect.pt, rect.w, rect.h)
         self.text = text
         self.rect = rect
         self.value = value
         self.hoverEffect = hoverEffect
         self.hover = False
+        self.setting = setting
+        self.possible = True
+        self.surface = pygame.Surface((self.w, self.h), pygame.SRCALPHA)
+        self.surface.fill(colors["transparent"])
     
+    def getSurface(self) -> pygame.Surface:
+        self.surface = pygame.Surface((self.w, self.h), pygame.SRCALPHA)
+        self.surface.fill(colors["transparent"])
+
     def draw(self, win):
         self.rect.draw(win)
         self.text.draw(win)
         if self.hover and self.hoverEffect is not None:
             hoverEffects[self.hoverEffect].draw(win, self.rect)
+        
+        if not self.possible:
+            win.blit(self.surface, self.pt)
     
     def collide(self, hb):
         return (
@@ -132,6 +159,14 @@ class Button(DrawTemplate):
     
     def setHover(self, hover):
         self.hover = hover
+    
+    def setPossible(self, possible):
+        if not possible == self.possible:
+            self.possible = possible
+    
+    def move(self, y):
+        self.pt[1] += y
+        self.text.pt[1] += y
 
 class SingleSelectButton(Button):
     def __init__(self, text: Text, rect: Rect, value, hoverEffect: str | None = None):
@@ -202,10 +237,11 @@ class FileBrowser(Button):
             self.hoverEffect = "red"
 
 class CheckMark(Button):
-    def __init__(self, text: Text, rect: Rect, value, image: Image, displacement: int):
+    def __init__(self, text: Text, rect: Rect, value, image: Image, displacement: int, setting: str):
         super().__init__(text, rect, value, None)
         self.image = image
         self.displacement = displacement
+        self.setting = setting
     
     def draw(self, win):
         super().draw(win)
@@ -220,6 +256,23 @@ class CheckMark(Button):
     
     def flipValue(self):
         self.value = not self.value
+    
+    def setSetting(self, buttons):
+        match(self.setting):
+            case "save":
+                for button in buttons:
+                    if isinstance(button, TextInput):
+                        button.setSave(self.value)
+            case "blur":
+                for button in buttons:
+                    if (isinstance(button, Button) or isinstance(button, Slider)) and button.setting == self.setting and button is not self:
+                        button.setPossible(self.value)
+            case _:
+                pass
+
+    def move(self, y):
+        super().move(y)
+        self.image.pt[1] += y
 
 class StateButton(Button):
     def __init__(self, text: Text, rect: Rect, value, hoverEffect):
@@ -231,6 +284,7 @@ class TextInput(Rect):
         self.save = False
         self.selected = False
         self.empty = True
+        self.possible = True
         self.font = font
         self.textColor = colors[textColor]
         self.text = "Filename"
@@ -270,3 +324,157 @@ class TextInput(Rect):
     
     def rerender(self):
         self.text_render = self.font.render(self.text, True, self.textColor)
+    
+    def move(self, y):
+        self.pt[1] += y
+    
+class Slider:
+    def __init__(self, pt: tuple[int, int], w: int, h: int, settingsKey: str, setting: str, font: pygame.font.Font, minVal: int = 0, maxVal: int = 100, step: int or float = 0, color: str = "#c8c8c8", handleColor = "#000000", initial: int or None = None, roundDig: int = 0, handleRadius: int or None = None, circleHandle: bool = True):
+        self.pt = pt
+        self.w = w
+        self.h = h
+        self.settingsKey = settingsKey
+        self.setting = setting
+        self.minVal = minVal
+        self.maxVal = maxVal
+        self.step = step
+        self.color = color
+        self.handleColor = handleColor
+        self.roundDig = roundDig
+        if initial is None:
+            self.initial = (minVal + maxVal) / 2
+        else:
+            self.initial = initial
+        self.value = self.initial
+        self.handleRadius = handleRadius
+        self.horizontal = self.w == max(self.w, self.h)
+
+        self.selected = False
+
+        width = 0
+        borderRadius = int(min(self.w, self.h) / 8)
+        self.circleHandle = circleHandle
+        if circleHandle:
+            if handleRadius is None:
+                self.handleRadius = h / 1.3
+            else:
+                self.handleRadius = handleRadius
+            
+            # draw objects
+            circlePt = [self.pt[0] + w * (self.value / self.maxVal), self.pt[1] + self.h / 2]
+            self.handle = Circle(circlePt, self.handleColor, self.handleRadius)
+        else:
+            if self.horizontal:
+                w = self.w * (self.value / self.maxVal)
+                h = self.h
+            else:
+                w = self.w
+                h = self.h * (self.value / self.maxVal)
+            self.handle = Rect([self.pt[0], self.pt[1]], w, h, self.handleColor, width, borderRadius)
+
+        borderRadius = int(min(self.w, self.h) / 8)
+        self.rect = Rect([int(self.pt[0]), int(self.pt[1])], self.w, self.h, self.color, width, borderRadius)
+        
+        self.textBG = Rect([self.pt[0] - 50 - 10, self.pt[1]], 50, self.h, self.color, width, borderRadius)
+        self.text = Text([0, 0], str(self.value), font, self.handleColor)
+
+        self.text.centerX(self.textBG.pt[0], self.textBG.w)
+        self.text.centerY(self.textBG.pt[1], self.textBG.h)
+
+        self.surface = pygame.Surface((self.textBG.w + 10 + self.rect.w, self.rect.h), pygame.SRCALPHA)
+        self.surface.fill(colors["transparent"])
+        self.possible = True
+    
+    def move(self, y):
+        self.pt[1] += y
+        self.rect.pt[1] += y
+        self.text.pt[1] += y
+        self.textBG.pt[1] += y
+        self.handle.pt[1] += y
+
+    def draw(self, win):
+        self.rect.draw(win)
+        self.handle.draw(win)
+        
+        self.textBG.draw(win)
+        self.text.draw(win)
+
+        if not self.possible:
+            win.blit(self.surface, self.textBG.pt)
+
+    def setPossible(self, possible: bool) -> None:
+        if not self.possible == possible:
+            self.possible = possible
+    
+    def setVal(self):
+        if self.roundDig == 0:
+            self.value = int(self.value)
+        self.text.text_render = self.text.render(str(self.value))
+        self.text.centerX(self.textBG.pt[0], self.textBG.w)
+        self.text.centerY(self.textBG.pt[1], self.textBG.h)
+        
+    def setHover(self, temp):
+        return
+
+    def increment(self) -> None:
+        if self.value + self.step < self.maxVal:
+            self.value += self.step
+        elif not self.value > self.maxVal and self.value + self.step >= self.maxVal:
+            self.value = self.maxVal
+        
+        self.calcHandlePos()
+        
+    def decrement(self) -> None:
+        if self.value - self.step > self.minVal:
+            self.value -= self.step
+        elif not self.value < self.minVal and self.value - self.step <= self.minVal:
+            self.value = self.minVal
+    
+        self.calcHandlePos()
+
+    def calcHandlePos(self):
+        if self.horizontal:
+            if not self.circleHandle:
+                self.handle.w = (self.value / self.maxVal) * self.w
+            else:
+                self.handle.pt[0] = self.pt[0] + (self.value / self.maxVal) * self.w
+        else:
+            if not self.circleHandle:
+                self.handle.h = (self.value / self.maxVal) * self.h
+            else:
+                self.handle.pt[1] = self.pt[1] + (self.value / self.maxVal) * self.h
+    
+    def slide(self, hb) -> None:
+        if self.horizontal:
+            x = hb.pt[0] - self.pt[0]
+            self.value = round(x / self.w * self.maxVal, self.roundDig)
+            if not self.circleHandle:
+                self.handle.w = x
+            else:
+                self.handle.pt = (hb.pt[0], self.handle.pt[1])
+        else:
+            y = hb.pt[1] - self.pt[1]
+            self.value = round(y / self.h * self.maxVal, self.roundDig)
+            if not self.circleHandle:
+                self.handle.h = y
+            else:
+                self.handle.pt = (self.handle.pt[0], hb.pt[1])
+        self.setVal()
+    
+    def checkBoundaries(self, hb):
+        return (
+			self.pt[0] < hb.pt[0] + hb.w
+			and hb.pt[0] < self.pt[0] + self.w
+			and self.pt[1] < hb.pt[1] + hb.h
+			and hb.pt[1] < self.pt[1] + self.h
+		)
+
+    def collide(self, hb) -> bool:
+        if self.checkBoundaries(hb) and self.possible and self.selected:
+            self.active = True
+            self.slide(hb)
+            return True
+        elif self.checkBoundaries(hb) and self.possible and not self.selected:
+            return True
+        
+        return False
