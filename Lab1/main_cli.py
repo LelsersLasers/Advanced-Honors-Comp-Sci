@@ -75,7 +75,6 @@ args["quit"] = False
 
 if args["input"] == "image":
     original_image = cv2.imread(args["path"])
-    output_image = original_image.copy()
     face_swap.image_detection(original_image, args)
 elif args["input"] == "video":
     original_video = cv2.VideoCapture(args["path"])
