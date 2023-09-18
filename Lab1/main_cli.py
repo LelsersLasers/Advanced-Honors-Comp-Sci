@@ -69,6 +69,10 @@ args = vars(ap.parse_args())
 if (args["input"] == "image" or args["input"] == "video") and args["path"] is None:
     raise Exception("An image or video requires a path")
 
+print("Press Q to quit")
+
+args["quit"] = False
+
 if args["input"] == "image":
     original_image = cv2.imread(args["path"])
     output_image = original_image.copy()

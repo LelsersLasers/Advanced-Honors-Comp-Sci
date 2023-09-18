@@ -16,7 +16,7 @@ def combine_with_mask(image1, image2, mask):
 def swap_faces(original_image, output_image, face_orderings, oval, order_offset):
     """Modifies output_image to swap faces according to face_orderings"""
 
-    # when mapping_order_offset == len(face_mappings), then no swaps happen
+    # when order_offset == len(face_orderings), then no swaps happen
     if order_offset == len(face_orderings):
         order_offset += 1
 
@@ -153,7 +153,7 @@ def video_detection(original_video, args):
             t0 = t1
 
         cv2.imshow("Face Swap Pro Plus Platinum Edition Deluxe", output_frame)
-        if cv2.waitKey(1) & 0xFF == ord("q"):
+        if cv2.waitKey(1) & 0xFF == ord("q") or args["quit"]:
             break
 
     original_video.release()
@@ -187,5 +187,7 @@ def image_detection(original_image, args):
             cv2.imwrite(args["save"], output_image)
 
         cv2.imshow("Face Swap Pro Plus Platinum Edition Deluxe", output_image)
-        if cv2.waitKey(1) & 0xFF == ord("q"):
+        if cv2.waitKey(1) & 0xFF == ord("q") or args["quit"]:
             break
+
+    cv2.destroyAllWindows()
