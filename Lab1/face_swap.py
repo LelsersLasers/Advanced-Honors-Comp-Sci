@@ -153,7 +153,6 @@ def video_detection(original_video, args):
             t0 = t1
 
         cv2.imshow("Face Swap Pro Plus Platinum Edition Deluxe", output_frame)
-
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 
@@ -167,24 +166,26 @@ def video_detection(original_video, args):
 def image_detection(original_image, args):
     """Sets up and then runs the face swap on the image"""
 
-    output_image = original_image.copy()
-    faces = face_detect.detect_faces(original_image, args["confidence"])
+    while True:
+        output_image = original_image.copy()
+        faces = face_detect.detect_faces(original_image, args["confidence"])
 
-    if len(faces) < 2:
-        raise Exception(f"Need at least two faces to swap (only detected {len(faces)})")
-    
-    face_orderings = [face_detect.FaceOrderingData(face) for face in faces]
-    swap_faces(original_image, output_image, face_orderings, args["oval"], args["order_offset"])
+        if len(faces) < 2:
+            raise Exception(f"Need at least two faces to swap (only detected {len(faces)})")
+        
+        face_orderings = [face_detect.FaceOrderingData(face) for face in faces]
+        swap_faces(original_image, output_image, face_orderings, args["oval"], args["order_offset"])
 
-    if args["blur"]:
-        output_image = blur_edges(output_image, face_orderings, args["blur_thickness"], args["blur_radius"], args["oval"])
+        if args["blur"]:
+            output_image = blur_edges(output_image, face_orderings, args["blur_thickness"], args["blur_radius"], args["oval"])
 
-    if args["debug"]:
-        for face in faces:
-            face.draw_debug(output_image)
+        if args["debug"]:
+            for face in faces:
+                face.draw_debug(output_image)
 
-    if args["save"] is not None:
-        cv2.imwrite(args["save"], output_image)
+        if args["save"] is not None:
+            cv2.imwrite(args["save"], output_image)
 
-    cv2.imshow("Face Swap Pro Plus Platinum Edition Deluxe", output_image)
-    cv2.waitKey(0)
+        cv2.imshow("Face Swap Pro Plus Platinum Edition Deluxe", output_image)
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
