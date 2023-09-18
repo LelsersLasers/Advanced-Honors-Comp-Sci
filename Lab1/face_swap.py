@@ -152,23 +152,17 @@ def video_detection(original_video, args):
             delta = t1 - t0
             t0 = t1
 
-        if not args["quiet"]:
-            cv2.imshow("Face Swap Pro Plus Platinum Edition Deluxe", output_frame)
+        cv2.imshow("Face Swap Pro Plus Platinum Edition Deluxe", output_frame)
 
-            if cv2.waitKey(1) & 0xFF == ord("q"):
-                break
-        else:
-            print(".", end="", flush=True)
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
 
     original_video.release()
 
     if args["save"] is not None:
         output_video.release()
 
-    if not args["quiet"]:
-        cv2.destroyAllWindows()
-    else:
-        print("")
+    cv2.destroyAllWindows()
 
 def image_detection(original_image, args):
     """Sets up and then runs the face swap on the image"""
@@ -192,6 +186,5 @@ def image_detection(original_image, args):
     if args["save"] is not None:
         cv2.imwrite(args["save"], output_image)
 
-    if not args["quiet"]:
-        cv2.imshow("Face Swap Pro Plus Platinum Edition Deluxe", output_image)
-        cv2.waitKey(0)
+    cv2.imshow("Face Swap Pro Plus Platinum Edition Deluxe", output_image)
+    cv2.waitKey(0)
