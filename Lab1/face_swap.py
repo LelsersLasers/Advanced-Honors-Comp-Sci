@@ -165,14 +165,11 @@ def video_detection(original_video, args):
     args["quit"] = True
 
 def image_detection(original_image, args):
-    """Sets up and then runs the face swap on the image"""
+    """Sets up and then continuously runs the face swap on the image"""
 
     while True:
         output_image = original_image.copy()
         faces = face_detect.detect_faces(original_image, args["confidence"])
-
-        if len(faces) < 2:
-            raise Exception(f"Need at least two faces to swap (only detected {len(faces)})")
         
         face_orderings = [face_detect.FaceOrderingData(face) for face in faces]
         swap_faces(original_image, output_image, face_orderings, args["oval"], args["order_offset"])
