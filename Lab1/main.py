@@ -115,7 +115,7 @@ def createWidgets(win, font):
 
     text = widgets.Text([0, 560], "Filename:", font, "nord6")
     text.centerX(0, 700)
-    textInput = widgets.TextInput([200, 610], 300, 75, "nord3", font, "nord6")
+    textInput = widgets.TextInput([200, 610], 300, 75, "nord3", font, "nord6", "save_path")
     textInput.rerender()
     buttons["run"].append(textInput)
 
@@ -136,19 +136,6 @@ def createWidgets(win, font):
 
     rect = widgets.Rect([10, 125], 680, 6, "nord3", borderRadius=2)
     rects["live"].append(rect)
-    
-    """
-    Settings to make:
-    [X] confidence (float) (default = 0.8)
-    [X] blur (bool)
-    [X] blur thickness (int) (default = 40)
-    [X] blur radius (int) (default = 15)
-    [X] oval (bool)
-    [ ] wait-time (float) (default = 0.4) (only for video and camera)
-    [ ] order-offset (int) (default = 1)
-    [ ] quiet (bool)
-
-    """
 
     text = widgets.Text([0, 150], "Confidence", font, "nord6")
     text.centerX(0, 700)
@@ -169,14 +156,14 @@ def createWidgets(win, font):
     text.centerX(0, 700)
     texts["live"].append(text)
 
-    slider = widgets.Slider([280, 450], 200, 75, "blur thickness", "blur", font, minVal = 0, maxVal = 100, step = 1, color = "nord3", handleColor = "nord6", initial=40, circleHandle = False)
+    slider = widgets.Slider([280, 450], 200, 75, "blur_thickness", "blur", font, minVal = 0, maxVal = 100, step = 1, color = "nord3", handleColor = "nord6", initial=40, circleHandle = False)
     buttons["live"].append(slider)
 
     text = widgets.Text([0, 550], "Blur Radius", font, "nord6")
     text.centerX(0, 700)
     texts["live"].append(text)
 
-    slider = widgets.Slider([280, 600], 200, 75, "blur radius", "blur", font, minVal = 0, maxVal = 100, step = 1, color = "nord3", handleColor = "nord6", initial = 15, circleHandle = False)
+    slider = widgets.Slider([280, 600], 200, 75, "blur_radius", "blur", font, minVal = 0, maxVal = 100, step = 1, color = "nord3", handleColor = "nord6", initial = 15, circleHandle = False)
     buttons["live"].append(slider)
 
     buttons["live"][-3].setSetting(buttons["live"])
@@ -193,14 +180,14 @@ def createWidgets(win, font):
     text.centerX(0, 700)
     texts["live"].append(text)
 
-    slider = widgets.Slider([280, 825], 200, 75, "wait-time", "wait-time", font, minVal = 0, maxVal = 1, step = 0.1, color = "nord3", handleColor = "nord6", initial = 0.4, roundDig=2, circleHandle = False)
+    slider = widgets.Slider([280, 825], 200, 75, "wait_time", "wait-time", font, minVal = 0, maxVal = 1, step = 0.1, color = "nord3", handleColor = "nord6", initial = 0.4, roundDig=2, circleHandle = False)
     buttons["live"].append(slider)
 
     text = widgets.Text([0, 925], "Order Offset:", font, "nord6")
     text.centerX(0, 700)
     texts["live"].append(text)
 
-    slider = widgets.Slider([280, 975], 200, 75, "order-offset", "order-offset", font, minVal = 0, maxVal = 10, step = 1, color = "nord3", handleColor = "nord6", initial = 1, circleHandle = False)
+    slider = widgets.Slider([280, 975], 200, 75, "order_offset", "order-offset", font, minVal = 0, maxVal = 10, step = 1, color = "nord3", handleColor = "nord6", initial = 1, circleHandle = False)
     buttons["live"].append(slider)
 
     rect = widgets.Rect([10, 1075], 680, 6, "nord4", borderRadius=2)
@@ -218,7 +205,47 @@ def createWidgets(win, font):
 def getSingleSelectValue(buttons):
     for button in buttons:
         if isinstance(button, widgets.SingleSelectButton):
-            return button.currentValue
+            if button.currentValue is not None:
+                return button.currentValue.lower()
+            else:
+                return button.currentValue
+        
+def getFilePath(buttons):
+    for button in buttons:
+        if isinstance(button, widgets.FileBrowser):
+            return button.filePath
+
+def getSetting(buttons, state, setting):
+    for button in buttons[state]:
+        if button.setting == setting:
+            if isinstance(button, widgets.SingleSelectButton):
+                if button.currentValue is not None:
+                   return button.currentValue.lower()
+                else:
+                    return button.currentValue
+            elif isinstance(button, widgets.TextInput):
+                if button.empty:
+                    return None
+                else:
+                    return button.text
+            else:
+                return button.value
+        else:
+            ...
+# ---------------------------------------------------------------------------- #
+def getLiveArgs(args, buttons):
+    for setting in ["confidence", "blur", "blur_thickness", "blur_radius", "oval", "wait_time", "order_offset"]:
+        args[setting] = getSetting(buttons, "live", setting)
+
+def getArgs(args, buttons):
+    args["input"] = getSingleSelectValue(buttons["run"])
+    args["path"] = getFilePath(buttons["run"])
+    save = getSetting(buttons, "run", "save")
+    if not save:
+        args["save"] = None
+    else:
+        args["save"] = getSetting(buttons, "run", "save_path")
+    getLiveArgs(args, buttons)
 # ---------------------------------------------------------------------------- #
 def main():
     # create objs for app
@@ -235,7 +262,24 @@ def main():
 
     # button selects
     textSelected = False
-    sliderSelected = False
+
+    # threading for openCv
+    thread = None
+    args = {
+        "input": None,
+        "path": None,
+        "filename": None,
+        "save": None,
+        "confidence": None,
+        "debug": False,
+        "blur": None,
+        "blur_thickness": None,
+        "blur_radius": None,
+        "oval": None,
+        "wait_time": None,
+        "order_offset": None,
+        "quit": False
+    }
 
     # for graphics and scrolling
     winSize = win.get_size()
@@ -275,8 +319,17 @@ def main():
                                 if button.selected:
                                     textSelected = True
                             elif isinstance(button, widgets.StateButton):
-                                state = button.value
-                                # TODO: make it start/stop cv2 stuff
+                                if state == "live" and button.value == "run":
+                                    args["quit"] = True
+                                    continue
+                                else:
+                                    if button.checkConditions(buttons["run"]):
+                                        if button.value == "live":
+                                            getArgs(args, buttons)
+                                        thread = button.changeState(args)
+                                        if thread is not None:
+                                            state = button.value
+
                             elif isinstance(button, widgets.Slider):
                                 button.selected = not button.selected
                             
@@ -326,6 +379,8 @@ def main():
                     item.setHover(True)
                 else:
                     item.setHover(False)
+            if state == "live":
+                getLiveArgs(args, buttons)
         else:
             delta = time.time() - currentTime
             currentTime = time.time()

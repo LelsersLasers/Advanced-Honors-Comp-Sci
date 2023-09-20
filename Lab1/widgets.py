@@ -1,11 +1,15 @@
 # Please just trust it works (we think)
 # TODO: comments, comments, comments
 # TODO: either use type hints or don't
-
+from typing import Any
 import pygame
 import tkinter
 from tkinter import filedialog
 import os
+import cv2
+import face_swap
+
+from thread_open_cv import CustomThread
 # ---------------------------------------------------------------------------- #
 colors = {
     "nord1": "#2E3440",
@@ -170,7 +174,7 @@ class Button(DrawTemplate):
 
 class SingleSelectButton(Button):
     def __init__(self, text: Text, rect: Rect, value, hoverEffect: str | None = None):
-        super().__init__(text, rect, value, hoverEffect)
+        super().__init__(text, rect, value, hoverEffect, "input")
         self.selected = False
         self.others: list[SingleSelectButton] = []
         self.currentValue = None
@@ -207,7 +211,7 @@ class FileBrowser(Button):
     imageFiles = ["*.jpg", "*.jpeg", "*.jpe", "*.png", "*.bmp", "*.dib", "*.webp", "*.avif", "*.pbm", "*.pgm", "*.ppm", "*.pxm", "*.pnm", "*.pfm", "*.sr", "*.ras", "*.tiff", "*.tif", "*.exr", "*.hdr", "*.pic"]
     videoFiles = ["*.mp4", "*.avi", "*.mov", "*.mkv"]
     def __init__(self, text: Text, rect: Rect, value, hoverEffect: str | None = None):
-        super().__init__(text, rect, value, hoverEffect)
+        super().__init__(text, rect, value, hoverEffect, "filename")
         self.filePath = ""
         self.label_file_explorer = None
         self.currentFileType = None
@@ -217,9 +221,9 @@ class FileBrowser(Button):
         self.setHoverEffect()
     
     def browseFiles(self):
-        if self.currentFileType == "Image":
+        if self.currentFileType == "image":
             fileTypeList = (("Image Files", FileBrowser.imageFiles), ("Video Files", FileBrowser.videoFiles))
-        elif self.currentFileType == "Video":
+        elif self.currentFileType == "video":
             fileTypeList = (("Video Files", FileBrowser.videoFiles), ("Image Files", FileBrowser.imageFiles))
         else:
             return None
@@ -231,7 +235,7 @@ class FileBrowser(Button):
         return None
 
     def setHoverEffect(self):
-        if self.currentFileType == "Image" or self.currentFileType == "Video":
+        if self.currentFileType == "image" or self.currentFileType == "video":
             self.hoverEffect = "white"
         else:
             self.hoverEffect = "red"
@@ -265,7 +269,7 @@ class CheckMark(Button):
                         button.setSave(self.value)
             case "blur":
                 for button in buttons:
-                    if (isinstance(button, Button) or isinstance(button, Slider)) and button.setting == self.setting and button is not self:
+                    if ((isinstance(button, Button) and button.setting == self.setting) or (isinstance(button, Slider) and button.settingsKey == self.setting)) and button is not self:
                         button.setPossible(self.value)
             case _:
                 pass
@@ -277,15 +281,58 @@ class CheckMark(Button):
 class StateButton(Button):
     def __init__(self, text: Text, rect: Rect, value, hoverEffect):
         super().__init__(text, rect, value, hoverEffect)
+    
+    def checkConditions(self, buttons):
+        inputType = getSingleSelectValue(buttons)
+
+        if inputType is None:
+            return False
+        
+        inputType = inputType.lower()
+
+        if inputType == "image" or inputType == "video":
+            filePath = getFilePath(buttons)
+            print(inputType, filePath)
+            if filePath is not None and not filePath == "":
+                return True
+            else:
+                return False
+        else:
+            return True
+    
+    def setHover(self, hover):
+        return super().setHover(hover)
+    
+    def changeState(self, args: dict) -> CustomThread | None:
+        if args["input"] == "image":
+            start_args = cv2.imread(args["path"])
+            start_fn = face_swap.image_detection
+        elif args["input"] == "video":
+            start_args = cv2.VideoCapture(args["path"])
+            start_fn = face_swap.video_detection
+        elif args["input"] == "camera":
+            start_args = cv2.VideoCapture(0)
+            start_fn = face_swap.video_detection
+        else:
+            return None
+
+        if self.value == "live":
+            thread = CustomThread(args, start_fn, start_args)
+            thread.start()
+            return thread
+        else:
+            return self.value
+
 
 class TextInput(Rect):
-    def __init__(self, pt, w, h, color: str, font, textColor: str, width: int = 0, borderRadius: int = 0):
+    def __init__(self, pt, w, h, color: str, font, textColor: str, setting: str, width: int = 0, borderRadius: int = 0):
         super().__init__(pt, w, h, color, width, borderRadius)
         self.save = False
         self.selected = False
         self.empty = True
         self.possible = True
         self.font = font
+        self.setting = setting
         self.textColor = colors[textColor]
         self.text = "Filename"
         self.text_render = self.font.render(self.text, True, self.textColor)
@@ -329,7 +376,7 @@ class TextInput(Rect):
         self.pt[1] += y
     
 class Slider:
-    def __init__(self, pt: tuple[int, int], w: int, h: int, settingsKey: str, setting: str, font: pygame.font.Font, minVal: int = 0, maxVal: int = 100, step: int or float = 0, color: str = "#c8c8c8", handleColor = "#000000", initial: int or None = None, roundDig: int = 0, handleRadius: int or None = None, circleHandle: bool = True):
+    def __init__(self, pt: tuple[int, int], w: int, h: int, setting: str, settingsKey: str, font: pygame.font.Font, minVal: int = 0, maxVal: int = 100, step: int or float = 0, color: str = "#c8c8c8", handleColor = "#000000", initial: int or None = None, roundDig: int = 0, handleRadius: int or None = None, circleHandle: bool = True):
         self.pt = pt
         self.w = w
         self.h = h
@@ -478,3 +525,13 @@ class Slider:
             return True
         
         return False
+    
+def getSingleSelectValue(buttons):
+    for button in buttons:
+        if isinstance(button, SingleSelectButton):
+            return button.currentValue
+
+def getFilePath(buttons):
+    for button in buttons:
+        if isinstance(button, FileBrowser):
+            return button.filePath
