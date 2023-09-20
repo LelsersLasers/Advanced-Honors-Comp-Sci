@@ -190,13 +190,21 @@ def createWidgets(win, font):
     slider = widgets.Slider([280, 975], 200, 75, "order_offset", "order-offset", font, minVal = 0, maxVal = 10, step = 1, color = "nord3", handleColor = "nord6", initial = 1, circleHandle = False)
     buttons["live"].append(slider)
 
-    rect = widgets.Rect([10, 1075], 680, 6, "nord4", borderRadius=2)
+    rect = widgets.Rect([0, 1075], 50, 50, "nord8", 5)
+    text = widgets.Text([0, 1075], "Debug:", font, "nord6")
+    image = widgets.Image([0, 1075], 45, 45, "resources/checkMark.png")
+
+    checkMark = widgets.CheckMark(text, rect, False, image, 15, "debug")
+    checkMark.centerX(0, 700)
+    buttons["live"].append(checkMark)
+
+    rect = widgets.Rect([10, 1175], 680, 6, "nord4", borderRadius=2)
     rects["live"].append(rect)
 
-    text = widgets.Text([0, 1085], "Stop", font, "nord6")
-    rect = widgets.Rect([275, 1085], 150, 60, "nord4", borderRadius=5)
+    text = widgets.Text([0, 1185], "Stop", font, "nord6")
+    rect = widgets.Rect([275, 1185], 150, 60, "nord4", borderRadius=5)
     text.centerX(275, 150)
-    text.centerY(1085, 60)
+    text.centerY(1185, 60)
     button = widgets.StateButton(text, rect, "run", "white")
     buttons["live"].append(button)
 
@@ -234,7 +242,7 @@ def getSetting(buttons, state, setting):
             ...
 # ---------------------------------------------------------------------------- #
 def getLiveArgs(args, buttons):
-    for setting in ["confidence", "blur", "blur_thickness", "blur_radius", "oval", "wait_time", "order_offset"]:
+    for setting in ["confidence", "blur", "blur_thickness", "blur_radius", "oval", "wait_time", "order_offset", "debug"]:
         args[setting] = getSetting(buttons, "live", setting)
 
 def getArgs(args, buttons):
