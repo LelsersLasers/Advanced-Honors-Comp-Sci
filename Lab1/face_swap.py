@@ -162,6 +162,7 @@ def video_detection(original_video, args):
         output_video.release()
 
     cv2.destroyAllWindows()
+    args["quit"] = True
 
 def image_detection(original_image, args):
     """Sets up and then runs the face swap on the image"""
@@ -191,3 +192,4 @@ def image_detection(original_image, args):
             break
 
     cv2.destroyAllWindows()
+    args["quit"] = True
