@@ -244,7 +244,7 @@ def getArgs(args, buttons):
     if not save:
         args["save"] = None
     else:
-        args["save"] = getSetting(buttons, "run", "save_path")
+        args["save"] = f"saves/{getSetting(buttons, 'run', 'save_path')}"
     getLiveArgs(args, buttons)
 # ---------------------------------------------------------------------------- #
 def main():
@@ -321,11 +321,13 @@ def main():
                             elif isinstance(button, widgets.StateButton):
                                 if state == "live" and button.value == "run":
                                     args["quit"] = True
+                                    state = button.value
                                     continue
                                 else:
                                     if button.checkConditions(buttons["run"]):
                                         if button.value == "live":
                                             getArgs(args, buttons)
+                                            args["quit"] = False
                                         thread = button.changeState(args)
                                         if thread is not None:
                                             state = button.value
