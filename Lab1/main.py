@@ -1,7 +1,3 @@
-import cv2
-import argparse
-import face_swap
-import sys
 import time
 import pygame
 import widgets
