@@ -1,3 +1,10 @@
+"""
+    Description: Runs GUI for face swap program
+    Author: Millan and Jerry
+    Date: 9/27/2023
+"""
+
+
 import time
 import pygame
 import widgets

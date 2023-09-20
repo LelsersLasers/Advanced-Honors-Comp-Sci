@@ -1,3 +1,9 @@
+"""
+    Description: Functions for running the OpenCV window and swapping faces
+    Author: Millan and Jerry
+    Date: 9/27/2023
+"""
+
 import cv2
 import numpy as np
 import time

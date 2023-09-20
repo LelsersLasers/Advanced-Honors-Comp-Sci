@@ -1,6 +1,12 @@
+"""
+    Description: Various graphical widgets for the GUI
+    Author: Millan and Jerry
+    Date: 9/27/2023
+"""
+
 # Please just trust it works (we think)
-# TODO: comments, comments, comments
-# TODO: either use type hints or don't
+
+
 from typing import Any
 import pygame
 import tkinter

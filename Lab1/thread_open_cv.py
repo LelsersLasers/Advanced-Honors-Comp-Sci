@@ -1,6 +1,11 @@
+"""
+    Description: CUstom Thread to allow the OpenCV and Pygame windows to run at the same time
+    Author: Millan and Jerry
+    Date: 9/27/2023
+"""
+
 from typing import Any
 import threading
-import cv2
 
 class CustomThread (threading.Thread):
 	def __init__(self, args: dict[str, Any], start_fn, *start_args):

@@ -1,3 +1,9 @@
+"""
+    Description: Runs CLI for face swap program
+    Author: Millan and Jerry
+    Date: 9/27/2023
+"""
+
 import cv2
 import argparse
 import face_swap

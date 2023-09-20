@@ -1,3 +1,9 @@
+"""
+    Description: Functions and classes for detecting and managing faces
+    Author: Millan and Jerry
+    Date: 9/27/2023
+"""
+
 import cv2
 
 config_file = "models/deploy.prototxt"
