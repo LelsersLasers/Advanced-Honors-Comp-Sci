@@ -372,6 +372,11 @@ def main():
                         for text in texts[state]:
                             text.pt[1] += y 
             
+            if state == "live":
+                if args["quit"]:
+                    state = "run"
+                    args["quit"] = False
+            
             hover = False
             for item in buttons[state]:
                 if hover:
