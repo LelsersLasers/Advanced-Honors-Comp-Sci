@@ -8,8 +8,6 @@
 
 
 from typing import Any
-import sys
-from PyQt5.QtWidgets import QApplication, QFileDialog
 import pygame
 import tkinter
 from tkinter import filedialog
@@ -43,25 +41,6 @@ colors = {
         127
     )
 }
-# ---------------------------------------------------------------------------- #
-imageFiles = ["*.jpg", "*.jpeg", "*.jpe", "*.png", "*.bmp", "*.dib", "*.webp", "*.avif", "*.pbm", "*.pgm", "*.ppm", "*.pxm", "*.pnm", "*.pfm", "*.sr", "*.ras", "*.tiff", "*.tif", "*.exr", "*.hdr", "*.pic"]
-videoFiles = ["*.mp4", "*.avi", "*.mov", "*.mkv"]
-
-image_files_filter = "Image Files (" + " ".join(imageFiles) + ")"
-video_files_filter = "Video Files (" + " ".join(videoFiles) + ")"
-
-image_files_first = ";;".join([image_files_filter, video_files_filter])
-video_files_first = ";;".join([video_files_filter, image_files_filter])
-
-app = QApplication(sys.argv)
-
-options = QFileDialog.Options()
-options |= QFileDialog.ReadOnly  # Allow read-only access
-
-file_dialog = QFileDialog()
-# file_dialog.setNameFilter("Image Files (*.png *.jpeg *.jpg);;All Files (*)")
-file_dialog.setOptions(options)
-file_dialog.setFileMode(QFileDialog.ExistingFile)  # Allow selection of a single existing file
 # ---------------------------------------------------------------------------- #
 class HoverEffect:
     def __init__(self, color, width):
@@ -235,8 +214,8 @@ class SingleSelectButton(Button):
             button.currentValue = self.value
 
 class FileBrowser(Button):
-    # imageFiles = ["*.jpg", "*.jpeg", "*.jpe", "*.png", "*.bmp", "*.dib", "*.webp", "*.avif", "*.pbm", "*.pgm", "*.ppm", "*.pxm", "*.pnm", "*.pfm", "*.sr", "*.ras", "*.tiff", "*.tif", "*.exr", "*.hdr", "*.pic"]
-    # videoFiles = ["*.mp4", "*.avi", "*.mov", "*.mkv"]
+    imageFiles = ["*.jpg", "*.jpeg", "*.jpe", "*.png", "*.bmp", "*.dib", "*.webp", "*.avif", "*.pbm", "*.pgm", "*.ppm", "*.pxm", "*.pnm", "*.pfm", "*.sr", "*.ras", "*.tiff", "*.tif", "*.exr", "*.hdr", "*.pic"]
+    videoFiles = ["*.mp4", "*.avi", "*.mov", "*.mkv"]
     def __init__(self, text: Text, rect: Rect, value, hoverEffect: str | None = None):
         super().__init__(text, rect, value, hoverEffect, "filename")
         self.filePath = ""
@@ -248,42 +227,16 @@ class FileBrowser(Button):
         self.setHoverEffect()
     
     def browseFiles(self):
-        imageFiles = ["*.jpg", "*.jpeg", "*.jpe", "*.png", "*.bmp", "*.dib", "*.webp", "*.avif", "*.pbm", "*.pgm", "*.ppm", "*.pxm", "*.pnm", "*.pfm", "*.sr", "*.ras", "*.tiff", "*.tif", "*.exr", "*.hdr", "*.pic"]
-        videoFiles = ["*.mp4", "*.avi", "*.mov", "*.mkv"]
-
-        image_files_filter = "Image Files (" + " ".join(imageFiles) + ")"
-        video_files_filter = "Video Files (" + " ".join(videoFiles) + ")"
-
-        image_files_first = ";;".join([image_files_filter, video_files_filter])
-        video_files_first = ";;".join([video_files_filter, image_files_filter])
-
-        app = QApplication(sys.argv)
-
-        options = QFileDialog.Options()
-        options |= QFileDialog.ReadOnly  # Allow read-only access
-
-        file_dialog = QFileDialog()
-        # file_dialog.setNameFilter("Image Files (*.png *.jpeg *.jpg);;All Files (*)")
-
         if self.currentFileType == "image":
-            # fileTypeList = (("Image Files", FileBrowser.imageFiles), ("Video Files", FileBrowser.videoFiles))
-            file_dialog.setNameFilter(image_files_first)
+            fileTypeList = (("Image Files", FileBrowser.imageFiles), ("Video Files", FileBrowser.videoFiles))
         elif self.currentFileType == "video":
-            # fileTypeList = (("Video Files", FileBrowser.videoFiles), ("Image Files", FileBrowser.imageFiles))
-            file_dialog.setNameFilter(video_files_first)
+            fileTypeList = (("Video Files", FileBrowser.videoFiles), ("Image Files", FileBrowser.imageFiles))
         else:
             return None
-
-        file_dialog.setOptions(options)
-        file_dialog.setFileMode(QFileDialog.ExistingFile)  # Allow selection of a single existing file
-    
         
-        # filename = filedialog.askopenfilename(initialdir = str(os.getcwd()), title = "Select a File", filetypes = fileTypeList)
-        if file_dialog.exec_():
-            filename = file_dialog.selectedFiles()[0]
-            self.filePath = filename
-        else:
-            self.filePath = ""
+        filename = filedialog.askopenfilename(initialdir = str(os.getcwd()), title = "Select a File", filetypes = fileTypeList)
+        
+        self.filePath = filename
 
         return None
 
