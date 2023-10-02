@@ -34,10 +34,10 @@ The project is in `Advanced-Honors-Comp-Sci/Lab1/`
 	- `image[y1 : y2, x1 : x2]`
 - 5: Drawing
 	- In debug mode, we draw rectangle outlines and colored circles
-	- `elipse`, `rectangle`, `circle`
+	- `ellipse`, `rectangle`, `circle`
 - 6: Image Processing
 	- We resize parts of images (the faces) to fit on other parts of the image
-	- We also use various bitwise operations and create masks to only use part of an image at a time
+	- We also use various bitwise operations and masks to only use part of an image at a time
 	- `resize`, `bitwise_and`, `bitwise_not`, `add`
 - 8: Smoothing and Blurring
 	- In blur mode, we blur the connection between a pasted face and the background
@@ -59,6 +59,7 @@ The project is in `Advanced-Honors-Comp-Sci/Lab1/`
 To run the program, run `main.py`.
 Press any key to skip the title screen (or wait 6 seconds).
 After that, interact with the pygame window to continue using the program.
+(Note: you can scroll up and down to see all the buttons.)
 The pygame window will launch an OpenCV once `Continue` is clicked on.
 You can continue to use the pygame window to change the parameters of the OpenCV in realtime.
 
@@ -66,7 +67,8 @@ You can continue to use the pygame window to change the parameters of the OpenCV
 
 If you do not want to use a GUI, then you can use our command line version.
 To do so, run `main_cli.py` and type in the command line arguments.
-This version cannot change in realtime.
+This version cannot change the parameters in realtime.
+Use `main_cli.py -h` to see the help text for the command line arguments.
 
 ## Notes
 
