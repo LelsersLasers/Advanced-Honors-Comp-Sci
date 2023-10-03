@@ -2,12 +2,6 @@
 
 GitHub: https://github.com/Lord-Lelsers/Advanced-Honors-Comp-Sci/tree/main/Lab1
 
-## TODO
-
-- MULTITHREADING
-- Debug UI button
-- Hover on buttons -> displays help text?
-
 ## Folder Structure
 
 The project is in `Advanced-Honors-Comp-Sci/Lab1/`
