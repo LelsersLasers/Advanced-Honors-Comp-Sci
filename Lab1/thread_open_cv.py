@@ -1,5 +1,5 @@
 """
-    Description: CUstom Thread to allow the OpenCV and Pygame windows to run at the same time
+    Description: Custom Thread to allow the OpenCV and Pygame windows to run at the same time
     Author: Millan and Jerry
     Date: 9/27/2023
 """
