@@ -310,6 +310,7 @@ def main():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
+                    return
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not downL:
                     downL = True
 
