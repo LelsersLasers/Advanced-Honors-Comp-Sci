@@ -54,7 +54,7 @@ The project is in `Advanced-Honors-Comp-Sci/Lab1/`
 
 ## Usage
 
-### GUI
+### GUI - Windows Only
 
 To run the program, run `main.py`.
 Press any key to skip the title screen (or wait 6 seconds).
