@@ -1,5 +1,5 @@
 """
-    Description: Runs GUI for face swap program
+    Description: Runs the supplementary Pygame GUI for face swap program
     Author: Millan and Jerry
     Date: 9/27/2023
 """

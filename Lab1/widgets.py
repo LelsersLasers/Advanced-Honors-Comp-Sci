@@ -1,5 +1,5 @@
 """
-    Description: Various graphical widgets for the GUI
+    Description: Various graphical widgets for the supplementary Pygame GUI 
     Author: Millan and Jerry
     Date: 9/27/2023
 """
