@@ -1,8 +1,11 @@
-import tensorflow as tf
-import tensorflow.keras.utils as utils
-import tensorflow.keras.applications.resnet50 as resnet50
-
 import time
+import tensorflow as tf
+import tensorflow.keras as keras
+import tensorflow.keras.utils as utils
+import tensorflow.keras.layers as layers
+import tensorflow.keras.losses as losses
+import tensorflow.keras.optimizers as optimizers
+import tensorflow.keras.applications.resnet50 as resnet50
 
 print("\n\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n")
 print(f"Tensorflow version: {tf.__version__}")
@@ -36,8 +39,29 @@ print("\nCreating model")
 resnet = resnet50.ResNet50(
     include_top=True,
     weights='imagenet',
-    classifier_activation="softmax"
+    # classifier_activation="softmax"
+)
+
+resnet.trainable = False
+
+inputs = keras.Input(shape=(224, 224, 3))
+outputs = resnet(inputs)
+outputs = layers.Dense(5, activation="softmax")(outputs)
+
+optimizer = optimizers.legacy.Adam(learning_rate = 0.00001)
+loss = losses.CategoricalCrossentropy()
+
+model = keras.Model(inputs, outputs)
+model.compile(
+    optimizer = optimizer,
+    loss = loss,
+    metrics = ['accuracy']
 )
 
 print(f"{resnet=}")
+print(f"{inputs=}")
+print(f"{outputs=}")
+print(f"{optimizer=}")
+print(f"{loss=}")
+print(f"{model=}")
 # ---------------------------------------------------------------------------- #
