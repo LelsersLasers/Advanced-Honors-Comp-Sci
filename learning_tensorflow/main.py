@@ -7,7 +7,7 @@ import tensorflow.keras.losses as losses
 import tensorflow.keras.optimizers as optimizers
 import tensorflow.keras.applications.resnet50 as resnet50
 
-print("\n\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n")
+print("\n\nStarting programing...\n")
 print(f"Tensorflow version: {tf.__version__}")
 
 
@@ -65,3 +65,14 @@ print(f"{optimizer=}")
 print(f"{loss=}")
 print(f"{model=}")
 # ---------------------------------------------------------------------------- #
+
+
+# ---------------------------------------------------------------------------- #
+print("\nTraining model")
+model.fit(
+    train,
+    batch_size = 32,
+    epochs = 10,
+    verbose = 1,
+    validation_batch_size = 32
+)
