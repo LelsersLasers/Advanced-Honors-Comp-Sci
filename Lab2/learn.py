@@ -1,15 +1,46 @@
+import argparse
+
+ap = argparse.ArgumentParser()
+
+ap.add_argument(
+    "-l",
+    "--load-checkpoint-path",
+    required=False,
+    help="checkpoint to load model weights from",
+    default=None,
+)
+ap.add_argument(
+    "-c",
+    "--checkpoint-save-path",
+    required=False,
+    help="location to save model checkpoint to after every epoch",
+    default=None,
+)
+ap.add_argument(
+    "-s",
+    "--save",
+    required=False,
+    help="location to save model after training",
+    default=None,
+)
+
+args = vars(ap.parse_args())
+# ---------------------------------------------------------------------------- #
+
+
+# ---------------------------------------------------------------------------- #
 import tensorflow as tf
 import tensorflow.keras as keras
 import tensorflow.keras.utils as utils
 import tensorflow.keras.layers as layers
 import tensorflow.keras.losses as losses
+import tensorflow.keras.models as models
 import tensorflow.keras.optimizers as optimizers
-import tensorflow.keras.applications.mobilenet_v3 as mobilenet_v3
-# import tensorflow.keras.applications.MobileNetV3Small as MobileNetV3Large
 import tensorflow.keras.applications as applications
+import tensorflow.keras.applications.mobilenet_v3 as mobilenet_v3
 
-print("\n\nStarting programing...\n")
-print(f"Tensorflow version: {tf.__version__}")
+print(f"\n\nTensorflow version: {tf.__version__}")
+# ---------------------------------------------------------------------------- #
 
 
 # ---------------------------------------------------------------------------- #
@@ -55,6 +86,9 @@ model.compile(
     metrics = ['accuracy']
 )
 
+if args["load_checkpoint_path"] is not None:
+    model.load_weights(args["load_checkpoint_path"])
+
 print(f"{mobilenet=}")
 print(f"{inputs=}")
 print(f"{outputs=}")
@@ -67,16 +101,25 @@ print(f"{model=}")
 # ---------------------------------------------------------------------------- #
 print("\nTraining model...")
 
-save_callback = keras.callbacks.ModelCheckpoint(
-    "weather-classification-model",
-	monitor = "val_accuracy",
-)
+if args["checkpoint_save_path"] is not None:
+    save_callback = keras.callbacks.ModelCheckpoint(
+        filepath = args["checkpoint_save_path"],
+        monitor = "val_accuracy",
+        verbose = 1,
+        save_weights_only = True,
+    )
+    callbacks = [save_callback]
+else:
+    callbacks = []
 
 model.fit(
     train,
     batch_size = 32,
     epochs = 20,
     verbose = 1,
-	callbacks = [save_callback]
+	callbacks = callbacks,
 )
+
+if args["save_path"] is not None:
+    model.save(args["save_path"])
 # ---------------------------------------------------------------------------- #
