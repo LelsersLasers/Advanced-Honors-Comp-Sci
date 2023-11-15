@@ -10,6 +10,22 @@ ap.add_argument(
     type=int,
 )
 ap.add_argument(
+    "-r",
+    "--learning-rate",
+    required=False,
+    help="learning rate for optimizer",
+    default=0.00001,
+    type=float,
+)
+ap.add_argument(
+    "-b",
+    "--batch-size",
+    required=False,
+    help="batch size for training (should be a power of 2)",
+    default=32,
+    type=int
+)
+ap.add_argument(
     "-l",
     "--load-checkpoint-path",
     required=False,
@@ -24,14 +40,30 @@ ap.add_argument(
     default=None,
 )
 ap.add_argument(
+    "-f",
+    "--frequency-checkpoint",
+    required=False,
+    help="frequency of saving model checkpoint (in epochs)",
+    default=1,
+    type=int
+)
+ap.add_argument(
     "-s",
     "--save-path",
     required=False,
     help="location to save model after training",
     default=None,
 )
+ap.add_argument(
+    "-p",
+    "--plot",
+    required=False,
+    help="show plot of training history",
+    action="store_true",
+)
 
 args = vars(ap.parse_args())
+print(f"\n{args=}\n")
 # ---------------------------------------------------------------------------- #
 
 
@@ -41,7 +73,6 @@ import tensorflow.keras as keras
 import tensorflow.keras.utils as utils
 import tensorflow.keras.layers as layers
 import tensorflow.keras.losses as losses
-import tensorflow.keras.models as models
 import tensorflow.keras.optimizers as optimizers
 import tensorflow.keras.applications as applications
 import tensorflow.keras.applications.mobilenet_v3 as mobilenet_v3
@@ -73,6 +104,7 @@ print("\nCreating model...")
 mobilenet = applications.MobileNetV3Large(
     include_top=True,
     weights='imagenet',
+    # input_shape=(224, 224),
     # classifier_activation="softmax"
 )
 
@@ -82,8 +114,7 @@ inputs = keras.Input(shape=(224, 224, 3))
 outputs = mobilenet(inputs)
 outputs = layers.Dense(5, activation="softmax")(outputs)
 
-# Transfer learning: use lower learning_rate
-optimizer = optimizers.legacy.Adam(learning_rate = 0.00001)
+optimizer = optimizers.legacy.Adam(learning_rate = args["learning_rate"])
 loss = losses.CategoricalCrossentropy()
 
 model = keras.Model(inputs, outputs)
@@ -108,21 +139,28 @@ print(f"{model=}")
 # ---------------------------------------------------------------------------- #
 print("\nTraining model...")
 
+
 if args["checkpoint_save_path"] is not None:
+    if args["frequency_checkpoint"] == 1:
+        save_freq = 'epoch'
+    else:
+        num_batches = len(train)
+        save_freq = args["frequency_checkpoint"] * num_batches
 
     save_callback = keras.callbacks.ModelCheckpoint(
         filepath = args["checkpoint_save_path"],
         monitor = "val_accuracy",
         verbose = 1,
         save_weights_only = True,
+        save_freq = save_freq,
     )
     callbacks = [save_callback]
 else:
     callbacks = []
 
-model.fit(
+history = model.fit(
     train,
-    batch_size = 32,
+    batch_size = args["batch_size"],
     epochs = args["epochs"],
     verbose = 1,
 	callbacks = callbacks,
@@ -134,3 +172,28 @@ if args["save_path"] is not None:
     print(f"Saving model to {args['save_path']}")
     model.save(args["save_path"])
 # ---------------------------------------------------------------------------- #
+
+
+# ---------------------------------------------------------------------------- #
+if args["plot"]:
+    import matplotlib.pyplot as plt
+
+    print("\n\nTraining history:")
+
+    print(f"{history=}")
+
+    accuracy_axis = history.history['accuracy']
+    loss_axis = history.history['loss']
+
+    epoch_axis = range(1, len(accuracy_axis) + 1)
+
+    plt.plot(epoch_axis, accuracy_axis, 'b', label='Training acc')
+    plt.title('Training accuracy')
+    plt.legend()
+
+    plt.figure()
+    plt.plot(epoch_axis, loss_axis, 'b', label='Training loss')
+    plt.title('Training loss')
+    plt.legend()
+
+    plt.show()
