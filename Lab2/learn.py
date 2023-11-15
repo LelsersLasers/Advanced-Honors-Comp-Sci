@@ -3,6 +3,13 @@ import argparse
 ap = argparse.ArgumentParser()
 
 ap.add_argument(
+    "-e",
+    "--epochs",
+    required=True,
+    help="number of epochs to train for",
+    type=int,
+)
+ap.add_argument(
     "-l",
     "--load-checkpoint-path",
     required=False,
@@ -116,7 +123,7 @@ else:
 model.fit(
     train,
     batch_size = 32,
-    epochs = 2,
+    epochs = args["epochs"],
     verbose = 1,
 	callbacks = callbacks,
 )
