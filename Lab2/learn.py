@@ -18,7 +18,7 @@ ap.add_argument(
 )
 ap.add_argument(
     "-s",
-    "--save",
+    "--save-path",
     required=False,
     help="location to save model after training",
     default=None,
@@ -102,6 +102,7 @@ print(f"{model=}")
 print("\nTraining model...")
 
 if args["checkpoint_save_path"] is not None:
+
     save_callback = keras.callbacks.ModelCheckpoint(
         filepath = args["checkpoint_save_path"],
         monitor = "val_accuracy",
@@ -115,11 +116,14 @@ else:
 model.fit(
     train,
     batch_size = 32,
-    epochs = 20,
+    epochs = 2,
     verbose = 1,
 	callbacks = callbacks,
 )
 
+print(f"Training finished.")
+
 if args["save_path"] is not None:
+    print(f"Saving model to {args['save_path']}")
     model.save(args["save_path"])
 # ---------------------------------------------------------------------------- #
