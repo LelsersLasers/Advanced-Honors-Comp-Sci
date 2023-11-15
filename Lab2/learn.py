@@ -4,7 +4,9 @@ import tensorflow.keras.utils as utils
 import tensorflow.keras.layers as layers
 import tensorflow.keras.losses as losses
 import tensorflow.keras.optimizers as optimizers
-import tensorflow.keras.applications.resnet50 as resnet50
+import tensorflow.keras.applications.mobilenet_v3 as mobilenet_v3
+# import tensorflow.keras.applications.MobileNetV3Small as MobileNetV3Large
+import tensorflow.keras.applications as applications
 
 print("\n\nStarting programing...\n")
 print(f"Tensorflow version: {tf.__version__}")
@@ -21,7 +23,7 @@ train = utils.image_dataset_from_directory(
     image_size=(224, 224),
 )
 
-train = train.map(lambda x, y: (resnet50.preprocess_input(x), y))
+train = train.map(lambda x, y: (mobilenet_v3.preprocess_input(x), y))
 
 print(f"{train=}")
 # ---------------------------------------------------------------------------- #
@@ -30,16 +32,16 @@ print(f"{train=}")
 # ---------------------------------------------------------------------------- #
 print("\nCreating model...")
 
-resnet = resnet50.ResNet50(
+mobilenet = applications.MobileNetV3Large(
     include_top=True,
     weights='imagenet',
     # classifier_activation="softmax"
 )
 
-resnet.trainable = False
+mobilenet.trainable = False
 
 inputs = keras.Input(shape=(224, 224, 3))
-outputs = resnet(inputs)
+outputs = mobilenet(inputs)
 outputs = layers.Dense(5, activation="softmax")(outputs)
 
 # Transfer learning: use lower learning_rate
@@ -53,7 +55,7 @@ model.compile(
     metrics = ['accuracy']
 )
 
-print(f"{resnet=}")
+print(f"{mobilenet=}")
 print(f"{inputs=}")
 print(f"{outputs=}")
 print(f"{optimizer=}")
@@ -73,7 +75,7 @@ save_callback = keras.callbacks.ModelCheckpoint(
 model.fit(
     train,
     batch_size = 32,
-    epochs = 1,
+    epochs = 20,
     verbose = 1,
 	callbacks = [save_callback]
 )
