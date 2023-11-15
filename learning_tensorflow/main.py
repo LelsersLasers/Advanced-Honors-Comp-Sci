@@ -48,6 +48,7 @@ inputs = keras.Input(shape=(224, 224, 3))
 outputs = resnet(inputs)
 outputs = layers.Dense(5, activation="softmax")(outputs)
 
+# Transfer learning: use lower learning_rate
 optimizer = optimizers.legacy.Adam(learning_rate = 0.00001)
 loss = losses.CategoricalCrossentropy()
 
