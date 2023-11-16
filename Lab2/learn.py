@@ -56,10 +56,10 @@ ap.add_argument(
 )
 ap.add_argument(
     "-p",
-    "--plot",
+    "--plot-history-save-path",
     required=False,
-    help="show plot of training history",
-    action="store_true",
+    help="path (.json) to save training history to (will append if file exists)",
+    default=None,
 )
 
 args = vars(ap.parse_args())
@@ -102,6 +102,7 @@ train = train.map(lambda x, y: (mobilenet_v3.preprocess_input(x), y))
 valid = valid.map(lambda x, y: (mobilenet_v3.preprocess_input(x), y))
 
 print(f"{train=}")
+print(f"{valid=}")
 # ---------------------------------------------------------------------------- #
 
 
@@ -146,7 +147,6 @@ print(f"{model=}")
 # ---------------------------------------------------------------------------- #
 print("\nTraining model...")
 
-
 if args["checkpoint_save_path"] is not None:
     if args["frequency_checkpoint"] == 1:
         save_freq = 'epoch'
@@ -184,29 +184,28 @@ if args["save_path"] is not None:
 
 
 # ---------------------------------------------------------------------------- #
-if args["plot"]:
-    import matplotlib.pyplot as plt
+if args["plot_history_save_path"]:
+    import json
+    print(f"Saving training history to {args['plot_history_save_path']}")
 
-    print("\n\nTraining history:")
+    old_history = {
+        "accuracy": [],
+        "loss": [],
+        "val_accuracy": [],
+        "val_loss": [],
+    }
+    try:
+        with open(args["plot_history_save_path"], "r") as f:
+            old_history = json.load(f)
+    except (FileNotFoundError, json.decoder.JSONDecodeError):
+        pass
 
-    print(f"{history=}")
+    if old_history is not None:
+        old_history["accuracy"] += history.history["accuracy"]
+        old_history["loss"] += history.history["loss"]
+        old_history["val_accuracy"] += history.history["val_accuracy"]
+        old_history["val_loss"] += history.history["val_loss"]
 
-    train_accuracy_axis = history.history['accuracy']
-    validation_accuracy_axis = history.history['val_accuracy']
-    train_loss_axis = history.history['loss']
-    validation_loss_axis = history.history['val_loss']
-
-    epoch_axis = range(1, len(train_accuracy_axis) + 1)
-
-    plt.plot(epoch_axis, train_accuracy_axis, 'b', label='training accuracy')
-    plt.plot(epoch_axis, validation_accuracy_axis, 'r', label='validation accuracy')
-    plt.title('Accuracy')
-    plt.legend()
-
-    plt.figure()
-    plt.plot(epoch_axis, train_loss_axis, 'b', label='training loss')
-    plt.plot(epoch_axis, validation_loss_axis, 'r', label='validation loss')
-    plt.title('Loss')
-    plt.legend()
-
-    plt.show()
+    with open(args["plot_history_save_path"], "w") as f:
+        json.dump(old_history, f, indent=4)
+# ---------------------------------------------------------------------------- #
