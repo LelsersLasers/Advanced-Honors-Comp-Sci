@@ -84,15 +84,22 @@ print(f"\n\nTensorflow version: {tf.__version__}")
 # ---------------------------------------------------------------------------- #
 print("\nLoading data...")
 
-DATA_SET_FOLDER = "learn-dataset"
+LEARN_DATA_FOLDER = "dataset/learn"
+VALID_DATA_FOLDER = "dataset/valid"
 
 train = utils.image_dataset_from_directory(
-    DATA_SET_FOLDER,
+    LEARN_DATA_FOLDER,
     label_mode='categorical',
-    image_size=(224, 224),
+    image_size=(224, 224)
+)
+valid = utils.image_dataset_from_directory(
+    VALID_DATA_FOLDER,
+    label_mode='categorical',
+    image_size=(224, 224)
 )
 
 train = train.map(lambda x, y: (mobilenet_v3.preprocess_input(x), y))
+valid = valid.map(lambda x, y: (mobilenet_v3.preprocess_input(x), y))
 
 print(f"{train=}")
 # ---------------------------------------------------------------------------- #
@@ -164,6 +171,8 @@ history = model.fit(
     epochs = args["epochs"],
     verbose = 1,
 	callbacks = callbacks,
+    validation_data = valid,
+    validation_batch_size = args["batch_size"]
 )
 
 print(f"Training finished.")
@@ -182,18 +191,22 @@ if args["plot"]:
 
     print(f"{history=}")
 
-    accuracy_axis = history.history['accuracy']
-    loss_axis = history.history['loss']
+    train_accuracy_axis = history.history['accuracy']
+    validation_accuracy_axis = history.history['val_accuracy']
+    train_loss_axis = history.history['loss']
+    validation_loss_axis = history.history['val_loss']
 
-    epoch_axis = range(1, len(accuracy_axis) + 1)
+    epoch_axis = range(1, len(train_accuracy_axis) + 1)
 
-    plt.plot(epoch_axis, accuracy_axis, 'b', label='Training acc')
-    plt.title('Training accuracy')
+    plt.plot(epoch_axis, train_accuracy_axis, 'b', label='training accuracy')
+    plt.plot(epoch_axis, validation_accuracy_axis, 'r', label='validation accuracy')
+    plt.title('Accuracy')
     plt.legend()
 
     plt.figure()
-    plt.plot(epoch_axis, loss_axis, 'b', label='Training loss')
-    plt.title('Training loss')
+    plt.plot(epoch_axis, train_loss_axis, 'b', label='training loss')
+    plt.plot(epoch_axis, validation_loss_axis, 'r', label='validation loss')
+    plt.title('Loss')
     plt.legend()
 
     plt.show()
