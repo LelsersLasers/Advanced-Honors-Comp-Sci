@@ -22,8 +22,7 @@ try:
 	with open(args["plot_history_load_path"], "r") as f:
 		history = json.load(f)
 except FileNotFoundError:
-	print(f"FileNotFoundError: {args['plot_history_load_path']} not found")
-	exit(1)
+	ap.error("invalid path to training history file")
 
 
 print(f"{history=}")
