@@ -63,4 +63,4 @@ if args["input"] == "image":
 
 	print("\n\nResults:")
 	for confidence, label in predictions_with_labels:
-		print(f"{label}: {confidence * 100:.2f}%")
+		print(f"{label : >8}: {confidence * 100:.2f}%")
