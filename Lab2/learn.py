@@ -130,30 +130,21 @@ inputs = keras.Input(shape=(224, 224, 3))
 outputs = mobilenet(inputs)
 outputs = layers.Dense(5, activation="softmax")(outputs)
 
-choices=["adadelta", "adafactor", "adagrad", "adam", "adamw", "adamax", "ftrl", "lion", "nadam", "rmsprop", "sgd"],
 
-if args["optimizer"] == "adadelta":
-    optimizer = optimizers.Adadelta(learning_rate = args["learning_rate"])
-elif args["optimizer"] == "adafactor":
-    optimizer = optimizers.Adafactor(learning_rate = args["learning_rate"])
-elif args["optimizer"] == "adagrad":
-    optimizer = optimizers.Adagrad(learning_rate = args["learning_rate"])
-elif args["optimizer"] == "adam":
-    optimizer = optimizers.Adam(learning_rate = args["learning_rate"])
-elif args["optimizer"] == "adamw":
-    optimizer = optimizers.AdamW(learning_rate = args["learning_rate"])
-elif args["optimizer"] == "adamax":
-    optimizer = optimizers.Adamax(learning_rate = args["learning_rate"])
-elif args["optimizer"] == "ftrl":
-    optimizer = optimizers.Ftrl(learning_rate = args["learning_rate"])
-elif args["optimizer"] == "lion":
-    optimizer = optimizers.Lion(learning_rate = args["learning_rate"])
-elif args["optimizer"] == "nadam":
-    optimizer = optimizers.Nadam(learning_rate = args["learning_rate"])
-elif args["optimizer"] == "rmsprop":
-    optimizer = optimizers.RMSprop(learning_rate = args["learning_rate"])
-elif args["optimizer"] == "sgd":
-    optimizer = optimizers.SGD(learning_rate = args["learning_rate"])
+optimizer_options = {
+	"adadelta": optimizers.Adadelta,
+    "adafactor": optimizers.Adafactor,
+    "adagrad": optimizers.Adagrad,
+    "adam": optimizers.Adam,
+    "adamw": optimizers.AdamW,
+    "adamax": optimizers.Adamax,
+    "ftrl": optimizers.Ftrl,
+    "lion": optimizers.Lion,
+    "nadam": optimizers.Nadam,
+    "rmsprop": optimizers.RMSprop,
+    "sgd": optimizers.SGD,
+}
+optimizer = optimizer_options[args["optimizer"]](learning_rate = args["learning_rate"])
 
 loss = losses.CategoricalCrossentropy()
 
