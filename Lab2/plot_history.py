@@ -25,8 +25,6 @@ except FileNotFoundError:
 	ap.error("invalid path to training history file")
 
 
-print(f"{history=}")
-
 train_accuracy_axis = history['accuracy']
 validation_accuracy_axis = history['val_accuracy']
 train_loss_axis = history['loss']
