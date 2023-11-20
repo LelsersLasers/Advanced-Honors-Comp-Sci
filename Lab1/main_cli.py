@@ -12,7 +12,6 @@ import face_swap
 ap = argparse.ArgumentParser()
 
 
-# TODO: clean, clarify, and expand wordings/help messages
 ap.add_argument(
     "-i",
     "--input",
