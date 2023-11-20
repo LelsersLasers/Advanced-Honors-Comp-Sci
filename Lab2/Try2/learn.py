@@ -48,6 +48,14 @@ ap.add_argument(
     type=int
 )
 ap.add_argument(
+    "-m",
+    "--model",
+    required=False,
+    help="base model to use",
+    choices=["mobilenet_v3", "resnet50"],
+    default="mobilenet_v3",
+)
+ap.add_argument(
     "-s",
     "--save-path",
     required=False,
@@ -75,8 +83,20 @@ import tensorflow.keras.utils as utils
 import tensorflow.keras.layers as layers
 import tensorflow.keras.losses as losses
 import tensorflow.keras.optimizers as optimizers
-import tensorflow.keras.applications as applications
-import tensorflow.keras.applications.mobilenet_v3 as mobilenet_v3
+
+
+if args["model"] == "mobilenet_v3":
+    import tensorflow.keras.applications as applications
+    import tensorflow.keras.applications.mobilenet_v3 as mobilenet_v3
+
+    preprocess_input = mobilenet_v3.preprocess_input
+    create_model = applications.MobileNetV3Large
+else:
+    import tensorflow.keras.applications.resnet50 as resnet50
+
+    preprocess_input = resnet50.preprocess_input
+    create_model = resnet50.ResNet50
+
 
 print(f"\n\nTensorflow version: {tf.__version__}")
 # ---------------------------------------------------------------------------- #
@@ -98,8 +118,8 @@ train, validation = utils.image_dataset_from_directory(
     subset='both',
 )
 
-train = train.map(lambda x, y: (mobilenet_v3.preprocess_input(x), y))
-validation = validation.map(lambda x, y: (mobilenet_v3.preprocess_input(x), y))
+train = train.map(lambda x, y: (preprocess_input(x), y))
+validation = validation.map(lambda x, y: (preprocess_input(x), y))
 
 print(f"{train=}")
 print(f"{validation=}")
@@ -109,17 +129,17 @@ print(f"{validation=}")
 # ---------------------------------------------------------------------------- #
 print("\nCreating model...")
 
-mobilenet = applications.MobileNetV3Large(
+base_model = create_model(
     include_top=True,
     weights='imagenet',
     # input_shape=(224, 224),
     # classifier_activation="softmax"
 )
 
-mobilenet.trainable = False
+base_model.trainable = False
 
 inputs = keras.Input(shape=(224, 224, 3))
-outputs = mobilenet(inputs)
+outputs = base_model(inputs)
 outputs = layers.Dense(3, activation="softmax")(outputs)
 
 optimizer = optimizers.Adam(learning_rate = args["learning_rate"])
@@ -136,7 +156,7 @@ model.compile(
 if args["load_checkpoint_path"] is not None:
     model.load_weights(args["load_checkpoint_path"])
 
-print(f"{mobilenet=}")
+print(f"{base_model=}")
 print(f"{inputs=}")
 print(f"{outputs=}")
 print(f"{optimizer=}")
