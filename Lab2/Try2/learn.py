@@ -105,7 +105,7 @@ print(f"\n\nTensorflow version: {tf.__version__}")
 # ---------------------------------------------------------------------------- #
 print("\nLoading data...")
 
-DATA_FOLDER = "datasetModified"
+DATA_FOLDER = "datasetModified2"
 
 seed = time.time_ns() & 0xfffffff
 
