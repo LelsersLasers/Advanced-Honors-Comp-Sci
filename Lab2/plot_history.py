@@ -1,3 +1,9 @@
+"""
+    Description: Plot training history from a .json file.
+    Author: Millan Kumar
+    Date: 11/29/2023
+"""
+
 import argparse
 
 ap = argparse.ArgumentParser()

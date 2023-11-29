@@ -1,3 +1,9 @@
+"""
+    Description:Use a model to predict the weather from an image or camera.
+    Author: Millan Kumar
+    Date: 11/29/2023
+"""
+
 import argparse
 
 ap = argparse.ArgumentParser()

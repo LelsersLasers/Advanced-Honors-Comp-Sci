@@ -1,3 +1,9 @@
+"""
+    Description: Train a resnet50 or mobilenet_v3 model on the weather dataset.
+    Author: Millan Kumar
+    Date: 11/29/2023
+"""
+
 import argparse
 
 ap = argparse.ArgumentParser()
