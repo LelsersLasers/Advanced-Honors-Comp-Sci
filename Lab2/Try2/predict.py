@@ -14,13 +14,13 @@ ap.add_argument(
     "--input",
     required=True,
     help="input type",
-    choices=["image", "video", "camera"],
+    choices=["image", "camera"],
 )
 ap.add_argument(
     "-p",
     "--path",
     required=False,
-    help="path to image or video (not required for camera)",
+    help="path to image (not required for camera)",
     default=None,
 )
 ap.add_argument(
@@ -35,7 +35,7 @@ ap.add_argument(
     "-w",
     "--wait-time",
     required=False,
-    help="how long to wait before removing a face (only for `-i video)`",
+    help="how long to wait before removing a face (only for `-i camera)`",
     default=0.2,
     type=float,
 )
@@ -103,17 +103,23 @@ def predict(image, face_detection):
 
 	write_text(image, output, (face_detection.x - 3, face_detection.y - 3))
 
+	return output
+
 
 if args["input"] == "image":
 	image = cv2.imread(args["path"])
 	if image is None:
 		ap.error("invalid path to image")
 
-	face_detections = face_detect.detect_faces(image, args["confidence"])
+	face_detections = face_detect.detect_faces(image, args["confidence"], use_whole=True)
 
 	for face_detection in face_detections:
-		predict(image, face_detection)
+		output = predict(image, face_detection)
 		face_detection.draw_debug(image)
+
+		print(output)
+
+
 
 	cv2.imshow("Output", image)
 	cv2.waitKey(0)

@@ -10,14 +10,6 @@ ap.add_argument(
     type=int,
 )
 ap.add_argument(
-	"-o",
-	"--optimizer",
-	required=False,
-	help="optimizer to use",
-	choices=["adadelta", "adafactor", "adagrad", "adam", "adamw", "adamax", "ftrl", "lion", "nadam", "rmsprop", "sgd"],
-    default="adam",
-)
-ap.add_argument(
     "-r",
     "--learning-rate",
     required=False,
@@ -56,6 +48,14 @@ ap.add_argument(
     type=int
 )
 ap.add_argument(
+    "-m",
+    "--model",
+    required=False,
+    help="base model to use",
+    choices=["mobilenet_v3", "resnet50"],
+    default="mobilenet_v3",
+)
+ap.add_argument(
     "-s",
     "--save-path",
     required=False,
@@ -82,8 +82,20 @@ import tensorflow.keras.utils as utils
 import tensorflow.keras.layers as layers
 import tensorflow.keras.losses as losses
 import tensorflow.keras.optimizers as optimizers
-import tensorflow.keras.applications as applications
-import tensorflow.keras.applications.mobilenet_v3 as mobilenet_v3
+
+
+if args["model"] == "mobilenet_v3":
+    import tensorflow.keras.applications as applications
+    import tensorflow.keras.applications.mobilenet_v3 as mobilenet_v3
+
+    preprocess_input = mobilenet_v3.preprocess_input
+    create_model = applications.MobileNetV3Large
+else:
+    import tensorflow.keras.applications.resnet50 as resnet50
+
+    preprocess_input = resnet50.preprocess_input
+    create_model = resnet50.ResNet50
+
 
 print(f"\n\nTensorflow version: {tf.__version__}")
 # ---------------------------------------------------------------------------- #
@@ -106,8 +118,8 @@ valid = utils.image_dataset_from_directory(
     image_size=(224, 224)
 )
 
-train = train.map(lambda x, y: (mobilenet_v3.preprocess_input(x), y))
-valid = valid.map(lambda x, y: (mobilenet_v3.preprocess_input(x), y))
+train = train.map(lambda x, y: (preprocess_input(x), y))
+validation = valid.map(lambda x, y: (preprocess_input(x), y))
 
 print(f"{train=}")
 print(f"{valid=}")
@@ -117,11 +129,9 @@ print(f"{valid=}")
 # ---------------------------------------------------------------------------- #
 print("\nCreating model...")
 
-mobilenet = applications.MobileNetV3Large(
+mobilenet = create_model(
     include_top=True,
     weights='imagenet',
-    # input_shape=(224, 224),
-    # classifier_activation="softmax"
 )
 
 mobilenet.trainable = False
@@ -130,22 +140,7 @@ inputs = keras.Input(shape=(224, 224, 3))
 outputs = mobilenet(inputs)
 outputs = layers.Dense(5, activation="softmax")(outputs)
 
-
-optimizer_options = {
-	"adadelta": optimizers.Adadelta,
-    "adafactor": optimizers.Adafactor,
-    "adagrad": optimizers.Adagrad,
-    "adam": optimizers.Adam,
-    "adamw": optimizers.AdamW,
-    "adamax": optimizers.Adamax,
-    "ftrl": optimizers.Ftrl,
-    "lion": optimizers.Lion,
-    "nadam": optimizers.Nadam,
-    "rmsprop": optimizers.RMSprop,
-    "sgd": optimizers.SGD,
-}
-optimizer = optimizer_options[args["optimizer"]](learning_rate = args["learning_rate"])
-
+optimizer = optimizers.Adam(learning_rate = args["learning_rate"])
 loss = losses.CategoricalCrossentropy()
 
 model = keras.Model(inputs, outputs)

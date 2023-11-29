@@ -62,7 +62,7 @@ def dist_between(p1, p2):
     """Returns the distance between two points"""
     return ((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)**0.5
 
-def detect_faces(image, confidence_threshold):
+def detect_faces(image, confidence_threshold, use_whole = False):
     """Uses a deep neural network to detect faces in an image and returns a list of DetectedFaces"""
 
     blob = cv2.dnn.blobFromImage(image, 1.0, (300, 300), [104, 117, 123], False, False)
@@ -86,6 +86,9 @@ def detect_faces(image, confidence_threshold):
 
             detected_face = DetectedFace(x1, y1, w, h)
             detected_faces.append(detected_face)
+
+    if use_whole:
+        detected_faces.append(DetectedFace(0, 0, image.shape[1], image.shape[0]))
 
     return detected_faces
 
