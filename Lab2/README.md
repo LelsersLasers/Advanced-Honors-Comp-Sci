@@ -9,6 +9,7 @@ Source: https://www.kaggle.com/datasets/vijaygiitk/multiclass-weather-dataset
 - `learn.py`: train a model
 - `predict.py`: predict using a model on an image/camera
 - `plot_history.py`: plot the training history of a model
+- `save/`: test save models along with a saved training history and checkpoint 
 - `dataset/`: contains the dataset
 	- `train/`: contains the training set
 	- `valid/`: contains the validation set
