@@ -135,15 +135,15 @@ print(f"{valid=}")
 # ---------------------------------------------------------------------------- #
 print("\nCreating model...")
 
-mobilenet = create_model(
+net = create_model(
     include_top=True,
     weights='imagenet',
 )
 
-mobilenet.trainable = False
+net.trainable = False
 
 inputs = keras.Input(shape=(224, 224, 3))
-outputs = mobilenet(inputs)
+outputs = net(inputs)
 outputs = layers.Dense(5, activation="softmax")(outputs)
 
 optimizer = optimizers.Adam(learning_rate = args["learning_rate"])
@@ -159,7 +159,7 @@ model.compile(
 if args["load_checkpoint_path"] is not None:
     model.load_weights(args["load_checkpoint_path"])
 
-print(f"{mobilenet=}")
+print(f"{net=}")
 print(f"{inputs=}")
 print(f"{outputs=}")
 print(f"{optimizer=}")
