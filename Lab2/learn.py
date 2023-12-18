@@ -16,6 +16,14 @@ ap.add_argument(
     type=int,
 )
 ap.add_argument(
+    "-k",
+    "--top-k-categorical-accuracy",
+    required=False,
+    help="top k categorical accuracy metric",
+    default=2,
+    type=int,
+)
+ap.add_argument(
     "-r",
     "--learning-rate",
     required=False,
@@ -153,7 +161,10 @@ model = keras.Model(inputs, outputs)
 model.compile(
     optimizer = optimizer,
     loss = loss,
-    metrics = ['accuracy']
+    metrics = [
+        'accuracy',
+        tf.keras.metrics.TopKCategoricalAccuracy(k=args["top_k_categorical_accuracy"])
+    ]
 )
 
 if args["load_checkpoint_path"] is not None:
