@@ -69,4 +69,5 @@ class Model:
 
 
 
-model = Model(input_size=(387, 387, 3))
+# model = Model(input_size=(387, 387, 3))
+model.summary()
