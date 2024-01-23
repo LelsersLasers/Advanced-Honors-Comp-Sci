@@ -7,6 +7,11 @@ import tensorflow.keras.activations as activations
 
 print(f"\n\nTensorflow version: {tf.__version__}")
 
+args = {
+    "plot_history_save_path": "history.json",
+    "epochs": 50,
+}
+
 
 # import tensorflow.keras as keras
 # import tensorflow.keras.utils as utils
@@ -21,7 +26,6 @@ class Model:
         # Input: 387 x 387 x 3
 
         self.model = tf.keras.Sequential()
-
         self.model.add(layers.Conv2D(
             filters = 10,
             kernel_size = 19,
@@ -30,6 +34,8 @@ class Model:
             input_shape = input_size,
         ))
         # Size: 47 x 47 x 10
+
+        self.model.add(layers.BatchNormalization())
 
         self.model.add(layers.MaxPool2D(
             pool_size = 3,
@@ -45,6 +51,8 @@ class Model:
         ))
         # Size: 21 x 21 x 14
 
+        self.model.add(layers.BatchNormalization())
+
         self.model.add(layers.MaxPool2D(
             pool_size = 3,
             strides = 2,
@@ -55,7 +63,9 @@ class Model:
         # Size: 1400
 
         self.model.add(layers.Dense(units = 256, activation = activations.relu))
+        self.model.add(layers.Dropout(rate = 0.5))
         self.model.add(layers.Dense(units = 64,  activation = activations.relu))
+        self.model.add(layers.Dropout(rate = 0.5))
         self.model.add(layers.Dense(units = 16,  activation = activations.relu))
         self.model.add(layers.Dense(units = 5,   activation = activations.softmax))
 
@@ -100,10 +110,10 @@ model.model.summary()
 # ---------------------------------------------------------------------------- #
 print("\nTraining model...")
 
-model.model.fit(
+history = model.model.fit(
     train,
     # batch_size = args["batch_size"],
-    epochs = 10,
+    epochs = args["epochs"],
     verbose = 1,
 	# callbacks = callbacks,
     validation_data = valid,
@@ -113,3 +123,30 @@ model.model.fit(
 print(f"Training finished.")
 # ---------------------------------------------------------------------------- #
 
+
+# ---------------------------------------------------------------------------- #
+if args["plot_history_save_path"]:
+    import json
+    print(f"Saving training history to {args['plot_history_save_path']}")
+
+    old_history = {
+        "accuracy": [],
+        "loss": [],
+        "val_accuracy": [],
+        "val_loss": [],
+    }
+    try:
+        with open(args["plot_history_save_path"], "r") as f:
+            old_history = json.load(f)
+    except (FileNotFoundError, json.decoder.JSONDecodeError):
+        pass
+
+    if old_history is not None:
+        old_history["accuracy"] += history.history["accuracy"]
+        old_history["loss"] += history.history["loss"]
+        old_history["val_accuracy"] += history.history["val_accuracy"]
+        old_history["val_loss"] += history.history["val_loss"]
+
+    with open(args["plot_history_save_path"], "w") as f:
+        json.dump(old_history, f, indent=4)
+# ---------------------------------------------------------------------------- #
