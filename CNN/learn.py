@@ -75,7 +75,23 @@ ap.add_argument(
     help="path (.json) to save training history to (will append if file exists)",
     default=None,
 )
-# TODO: more ideas: 1 padding + 3 size 1 stride convs; dropout arg parse
+ap.add_argument(
+    "-d",
+    "--dropout",
+    required=False,
+    help="dropout rate for first 2 dense layers",
+    default=0.5,
+    type=float
+)
+ap.add_argument(
+    "-i",
+    "--extra-conv2d-count",
+    required=False,
+    help="Number of extra conv2d layers to add that do not change the size of the image",
+    default=0,
+    type=int
+)
+
 
 
 args = vars(ap.parse_args())
@@ -98,18 +114,46 @@ print(f"\n\nTensorflow version: {tf.__version__}")
 
 # ---------------------------------------------------------------------------- #
 class Model:
-    def __init__(self, input_size):
+    def __init__(self, input_size, dropout_rate, extra_conv2d_count):
         # Input: 387 x 387 x 3
 
         self.model = tf.keras.Sequential()
-        self.model.add(layers.Conv2D(
-            filters = 10,
-            kernel_size = 19,
-            strides = 8,
-            activation = activations.relu,
-            input_shape = input_size,
-        ))
-        # Size: 47 x 47 x 10
+
+        for i in range(extra_conv2d_count):
+            if i == 0:
+                self.model.add(layers.Conv2D(
+                    filters = 10,
+                    kernel_size = 3,
+                    strides = 1,
+                    activation = activations.relu,
+                    input_shape = input_size,
+                ))
+            else:
+                self.model.add(layers.Conv2D(
+                    filters = 10,
+                    kernel_size = 3,
+                    strides = 1,
+                    activation = activations.relu,
+                ))
+
+        if extra_conv2d_count > 0:
+            self.model.add(layers.BatchNormalization())
+        
+            self.model.add(layers.Conv2D(
+                filters = 15,
+                kernel_size = 19,
+                strides = 8,
+                activation = activations.relu,
+            ))
+        else:
+            self.model.add(layers.Conv2D(
+                filters = 15,
+                kernel_size = 19,
+                strides = 8,
+                activation = activations.relu,
+                input_shape = input_size,
+            ))
+        # Size: 47 x 47 x 15
 
         self.model.add(layers.BatchNormalization())
 
@@ -117,15 +161,15 @@ class Model:
             pool_size = 3,
             strides = 2,
         ))
-        # Size: 23 x 23 x 10
+        # Size: 23 x 23 x 15
 
         self.model.add(layers.Conv2D(
-            filters = 14,
+            filters = 20,
             kernel_size = 3,
             strides = 1,
             activation = activations.relu,
         ))
-        # Size: 21 x 21 x 14
+        # Size: 21 x 21 x 20
 
         self.model.add(layers.BatchNormalization())
 
@@ -133,15 +177,15 @@ class Model:
             pool_size = 3,
             strides = 2,
         ))
-        # Size: 10 x 10 x 14
+        # Size: 10 x 10 x 20
 
         self.model.add(layers.Flatten())
-        # Size: 1400
+        # Size: 2000
 
         self.model.add(layers.Dense(units = 256, activation = activations.relu))
-        self.model.add(layers.Dropout(rate = 0.5))
+        self.model.add(layers.Dropout(rate = dropout_rate))
         self.model.add(layers.Dense(units = 64,  activation = activations.relu))
-        self.model.add(layers.Dropout(rate = 0.5))
+        self.model.add(layers.Dropout(rate = dropout_rate))
         self.model.add(layers.Dense(units = 16,  activation = activations.relu))
         self.model.add(layers.Dense(units = 5,   activation = activations.softmax))
 
@@ -196,7 +240,11 @@ print(f"{valid=}")
 # ---------------------------------------------------------------------------- #
 
 # ---------------------------------------------------------------------------- #
-model = Model(input_size=(DATA_SHAPE[0], DATA_SHAPE[1], 3))
+model = Model(
+    input_size=(DATA_SHAPE[0], DATA_SHAPE[1], 3),
+    dropout_rate=args["dropout"],
+    extra_conv2d_count=args["extra_conv2d_count"],
+)
 
 model.set_optimizer(optimizers.Adam(learning_rate = args["learning_rate"]))
 model.set_loss(losses.CategoricalCrossentropy())
