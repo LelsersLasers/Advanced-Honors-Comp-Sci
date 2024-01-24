@@ -1,13 +1,21 @@
 """
     Description: Plot training history from a .json file.
     Author: Millan Kumar
-    Date: 11/29/2023
+    Date: 1/24/2024
 """
 
+import argparse
 
-args = {
-    "plot_history_load_path": "history.json",
-}
+ap = argparse.ArgumentParser()
+
+ap.add_argument(
+    "-p",
+    "--plot-history-load-path",
+    required=True,
+    help="path (.json) to load training history from",
+)
+
+args = vars(ap.parse_args())
 # ---------------------------------------------------------------------------- #
 
 
