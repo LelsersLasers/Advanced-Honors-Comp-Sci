@@ -127,6 +127,7 @@ class Model:
                     strides = 1,
                     activation = activations.relu,
                     input_shape = input_size,
+                    padding = "same",
                 ))
             else:
                 self.model.add(layers.Conv2D(
@@ -134,6 +135,7 @@ class Model:
                     kernel_size = 3,
                     strides = 1,
                     activation = activations.relu,
+                    padding = "same",
                 ))
 
         if extra_conv2d_count > 0:
