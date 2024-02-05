@@ -14,6 +14,14 @@ ap.add_argument(
     required=True,
     help="path (.json) to load training history from",
 )
+ap.add_argument(
+    "-w",
+    "--window-size",
+    required=False,
+    help="size of window for rolling accuracy/loss for validation",
+    default=3,
+    type=int,
+)
 
 args = vars(ap.parse_args())
 # ---------------------------------------------------------------------------- #
@@ -24,6 +32,14 @@ import json
 import matplotlib.pyplot as plt
 
 
+def convert_to_rolling(lst, size):
+    rolling = lst[:size - 2]
+    for i in range(len(lst) - size + 1):
+        rolling.append(sum(lst[i:i + size]) / size)
+    rolling.append(lst[-1])
+    return rolling
+
+
 try:
 	with open(args["plot_history_load_path"], "r") as f:
 		history = json.load(f)
@@ -32,9 +48,20 @@ except FileNotFoundError:
 
 
 train_accuracy_axis = history['accuracy']
-validation_accuracy_axis = history['val_accuracy']
+
+validation_accuracy_axis_base = history['val_accuracy']
+if args["window_size"] > 1:
+    validation_accuracy_axis = convert_to_rolling(validation_accuracy_axis_base, args["window_size"])
+else:
+    validation_accuracy_axis = validation_accuracy_axis_base
+
 train_loss_axis = history['loss']
-validation_loss_axis = history['val_loss']
+
+validation_loss_axis_base = history['val_loss']
+if args["window_size"] > 1:
+    validation_loss_axis = convert_to_rolling(validation_loss_axis_base, args["window_size"])
+else:
+    validation_loss_axis = validation_loss_axis_base
 
 epoch_axis = range(1, len(train_accuracy_axis) + 1)
 
