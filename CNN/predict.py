@@ -61,20 +61,27 @@ def prep_image(image):
 	image = np.expand_dims(image, axis=0)
 	return image
 
+def predict(prepped_image):
+	prediction = list(model.predict(prepped_image)[0])
+	predictions_with_labels = list(zip(prediction, classes))
+	predictions_with_labels.sort(reverse=True, key=lambda x: x[0])
+	
+	print("\n\nResults:")
+	for confidence, label in predictions_with_labels:
+		output = f"{label : >8}: {confidence * 100:.2f}%"
+		print(output)
+
+	return predictions_with_labels
+
+
+
 if args["input"] == "image":
 	image = cv2.imread(args["path"])
 	if image is None:
 		ap.error("invalid path to image")
 
-	image = prep_image(image)
-
-	prediction = list(model.predict(image)[0])
-	predictions_with_labels = list(zip(prediction, classes))
-	predictions_with_labels.sort(reverse=True, key=lambda x: x[0])
-
-	print("\n\nResults:")
-	for confidence, label in predictions_with_labels:
-		print(f"{label : >8}: {confidence * 100:.2f}%")
+	prepped_image = prep_image(image)
+	predict(prepped_image)
 else:
 	cap = cv2.VideoCapture(0)
 
@@ -87,11 +94,7 @@ else:
 			break
 
 		prepped_frame = prep_image(frame)
-
-		prediction = list(model.predict(prepped_frame)[0])
-		predictions_with_labels = list(zip(prediction, classes))
-		predictions_with_labels.sort(reverse=True, key=lambda x: x[0])
-
+		predictions_with_labels = predict(prepped_frame)
 		
 		font = cv2.FONT_HERSHEY_SIMPLEX
 		bottomLeftCornerOfText = (5, 2)
@@ -103,10 +106,8 @@ else:
 		print("\n\nResults:")
 		for confidence, label in predictions_with_labels:
 			output = f"{label : >8}: {confidence * 100:.2f}%"
-			print(output)
 
 			bottomLeftCornerOfText = (bottomLeftCornerOfText[0], bottomLeftCornerOfText[1] + 20)
-
 			cv2.putText(
 				frame,
 				output,
