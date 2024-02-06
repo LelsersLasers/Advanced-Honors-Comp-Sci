@@ -60,18 +60,12 @@ except FileNotFoundError:
 train_accuracy_axis = history['accuracy']
 
 validation_accuracy_axis_base = history['val_accuracy']
-if args["window_size"] > 1:
-    validation_accuracy_axis = convert_to_rolling(validation_accuracy_axis_base, args["window_size"])
-else:
-    validation_accuracy_axis = validation_accuracy_axis_base
+validation_accuracy_axis = convert_to_rolling(validation_accuracy_axis_base, args["window_size"])
 
 train_loss_axis = history['loss']
 
 validation_loss_axis_base = history['val_loss']
-if args["window_size"] > 1:
-    validation_loss_axis = convert_to_rolling(validation_loss_axis_base, args["window_size"])
-else:
-    validation_loss_axis = validation_loss_axis_base
+validation_loss_axis = convert_to_rolling(validation_loss_axis_base, args["window_size"])
 
 epoch_axis = range(1, len(train_accuracy_axis) + 1)
 
