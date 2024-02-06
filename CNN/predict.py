@@ -9,10 +9,10 @@ import argparse
 ap = argparse.ArgumentParser()
 
 ap.add_argument(
-	"-l",
-	"--load-path",
+	"-s",
+	"--saved-model-path",
 	required=True,
-	help="location to load model from",
+	help="location to load the full model from",
 	default=None,
 )
 ap.add_argument(
@@ -43,7 +43,7 @@ import tensorflow as tf
 import tensorflow.keras.models as models
 
 classes = ["cloudy", "foggy", "rainy", "shine", "sunrise"]
-model = models.load_model(args["load_path"])
+model = models.load_model(args["saved_model_path"])
 
 print(f"\n\nTensorflow version: {tf.__version__}")
 # ---------------------------------------------------------------------------- #
