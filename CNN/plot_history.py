@@ -33,10 +33,20 @@ import matplotlib.pyplot as plt
 
 
 def convert_to_rolling(lst, size):
-    rolling = lst[:size - 2]
-    for i in range(len(lst) - size + 1):
-        rolling.append(sum(lst[i:i + size]) / size)
-    rolling.append(lst[-1])
+    slice_size_lower = size // 2
+    slice_size_upper = size - slice_size_lower
+
+    rolling = []
+    max_len = len(lst)
+    for i in range(max_len):
+        lower = max(0, i - slice_size_lower)
+        upper = min(max_len, i + slice_size_upper)
+
+        total = sum(lst[lower:upper])
+        count = upper - lower
+        rolling.append(total / count)
+
+    print("lens", len(lst), len(rolling))
     return rolling
 
 
