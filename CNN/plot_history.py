@@ -46,7 +46,6 @@ def convert_to_rolling(lst, size):
         count = upper - lower
         rolling.append(total / count)
 
-    print("lens", len(lst), len(rolling))
     return rolling
 
 
