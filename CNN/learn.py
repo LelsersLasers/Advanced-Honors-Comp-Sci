@@ -101,6 +101,7 @@ print(f"\n{args=}\n")
 
 # ---------------------------------------------------------------------------- #
 import tensorflow as tf
+import tensorflow.data as data
 import tensorflow.keras as keras
 import tensorflow.keras.utils as utils
 import tensorflow.keras.layers as layers
@@ -230,12 +231,16 @@ train = utils.image_dataset_from_directory(
     label_mode='categorical',
     image_size=DATA_SHAPE
 )
+print(f"{train.class_names=}")
+train = train.cache().prefetch(buffer_size = data.AUTOTUNE)
+
 valid = utils.image_dataset_from_directory(
     VALID_DATA_FOLDER,
     label_mode='categorical',
     image_size=DATA_SHAPE
 )
-
+print(f"{valid.class_names=}")
+valid = valid.cache().prefetch(buffer_size = data.AUTOTUNE)
 
 print(f"{train=}")
 print(f"{valid=}")
