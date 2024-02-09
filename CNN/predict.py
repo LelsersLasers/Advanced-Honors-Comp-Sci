@@ -44,6 +44,7 @@ import tensorflow.keras.models as models
 
 classes = ["cloudy", "foggy", "rainy", "shine", "sunrise"]
 model = models.load_model(args["saved_model_path"])
+print(model.summary())
 
 print(f"\n\nTensorflow version: {tf.__version__}")
 # ---------------------------------------------------------------------------- #

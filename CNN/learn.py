@@ -123,7 +123,7 @@ class Model:
         for i in range(extra_conv2d_count):
             if i == 0:
                 self.model.add(layers.Conv2D(
-                    filters = 10,
+                    filters = 10 + i,
                     kernel_size = 3,
                     strides = 1,
                     activation = activations.relu,
@@ -132,7 +132,7 @@ class Model:
                 ))
             else:
                 self.model.add(layers.Conv2D(
-                    filters = 10,
+                    filters = 10 + i,
                     kernel_size = 3,
                     strides = 1,
                     activation = activations.relu,
@@ -144,14 +144,14 @@ class Model:
         
             self.model.add(layers.Conv2D(
                 filters = 15,
-                kernel_size = 19,
+                kernel_size = 15 + extra_conv2d_count,
                 strides = 8,
                 activation = activations.relu,
             ))
         else:
             self.model.add(layers.Conv2D(
                 filters = 15,
-                kernel_size = 19,
+                kernel_size = 15 + extra_conv2d_count,
                 strides = 8,
                 activation = activations.relu,
                 input_shape = input_size,
@@ -167,7 +167,7 @@ class Model:
         # Size: 23 x 23 x 15
 
         self.model.add(layers.Conv2D(
-            filters = 20,
+            filters = 20 + extra_conv2d_count,
             kernel_size = 3,
             strides = 1,
             activation = activations.relu,
@@ -270,6 +270,8 @@ if args["load_checkpoint_path"] is not None:
 # ---------------------------------------------------------------------------- #
 print("\nTraining model...")
 
+callbacks = []
+
 if args["checkpoint_save_path"] is not None:
     if args["frequency_checkpoint"] == 1:
         save_freq = 'epoch'
@@ -284,9 +286,7 @@ if args["checkpoint_save_path"] is not None:
         save_weights_only = True,
         save_freq = save_freq,
     )
-    callbacks = [save_callback]
-else:
-    callbacks = []
+    callbacks.append(save_callback)
 
 history = model.model.fit(
     train,
