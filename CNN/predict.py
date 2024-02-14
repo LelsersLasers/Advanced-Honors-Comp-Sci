@@ -42,7 +42,7 @@ if args["input"] == "image" and args["path"] is None:
 import tensorflow as tf
 import tensorflow.keras.models as models
 
-classes = ["cloudy", "foggy", "rainy", "shine", "sunrise"]
+CLASSES = ["cloudy", "foggy", "rainy", "shine", "sunrise"]
 model = models.load_model(args["saved_model_path"])
 print(model.summary())
 
@@ -64,7 +64,7 @@ def prep_image(image):
 
 def predict(prepped_image):
 	prediction = list(model.predict(prepped_image)[0])
-	predictions_with_labels = list(zip(prediction, classes))
+	predictions_with_labels = list(zip(prediction, CLASSES))
 	predictions_with_labels.sort(reverse=True, key=lambda x: x[0])
 	
 	print("\n\nResults:")
