@@ -32,12 +32,36 @@ ap.add_argument(
     type=float,
 )
 ap.add_argument(
-    "-b",
-    "--batch-size",
+	"-g",
+	"--decay-rate",
+	required=False,
+	help="decay rate for learning rate",
+	default=0.9,
+	type=float,
+)
+ap.add_argument(
+	"-j",
+	"--decay-steps",
+	required=False,
+	help="decay steps for learning rate",
+	default=400,
+	type=int,
+)
+ap.add_argument(
+	"-m",
+	"--l1",
+	required=False,
+	help="l1 regularization for all layers",
+	default=0.2,
+	type=float,
+)
+ap.add_argument(
+	"-n",
+    "--l2",
     required=False,
-    help="batch size for training (should be a power of 2)",
-    default=32,
-    type=int
+    help="l2 regularization for all layers",
+    default=0.2,
+    type=float,
 )
 ap.add_argument(
     "-l",
@@ -80,7 +104,7 @@ ap.add_argument(
     "--dropout",
     required=False,
     help="dropout rate for first 2 dense layers",
-    default=0.5,
+    default=0.6,
     type=float
 )
 ap.add_argument(
@@ -88,7 +112,7 @@ ap.add_argument(
     "--extra-conv2d-count",
     required=False,
     help="Number of extra conv2d layers to add that do not change the size of the image",
-    default=0,
+    default=1,
     type=int
 )
 
@@ -115,8 +139,10 @@ print(f"\n\nTensorflow version: {tf.__version__}")
 
 # ---------------------------------------------------------------------------- #
 class Model:
-    def __init__(self, input_size, dropout_rate, extra_conv2d_count):
+    def __init__(self, input_size, dropout_rate, l1, l2, extra_conv2d_count):
         # Input: 387 x 387 x 3
+
+        regularizer = keras.regularizers.l1_l2(l1=l1, l2=l2)
 
         self.model = tf.keras.Sequential()
 
@@ -127,6 +153,7 @@ class Model:
                     kernel_size = 3,
                     strides = 1,
                     activation = activations.relu,
+                    kernel_regularizer = regularizer,
                     input_shape = input_size,
                     padding = "same",
                 ))
@@ -136,17 +163,19 @@ class Model:
                     kernel_size = 3,
                     strides = 1,
                     activation = activations.relu,
+                    kernel_regularizer = regularizer,
                     padding = "same",
                 ))
 
-        if extra_conv2d_count > 0:
             self.model.add(layers.BatchNormalization())
-        
+
+        if extra_conv2d_count > 0:
             self.model.add(layers.Conv2D(
                 filters = 15,
                 kernel_size = 15 + extra_conv2d_count,
                 strides = 8,
                 activation = activations.relu,
+                kernel_regularizer = regularizer,
             ))
         else:
             self.model.add(layers.Conv2D(
@@ -154,6 +183,7 @@ class Model:
                 kernel_size = 15 + extra_conv2d_count,
                 strides = 8,
                 activation = activations.relu,
+                kernel_regularizer = regularizer,
                 input_shape = input_size,
             ))
         # Size: 47 x 47 x 15
@@ -171,6 +201,7 @@ class Model:
             kernel_size = 3,
             strides = 1,
             activation = activations.relu,
+            kernel_regularizer = regularizer,
         ))
         # Size: 21 x 21 x 20
 
@@ -185,12 +216,12 @@ class Model:
         self.model.add(layers.Flatten())
         # Size: 2000
 
-        self.model.add(layers.Dense(units = 256, activation = activations.relu))
+        self.model.add(layers.Dense(units = 256, activation = activations.relu,    kernel_regularizer = regularizer))
         self.model.add(layers.Dropout(rate = dropout_rate))
-        self.model.add(layers.Dense(units = 64,  activation = activations.relu))
+        self.model.add(layers.Dense(units = 64,  activation = activations.relu,    kernel_regularizer = regularizer))
         self.model.add(layers.Dropout(rate = dropout_rate))
-        self.model.add(layers.Dense(units = 16,  activation = activations.relu))
-        self.model.add(layers.Dense(units = 5,   activation = activations.softmax))
+        self.model.add(layers.Dense(units = 16,  activation = activations.relu,    kernel_regularizer = regularizer))
+        self.model.add(layers.Dense(units = 5,   activation = activations.softmax, kernel_regularizer = regularizer,))
 
     def set_optimizer(self, optimizer):
         self.optimizer = optimizer
@@ -226,6 +257,8 @@ LEARN_DATA_FOLDER = "dataset/learn"
 VALID_DATA_FOLDER = "dataset/valid"
 DATA_SHAPE = (387, 387)
 
+# NOTE: will be split into 47 batches
+
 train = utils.image_dataset_from_directory(
     LEARN_DATA_FOLDER,
     label_mode='categorical',
@@ -251,9 +284,17 @@ model = Model(
     input_size=(DATA_SHAPE[0], DATA_SHAPE[1], 3),
     dropout_rate=args["dropout"],
     extra_conv2d_count=args["extra_conv2d_count"],
+    l1=args["l1"],
+    l2=args["l2"],
 )
 
-model.set_optimizer(optimizers.Adam(learning_rate = args["learning_rate"]))
+lr_schedule = keras.optimizers.schedules.ExponentialDecay(
+    initial_learning_rate = args["learning_rate"],
+    decay_steps = args["decay_steps"],
+    decay_rate = args["decay_rate"],
+)
+
+model.set_optimizer(optimizers.Adam(learning_rate = lr_schedule))
 model.set_loss(losses.CategoricalCrossentropy())
 model.set_metrics([
     'accuracy',
@@ -290,12 +331,10 @@ if args["checkpoint_save_path"] is not None:
 
 history = model.model.fit(
     train,
-    batch_size = args["batch_size"],
     epochs = args["epochs"],
     verbose = 1,
 	callbacks = callbacks,
     validation_data = valid,
-    validation_batch_size = args["batch_size"]
 )
 
 print(f"Training finished.")
