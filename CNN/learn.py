@@ -171,16 +171,16 @@ class Model:
 
         if extra_conv2d_count > 0:
             self.model.add(layers.Conv2D(
-                filters = 15,
-                kernel_size = 15 + extra_conv2d_count,
+                filters = 15 + extra_conv2d_count,
+                kernel_size = 15,
                 strides = 8,
                 activation = activations.relu,
                 kernel_regularizer = regularizer,
             ))
         else:
             self.model.add(layers.Conv2D(
-                filters = 15,
-                kernel_size = 15 + extra_conv2d_count,
+                filters = 15 + extra_conv2d_count,
+                kernel_size = 15,
                 strides = 8,
                 activation = activations.relu,
                 kernel_regularizer = regularizer,
