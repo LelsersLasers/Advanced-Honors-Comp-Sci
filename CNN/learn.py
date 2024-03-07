@@ -1,7 +1,7 @@
 """
     Description: Custom CNN for weather classification.
     Author: Millan Kumar
-    Date: 1/24/2024
+    Date: 3/7/2024
 """
 
 import argparse
@@ -96,7 +96,7 @@ ap.add_argument(
     "-p",
     "--plot-history-save-path",
     required=False,
-    help="path (.json) to save training history to (will append if file exists)",
+    help="path (.csv) to save training history to (will append if file exists)",
     default=None,
 )
 ap.add_argument(
@@ -331,45 +331,23 @@ if args["checkpoint_save_path"] is not None:
     )
     callbacks.append(save_callback)
 
-history = model.model.fit(
-    train,
-    epochs = args["epochs"],
-    verbose = 1,
-	callbacks = callbacks,
-    validation_data = valid,
-)
+if args["plot_history_save_path"] is not None:
+    plot_callback = keras.callbacks.CSVLogger(args["plot_history_save_path"], append=True)
+    callbacks.append(plot_callback)
 
-print(f"Training finished.")
+try:
+    history = model.model.fit(
+        train,
+        epochs = args["epochs"],
+        verbose = 1,
+        callbacks = callbacks,
+        validation_data = valid,
+    )
+
+    print(f"Training finished.")
+except KeyboardInterrupt: pass
 
 if args["save_path"] is not None:
     print(f"Saving model to {args['save_path']}")
     model.save(args["save_path"])
-# ---------------------------------------------------------------------------- #
-
-
-# ---------------------------------------------------------------------------- #
-if args["plot_history_save_path"]:
-    import json
-    print(f"Saving training history to {args['plot_history_save_path']}")
-
-    old_history = {
-        "accuracy": [],
-        "loss": [],
-        "val_accuracy": [],
-        "val_loss": [],
-    }
-    try:
-        with open(args["plot_history_save_path"], "r") as f:
-            old_history = json.load(f)
-    except (FileNotFoundError, json.decoder.JSONDecodeError):
-        pass
-
-    if old_history is not None:
-        old_history["accuracy"] += history.history["accuracy"]
-        old_history["loss"] += history.history["loss"]
-        old_history["val_accuracy"] += history.history["val_accuracy"]
-        old_history["val_loss"] += history.history["val_loss"]
-
-    with open(args["plot_history_save_path"], "w") as f:
-        json.dump(old_history, f, indent=4)
 # ---------------------------------------------------------------------------- #

@@ -1,7 +1,7 @@
 """
     Description: Plot training history from a .json file.
     Author: Millan Kumar
-    Date: 1/24/2024
+    Date: 3/7/2024
 """
 
 import argparse
@@ -12,7 +12,7 @@ ap.add_argument(
     "-p",
     "--plot-history-load-path",
     required=True,
-    help="path (.json) to load training history from",
+    help="path (.csv) to load training history from",
 )
 ap.add_argument(
     "-w",
@@ -28,7 +28,7 @@ args = vars(ap.parse_args())
 
 
 # ---------------------------------------------------------------------------- #
-import json
+import csv
 import matplotlib.pyplot as plt
 
 
@@ -50,33 +50,35 @@ def convert_to_rolling(lst, size):
 
 
 try:
-	with open(args["plot_history_load_path"], "r") as f:
-		history = json.load(f)
+    history = {}
+    with open(args["plot_history_load_path"], "r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            for key, value in row.items():
+                if key not in history:
+                    history[key] = []
+                history[key].append(float(value))
 except FileNotFoundError:
-	ap.error("invalid path to training history file")
+    ap.error("invalid path to training history file")
 
 
-train_accuracy_axis = history['accuracy']
+epoch_axis = range(1, len(history["epoch"]) + 1)
 
-validation_accuracy_axis_base = history['val_accuracy']
-validation_accuracy_axis = convert_to_rolling(validation_accuracy_axis_base, args["window_size"])
+axis_pairs = []
+for key, value in history.items():
+    if key == "epoch" or key.startswith("val_"):
+        continue
+    axis_pairs.append((key, f"val_{key}"))
 
-train_loss_axis = history['loss']
+for (train_axis_label, val_axis_label) in axis_pairs:
+    plt.figure()
 
-validation_loss_axis_base = history['val_loss']
-validation_loss_axis = convert_to_rolling(validation_loss_axis_base, args["window_size"])
+    train_axis = convert_to_rolling(history[train_axis_label], args["window_size"])
+    val_axis = convert_to_rolling(history[val_axis_label], args["window_size"])
 
-epoch_axis = range(1, len(train_accuracy_axis) + 1)
-
-plt.plot(epoch_axis, train_accuracy_axis, 'b', label='training accuracy')
-plt.plot(epoch_axis, validation_accuracy_axis, 'r', label='validation accuracy')
-plt.title('Accuracy')
-plt.legend()
-
-plt.figure()
-plt.plot(epoch_axis, train_loss_axis, 'b', label='training loss')
-plt.plot(epoch_axis, validation_loss_axis, 'r', label='validation loss')
-plt.title('Loss')
-plt.legend()
+    plt.plot(epoch_axis, train_axis, 'b', label=train_axis_label)
+    plt.plot(epoch_axis, val_axis,   'r', label=val_axis_label)
+    plt.title(train_axis_label)
+    plt.legend()
 
 plt.show()
