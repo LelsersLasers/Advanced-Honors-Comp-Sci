@@ -259,6 +259,8 @@ DATA_SHAPE = (387, 387)
 
 # NOTE: will be split into 47 batches
 
+# TODO: data augmentation: random_crop, random_brightness, random_contrast
+
 train = utils.image_dataset_from_directory(
     LEARN_DATA_FOLDER,
     label_mode='categorical',
