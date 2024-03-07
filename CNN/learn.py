@@ -104,7 +104,7 @@ ap.add_argument(
     "--dropout",
     required=False,
     help="dropout rate for first 2 dense layers",
-    default=0.6,
+    default=0.5,
     type=float
 )
 ap.add_argument(
@@ -114,6 +114,38 @@ ap.add_argument(
     help="Number of extra conv2d layers to add that do not change the size of the image",
     default=1,
     type=int
+)
+ap.add_argument(
+    "-a",
+    "--augment-maps",
+    required=False,
+    help="Number of times to augment the dataset",
+    default=3,
+    type=int
+)
+ap.add_argument(
+    "-x",
+    "--max-delta",
+    required=False,
+    help="Maximum delta for brightness augmentation",
+    default=0.25,
+    type=float
+)
+ap.add_argument(
+    "-y",
+    "--lower",
+    required=False,
+    help="Lower bound for contrast augmentation",
+    default=0.5,
+    type=float
+)
+ap.add_argument(
+    "-z",
+    "--upper",
+    required=False,
+    help="Upper bound for contrast augmentation",
+    default=0.8,
+    type=float
 )
 
 
@@ -259,11 +291,9 @@ DATA_SHAPE = (387, 387)
 
 # NOTE: will be split into 47 batches
 
-# TODO: argparse for: # augment maps, max_delta, lower, upper
-
 def augment(image, label):
-    image = tf.image.random_brightness(image, max_delta=0.25)
-    image = tf.image.random_contrast(image, lower=0.2, upper=0.5)
+    image = tf.image.random_brightness(image, max_delta=args["max_delta"])
+    image = tf.image.random_contrast(image, lower=args["lower"], upper=args["upper"])
     return image, label
 
 train = utils.image_dataset_from_directory(
@@ -273,10 +303,9 @@ train = utils.image_dataset_from_directory(
 )
 train = train.cache().prefetch(buffer_size = data.AUTOTUNE)
 
-train = (train
-    .concatenate(train.map(augment))
-    .concatenate(train.map(augment))
-    .concatenate(train.map(augment)))
+augmented_trains = [train.map(augment) for _ in range(args["augment_maps"])]
+for augmented_train in augmented_trains:
+    train = train.concatenate(augmented_train)
 
 
 valid = utils.image_dataset_from_directory(
