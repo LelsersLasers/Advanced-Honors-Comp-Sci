@@ -32,35 +32,35 @@ ap.add_argument(
     type=float,
 )
 ap.add_argument(
-	"-g",
-	"--decay-rate",
-	required=False,
-	help="decay rate for learning rate",
-	default=0.9,
-	type=float,
+    "-g",
+    "--decay-rate",
+    required=False,
+    help="decay rate for learning rate",
+    default=0.9,
+    type=float,
 )
 ap.add_argument(
-	"-j",
-	"--decay-steps",
-	required=False,
-	help="decay steps for learning rate",
-	default=400,
-	type=int,
+    "-j",
+    "--decay-steps",
+    required=False,
+    help="decay steps for learning rate",
+    default=400,
+    type=int,
 )
 ap.add_argument(
-	"-m",
-	"--l1",
-	required=False,
-	help="l1 regularization for all layers",
-	default=0.2,
-	type=float,
+    "-m",
+    "--l1",
+    required=False,
+    help="l1 regularization for all layers",
+    default=0.001,
+    type=float,
 )
 ap.add_argument(
-	"-n",
+    "-n",
     "--l2",
     required=False,
     help="l2 regularization for all layers",
-    default=0.2,
+    default=0.001,
     type=float,
 )
 ap.add_argument(
@@ -259,15 +259,25 @@ DATA_SHAPE = (387, 387)
 
 # NOTE: will be split into 47 batches
 
-# TODO: data augmentation: random_crop, random_brightness, random_contrast
+# TODO: argparse for: # augment maps, max_delta, lower, upper
+
+def augment(image, label):
+    image = tf.image.random_brightness(image, max_delta=0.25)
+    image = tf.image.random_contrast(image, lower=0.2, upper=0.5)
+    return image, label
 
 train = utils.image_dataset_from_directory(
     LEARN_DATA_FOLDER,
     label_mode='categorical',
     image_size=DATA_SHAPE
 )
-print(f"{train.class_names=}")
 train = train.cache().prefetch(buffer_size = data.AUTOTUNE)
+
+train = (train
+    .concatenate(train.map(augment))
+    .concatenate(train.map(augment))
+    .concatenate(train.map(augment)))
+
 
 valid = utils.image_dataset_from_directory(
     VALID_DATA_FOLDER,
@@ -348,6 +358,6 @@ try:
 except KeyboardInterrupt: pass
 
 if args["save_path"] is not None:
-    print(f"Saving model to {args['save_path']}")
+    print(f"\nSaving model to {args['save_path']}")
     model.save(args["save_path"])
 # ---------------------------------------------------------------------------- #
