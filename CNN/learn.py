@@ -120,7 +120,7 @@ ap.add_argument(
     "--augment-maps",
     required=False,
     help="Number of times to augment the dataset",
-    default=3,
+    default=2,
     type=int
 )
 ap.add_argument(
