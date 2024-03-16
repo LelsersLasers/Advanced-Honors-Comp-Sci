@@ -27,7 +27,7 @@ print(f"TensorFlow Similarity version {tfsim.__version__}\n\n")
 
 
 # ---------------------------------------------------------------------------- #
-DATA_PATH = 'data/data/data.csv'
+DATA_PATH = 'data/data.csv'
 
 data = pd.read_csv(DATA_PATH)
 print(data.head())
@@ -86,6 +86,8 @@ print(model.summary())
 model.fit(
 	data_features,
 	data_labels,
-	epochs=3
+	epochs=200
 )
+
+model.save('output/try1-fullsave')
 # ---------------------------------------------------------------------------- #
