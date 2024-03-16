@@ -23,8 +23,6 @@
 - Similarity between songs
     - Built from data.csv
     - If given a song, recommend similar songs
-- Correlation between features
-    - E.g. popularity and danceability
 - Similarity between artists
     - Built from data.csv
     - If given an artist, recommend similar artists
@@ -33,7 +31,8 @@
     - Use either/both generate from:
         - The similarity built from data.csv
         - Built a new similarity based on just the playlist
-
+- Correlation between features
+    - Ex: popularity vs danceability
 
 ## Copied ideas
 
