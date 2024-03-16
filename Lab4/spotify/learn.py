@@ -60,10 +60,10 @@ def make_model():
 
 	inputs = layers.Input(shape=(data_features.shape[1],))
 	x = normalize(inputs)
-	x = layers.Dense(256, activation=activations.relu)(x)
-	x = layers.Dense(256, activation=activations.relu)(x)
-	x = layers.Dense(256, activation=activations.relu)(x)
-	outputs = tfsim.layers.MetricEmbedding(100)(x)
+	x = layers.Dense(100, activation=activations.relu)(x)
+	x = layers.Dense(100, activation=activations.relu)(x)
+	x = layers.Dense(100, activation=activations.relu)(x)
+	outputs = tfsim.layers.MetricEmbedding(64)(x)
 
 	model = tfsim.models.SimilarityModel(inputs, outputs)
 	return model
@@ -91,28 +91,5 @@ model.fit(
 
 model.save('output/try1-fullsave')
 # ---------------------------------------------------------------------------- #
-
-
-# valence,year,acousticness,artists,danceability,duration_ms,energy,explicit,id,instrumentalness,key,liveness,loudness,mode,name,popularity,release_date,speechiness,tempo
-test='0.606,2009,0.00244,["Rascal Flatts"],0.562,276707,0.91,0,5YbeJyTQkdSAWe1Ie4sLAl,0.0,5,0.0676,-6.939,1,"Life is a Highway - From ""Cars""",56,2009-01-01,0.058,103.057'
-test = test.split(',')
-
-valence = float(test[0])
-year = float(test[1])
-acousticness = float(test[2])
-danceability = float(test[4])
-duration_ms = float(test[5])
-energy = float(test[6])
-instrumentalness = float(test[9])
-key = float(test[10])
-liveness = float(test[11])
-loudness = float(test[12])
-speechiness = float(test[16])
-tempo = float(test[17])
-
-x = np.array([valence, year, acousticness, danceability, duration_ms, energy, instrumentalness, key, liveness, loudness, speechiness, tempo], dtype=np.float32)
-closest = model.lookup(x, k=5)
-
-print(closest)
 
 
