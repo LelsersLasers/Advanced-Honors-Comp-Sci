@@ -4,6 +4,7 @@ import numpy as np
 np.set_printoptions(precision=3, suppress=True)
 
 DATA_PATH = 'data/data.csv'
+POPULARITY_COLUMN_COUNT = 10
 
 
 def load_data():
@@ -13,10 +14,8 @@ def load_data():
 
 	data_features = data.copy()
 
-	max_popularity = data_features['popularity'].max()
-	min_popularity = data_features['popularity'].min()
-	norm = lambda x: (x - min_popularity) / (max_popularity - min_popularity)
-	data_features['popularity'] = data_features['popularity'].apply(norm)
+	pop_to_column = lambda x: int(x / POPULARITY_COLUMN_COUNT) + 1
+	data_features['popularity'] = data_features['popularity'].apply(pop_to_column)
 
 	data_labels = data_features.pop('popularity') # target
 

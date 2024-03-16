@@ -37,7 +37,6 @@ x = np.array([valence, year, acousticness, danceability, duration_ms, energy, in
 x = np.expand_dims(x, axis=0)
 print(x)
 
-# TODO: lookup i think needs the index built first but why would I build an index?
-closest = model.lookup(x, k=5)
+closest = model.lookup(x, k=500)
 
 print(closest)
