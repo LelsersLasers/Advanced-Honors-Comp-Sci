@@ -18,8 +18,25 @@
 	- https://github.com/tensorflow/similarity/blob/master/examples/supervised_hello_world.ipynb
 	- https://blog.tensorflow.org/2021/09/introducing-tensorflow-similarity.html
 
+## Ideas
+
+- Similarity between songs
+    - Built from data.csv
+    - If given a song, recommend similar songs
+- Correlation between features
+    - E.g. popularity and danceability
+- Similarity between artists
+    - Built from data.csv
+    - If given an artist, recommend similar artists
+- Recommend by playlist?
+    - Given a playlist, recommend songs
+    - Use either/both generate from:
+        - The similarity built from data.csv
+        - Built a new similarity based on just the playlist
+
+
 ## Copied ideas
 
 - Correlation: https://www.tensorflow.org/probability/api_docs/python/tfp/stats/auto_correlation
 - Average/median x category over time
-- Averagex category per genre
+- Average/median x category per genre
