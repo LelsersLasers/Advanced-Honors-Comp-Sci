@@ -14,3 +14,9 @@
 ## Helpful
 
 - Read CSV: https://www.tensorflow.org/tutorials/load_data/csv
+
+## Copied ideas
+
+- Correlation: https://www.tensorflow.org/probability/api_docs/python/tfp/stats/auto_correlation
+- Average/median x category over time
+- Averagex category per genre

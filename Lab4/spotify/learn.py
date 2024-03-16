@@ -3,10 +3,10 @@ import numpy as np
 
 np.set_printoptions(precision=3, suppress=True)
 
-import tensorflow as tf
+# import tensorflow as tfs
 # import tensorflow.data as data
 import tensorflow.keras as keras
-import tensorflow.keras.utils as utils
+# import tensorflow.keras.utils as utils
 import tensorflow.keras.layers as layers
 import tensorflow.keras.losses as losses
 import tensorflow.keras.optimizers as optimizers
@@ -17,8 +17,8 @@ DATA_PATH = 'data/data/data.csv'
 
 
 data = pd.read_csv(DATA_PATH)
-# print(data.head())
-# print(data.info())
+print(data.head())
+print(data.info())
 
 data_features = data.copy()
 
@@ -33,10 +33,12 @@ data_features.pop('id')
 data_features.pop('mode')
 data_features.pop('name')
 
-# print(data_features.head())
-# print(data_features.info())
+data_features["release_date"] = data_features["release_date"].apply(lambda x: int(x.split("-")[0]))
 
-data_features = np.array(data_features)
+print(data_features.head())
+print(data_features.info())
+
+data_features = np.asarray(data_features).astype(np.float32)
 print(data_features)
 
 
@@ -52,12 +54,11 @@ model = keras.Sequential([
 ])
 
 optimizer = optimizers.Adam(learning_rate = 0.001)
-loss = losses.CategoricalCrossentropy()
+loss = losses.MeanSquaredError()
 
 model.compile(
 	optimizer=optimizer,
 	loss=loss,
-	metrics=['accuracy']
 )
 
 model.fit(
