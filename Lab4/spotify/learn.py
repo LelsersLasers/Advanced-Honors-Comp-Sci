@@ -53,6 +53,8 @@ model = keras.Sequential([
 	layers.Dense(1)
 ])
 
+print(model.summary())
+
 optimizer = optimizers.Adam(learning_rate = 0.001)
 loss = losses.MeanSquaredError()
 

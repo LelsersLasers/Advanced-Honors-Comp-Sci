@@ -14,6 +14,9 @@
 ## Helpful
 
 - Read CSV: https://www.tensorflow.org/tutorials/load_data/csv
+- Tensorflow Similarity:
+	- https://github.com/tensorflow/similarity/blob/master/examples/supervised_hello_world.ipynb
+	- https://blog.tensorflow.org/2021/09/introducing-tensorflow-similarity.html
 
 ## Copied ideas
 
