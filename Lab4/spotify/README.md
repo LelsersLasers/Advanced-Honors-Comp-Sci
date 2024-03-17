@@ -17,6 +17,8 @@
 - Tensorflow Similarity:
 	- https://github.com/tensorflow/similarity/blob/master/examples/supervised_hello_world.ipynb
 	- https://blog.tensorflow.org/2021/09/introducing-tensorflow-similarity.html
+- Google Similarity overview:
+    - https://developers.google.com/machine-learning/clustering/similarity/supervised-similarity
 
 ## Ideas
 
