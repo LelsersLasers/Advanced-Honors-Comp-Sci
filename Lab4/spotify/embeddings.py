@@ -1,4 +1,6 @@
 MODEL_PATH = 'output/fullsave'
+
+# NOTE: the file ends in .csv but the seperators are " ^^ " which is not a standard csv seperator
 EMBEDDINGS_PATH = 'output/embeddings.csv'
 
 

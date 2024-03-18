@@ -1,4 +1,4 @@
-EPOCHS = 20
+EPOCHS = 25
 MODEL_PATH = 'output/fullsave'
 
 
@@ -27,10 +27,9 @@ def make_model():
     
     model = keras.Sequential([
         normalize,
-        layers.Dense(8),
-        # layers.Dense(200),
-        # layers.Dense(100),
-        layers.Dense(4),
+        layers.Dense(50),
+        layers.Dense(50),
+        layers.Dense(25),
         layers.Dense(1),
     ])
 
