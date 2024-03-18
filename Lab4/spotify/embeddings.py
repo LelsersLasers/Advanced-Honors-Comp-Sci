@@ -12,7 +12,8 @@ import numpy as np
 
 # ---------------------------------------------------------------------------- #
 import data
-all_data, data_features, data_labels = data.load_data()
+# all_data, data_features, data_labels = data.load_data()
+all_data, data_features = data.load_data()
 # ---------------------------------------------------------------------------- #
 
 
