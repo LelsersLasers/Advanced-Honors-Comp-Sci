@@ -28,7 +28,9 @@ def make_model():
     model = keras.Sequential([
         normalize,
         layers.Dense(50),
+        layers.Dropout(0.3),
         layers.Dense(50),
+        layers.Dropout(0.3),
         layers.Dense(25),
         layers.Dense(1),
     ])
