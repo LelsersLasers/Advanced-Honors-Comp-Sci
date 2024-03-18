@@ -21,8 +21,6 @@ print(f"TensorFlow Similarity version {tfsim.__version__}\n\n")
 import pandas as pd
 import numpy as np
 
-np.set_printoptions(precision=3, suppress=True)
-
 DATA_PATH = 'data/data.csv'
 POPULARITY_COLUMN_COUNT = 10
 

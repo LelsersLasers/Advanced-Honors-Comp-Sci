@@ -1,5 +1,4 @@
 import numpy as np
-np.set_printoptions(precision=3, suppress=True)
 
 # import tensorflow as tf
 import tensorflow.keras as keras
