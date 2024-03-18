@@ -19,6 +19,7 @@
 	- https://blog.tensorflow.org/2021/09/introducing-tensorflow-similarity.html
 - Google Similarity overview:
     - https://developers.google.com/machine-learning/clustering/similarity/supervised-similarity
+- ChatGPT: https://chat.openai.com/share/d170d9be-4828-4f9f-a6cb-6e378c113590
 
 ## Ideas
 
