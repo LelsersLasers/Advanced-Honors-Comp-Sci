@@ -12,8 +12,8 @@ import numpy as np
 
 # ---------------------------------------------------------------------------- #
 import data
-# all_data, data_features, data_labels = data.load_data()
-all_data, data_features = data.load_data()
+all_data, data_features, _data_labels = data.load_data()
+# all_data, data_features = data.load_data()
 # ---------------------------------------------------------------------------- #
 
 
@@ -23,7 +23,13 @@ import tensorflow.keras as keras
 
 def intermediate_model(model):
     # forward pass until the very last layer
-    intermediate_model = keras.Model(inputs=model.inputs, outputs=model.layers[-2].output)
+    # skip any Dropout layers
+    intermediate_model = keras.Sequential()
+    for layer in model.layers:
+        if isinstance(layer, keras.layers.Dropout):
+            continue
+        intermediate_model.add(layer)
+    intermediate_model.layers = intermediate_model.layers[:-1]
     return intermediate_model
 
 

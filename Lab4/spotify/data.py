@@ -22,9 +22,6 @@ def load_data():
     # scale_pop = lambda x: x / MAX_POPULARITY
     # data_features['popularity'] = data_features['popularity'].apply(scale_pop)
 
-    # predictor target
-    # data_labels = data_features.pop('popularity')
-
     data_features.pop('artists')
     data_features.pop('explicit')
     data_features.pop('id')
@@ -34,6 +31,9 @@ def load_data():
 
     for category in data_features.columns:
         data_features = scale(data_features, category)
+    
+    # predictor target
+    data_labels = data_features.pop('popularity')
 
 
     print(data_features.head())
@@ -42,5 +42,5 @@ def load_data():
     data_features = np.asarray(data_features).astype(np.float32)
     print(data_features)
 
-    # return data, data_features, data_labels
-    return data, data_features
+    return data, data_features, data_labels
+    # return data, data_features
