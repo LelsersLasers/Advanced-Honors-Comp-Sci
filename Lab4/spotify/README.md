@@ -9,7 +9,7 @@
 ## Data Preprocessing
 
 - Don't need: artists, explicit, id, mode, name
-- Build similarity based on popularity
+- Build similarity based on popularity for predictor style
 
 ## Helpful
 
@@ -20,6 +20,7 @@
 - Google Similarity overview:
     - https://developers.google.com/machine-learning/clustering/similarity/supervised-similarity
 - ChatGPT: https://chat.openai.com/share/d170d9be-4828-4f9f-a6cb-6e378c113590
+- spotipy: https://spotipy.readthedocs.io/en/2.22.1/
 
 ## Ideas
 
@@ -36,9 +37,16 @@
         - Built a new similarity based on just the playlist
 - Correlation between features
     - Ex: popularity vs danceability
+- Predict cover art to 13 features
+    - Conv2Ds, MaxPooling2D, Flatten, Dense
+    - But also use to predict similarity?
 
-## Copied ideas
+### Similarity
+
+- Cosine, Euclidean (L2), Manhattan (L1), dot product
+
+### Copied ideas
 
 - Correlation: https://www.tensorflow.org/probability/api_docs/python/tfp/stats/auto_correlation
-- Average/median x category over time
-- Average/median x category per genre
+- Average/median category over time
+- Average/median category per genre
