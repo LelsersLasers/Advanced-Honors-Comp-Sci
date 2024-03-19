@@ -39,7 +39,8 @@
     - Ex: popularity vs danceability
 - Predict cover art to 13 features
     - Conv2Ds, MaxPooling2D, Flatten, Dense
-    - But also use to predict similarity?
+    - But also use to predict similarity
+        - If given a random image, can still do similarity compare against all other songs
 
 ### Similarity
 
