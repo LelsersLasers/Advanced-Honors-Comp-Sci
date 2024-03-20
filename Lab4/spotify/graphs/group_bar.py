@@ -4,17 +4,18 @@ import numpy as np
 import data
 
 
-def genre_bar_full(categories):
-	categories.append("genre")
+def bar_full(categories, group):
+	categories.append(group)
 
-	genres, data_features = data.genre_data()
+	groups, data_features = data.artist_data() if group == "artists" else data.genre_data()
+	print(groups)
 	keys = list(data_features.keys())
 	for key in keys:
 		if key not in categories:
 			data_features.pop(key)
 
-	x = np.arange(len(genres))
-	width = 0.035
+	x = np.arange(len(groups))
+	width = 0.05
 
 	_fig, ax = plt.subplots()
 
@@ -25,8 +26,10 @@ def genre_bar_full(categories):
 		rects = ax.bar(x + offset, measurement, width, label=attribute)
 		ax.bar_label(rects)
 
-	ax.set_title('Category Per Genre')
-	ax.set_xticks(x + width, genres)
+	title = f'Category per {group.capitalize()}'
+	ax.set_title(title)
+
+	ax.set_xticks(x + width, groups)
 	ax.legend(loc='upper left', ncols=len(data_features))
 	ax.set_ylim(0, 1.1)
 

@@ -1,6 +1,6 @@
 import graphs.heat_map
 import graphs.time_line
-import graphs.genre_bar
+import graphs.group_bar
 
 
 # ---------------------------------------------------------------------------- #
@@ -28,6 +28,13 @@ ap.add_argument(
 	"--genre-bar",
 	required=False,
 	help="display bar graph of average category per genre",
+	action="store_false",
+)
+ap.add_argument(
+	"-a",
+	"--artists",
+	required=False,
+	help="display bar graph of average category per artists",
 	action="store_false",
 )
 ap.add_argument(
@@ -60,4 +67,6 @@ for arg, value in args.items():
 		elif arg == "time_line":
 			graphs.time_line.time_line_full(args["categories_values"])
 		elif arg == "genre_bar":
-			graphs.genre_bar.genre_bar_full(args["categories_values"])
+			graphs.group_bar.bar_full(args["categories_values"], "genres")
+		elif arg == "artists":
+			graphs.group_bar.bar_full(args["categories_values"], "artists")

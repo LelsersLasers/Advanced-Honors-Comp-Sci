@@ -1,8 +1,7 @@
 import pandas as pd
 import numpy as np
 
-GENRE_TOP_POPULARITY = 2
-GENRE_RANDOM_COUNT = 3
+BAR_GROUPS = 6
 
 
 # ---------------------------------------------------------------------------- #
@@ -36,15 +35,17 @@ def scale(data_features, category):
 
 def input_data_features(all_features):
     # 13 input categories as a pandas.DataFrame
-    unused_categories = ['artists', 'explicit', 'id', 'mode', 'name', 'release_date']
+    unused_categories = ['explicit', 'id', 'mode', 'name', 'release_date']
     for category in unused_categories: 
         try:
             all_features.pop(category)
         except KeyError:
             pass
     return all_features
+# ---------------------------------------------------------------------------- #
 
 
+# ---------------------------------------------------------------------------- #
 def year_data():
     all_features = all_data(DataPath.YEAR)
 
@@ -57,32 +58,42 @@ def year_data():
 
     return data_features
 
-def genre_data():
-    all_features = all_data(DataPath.GENRE)
+
+def group_bar_graph_data(data_path, target):
+    all_features = all_data(data_path)
     data_features = input_data_features(all_features.copy())
     for category in data_features.columns: scale(data_features, category)
 
-    genre_data = {}
-    for i in range(data_features.shape[0]):
-        genre = data_features.iloc[i]['genres']
-        genre_data[genre] = data_features.iloc[i].drop('genres')
+    category_idxs = [np.random.randint(1, data_features.shape[0]) for _ in range(BAR_GROUPS)]
+    category_data = {}
+    for i in range(BAR_GROUPS):
+        iloc = category_idxs[i]
+        row = data_features.iloc[iloc]
+        group = row[target]
+        category_data[group] = row.drop(target)
 
-    genres = list(genre_data.keys())
-    genres.sort(key=lambda x: genre_data[x]['popularity'], reverse=True)
+    categories = list(category_data.keys())
 
-    genre_idxs = [0, 1] + [np.random.randint(2, len(genres)) for _ in range(GENRE_RANDOM_COUNT)]
-    genres_to_display = [genres[i] for i in genre_idxs]
+    bar_data = {} # bar_data[category] = [category_data]
+    for category in categories:
+        for key, value in category_data[category].items():
+            if key not in bar_data:
+                bar_data[key] = []
+            bar_data[key].append(value)
 
-    genre_data_dict = {} # genre_data_dict[category] = [category_data]
-    for genre in genres_to_display:
-        for key, value in genre_data[genre].items():
-            if key not in genre_data_dict:
-                genre_data_dict[key] = []
-            genre_data_dict[key].append(value)
+    return categories, bar_data
 
-    return genres_to_display, genre_data_dict
+def genre_data():
+    categories_to_display, bar_data = group_bar_graph_data(DataPath.GENRE, 'genres')
+    return categories_to_display, bar_data
+
+def artist_data():
+    categories_to_display, bar_data = group_bar_graph_data(DataPath.ARTIST, 'artists')
+    return categories_to_display, bar_data
+# ---------------------------------------------------------------------------- #
 
 
+# ---------------------------------------------------------------------------- #
 def predictor_data(data_path):
     # 12 input categories, 1 output category
     all_features = all_data(data_path)
@@ -113,3 +124,4 @@ def autoencoder_data(data_path):
     data_features = np.asarray(data_features).astype(np.float32)
 
     return all_features, data_features
+# ---------------------------------------------------------------------------- #
