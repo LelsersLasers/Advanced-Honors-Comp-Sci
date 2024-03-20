@@ -10,11 +10,15 @@
 
 
 # valence,year,acousticness,artists,danceability,duration_ms,energy,explicit,id,instrumentalness,key,liveness,loudness,mode,name,popularity,release_date,speechiness,tempo
-import data
-data_features = data.input_data_features(data.all_data(data.DataPath.SONG))
-
 import matplotlib.pyplot as plt
 import numpy as np
+
+import data
+
+
+# ---------------------------------------------------------------------------- #
+data_features = data.input_data_features(data.all_data(data.DataPath.SONG))
+
 
 class Correlations:
 	PEARSON  = "pearson"
@@ -41,3 +45,20 @@ def heat_map(corr, method):
 
 corr = correlations(data_features, Correlations.PEARSON)
 heat_map(corr, Correlations.PEARSON)
+# ---------------------------------------------------------------------------- #
+
+
+# ---------------------------------------------------------------------------- #
+data_features_year = data.year_data()
+
+x_axis = data_features_year["year"]
+y_axises = data_features_year.columns[1:]
+
+plt.figure()
+
+for y_axis in y_axises:
+	plt.plot(x_axis, data_features_year[y_axis], label=y_axis)
+plt.title("Category Over Time")
+plt.legend()
+plt.show()
+# ---------------------------------------------------------------------------- #

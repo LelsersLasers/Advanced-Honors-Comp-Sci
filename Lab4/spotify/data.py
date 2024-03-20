@@ -31,8 +31,26 @@ def scale(data_features, category):
 def input_data_features(all_features):
     # 13 input categories as a pandas.DataFrame
     unused_categories = ['artists', 'explicit', 'id', 'mode', 'name', 'release_date']
-    for category in unused_categories: all_features.pop(category)
+    for category in unused_categories: 
+        try:
+            all_features.pop(category)
+        except KeyError:
+            pass
     return all_features
+
+
+def year_data():
+    # 13 input categories
+    all_features = all_data(DataPath.YEAR)
+
+    data_features = input_data_features(all_features.copy())
+    data_features.pop('key')
+    for category in data_features.columns: scale(data_features, category)
+
+    print(f"\nYear data features shape: {data_features.shape}")
+    print(f"Year data features head:\n{data_features.head()}\n")
+
+    return data_features
 
 
 def predictor_data(data_path):
