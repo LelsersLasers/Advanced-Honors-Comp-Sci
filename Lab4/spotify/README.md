@@ -21,33 +21,53 @@
     - https://developers.google.com/machine-learning/clustering/similarity/supervised-similarity
 - ChatGPT: https://chat.openai.com/share/d170d9be-4828-4f9f-a6cb-6e378c113590
 - spotipy: https://spotipy.readthedocs.io/en/2.22.1/
+- Correlation: 
+    - Auto: https://www.tensorflow.org/probability/api_docs/python/tfp/stats/auto_correlation
+    - Pearson: https://www.tensorflow.org/probability/api_docs/python/tfp/stats/correlation
 
 ## Ideas
 
-- Similarity between songs
-    - Built from data.csv
-    - If given a song, recommend similar songs
-- Similarity between artists
-    - Built from data.csv
-    - If given an artist, recommend similar artists
-- Recommend by playlist?
-    - Given a playlist, recommend songs
-    - Use either/both generate from:
-        - The similarity built from data.csv
-        - Built a new similarity based on just the playlist
-- Correlation between features
-    - Ex: popularity vs danceability
-- Predict cover art to 13 features
-    - Conv2Ds, MaxPooling2D, Flatten, Dense
-    - But also use to predict similarity
-        - If given a random image, can still do similarity compare against all other songs
+- Graphs:
+    - Correlation between categories
+        - Cache/save results if slow?
+        - Input: (categories, target category)
+        - Output: (bar graph)
+    - Average (mean? median?) category over time
+        - Input: (categories)
+        - Output: (line graph)
+    - Average (mean? median?) category per genre
+        - Input: (categories)
+        - Output: (bar graph)
+- Similarities:
+    - Base:
+        - Distance between 13 input features
+    - Predictor style:
+        - Distance between embeddings layer of a DNN with:
+            - Input: 12 features (all but popularity)
+            - Hidden layers (Dense, Dropout)
+            - Output: 1 feature (popularity)
+    - Autoencoder style:
+        - Distance between embeddings layer of a DNN with:
+            - Input: 13 features
+            - Hidden layers (Dense, Dropout)
+            - Output: 13 features
+    - Image:
+        - Distance between embeddings layer of a CNN with:
+            - Input: image
+            - Hidden layers (Conv2D, MaxPooling2D, Flatten, Dense, Dropout)
+            - Output: 13 features
+- Similarity inputs:
+    - Song: use `data.csv`
+    - Artist: use `data.csv`
+    - Playlist:
+        - For every song in playlist, use `data.csv` (filter out duplicates, etc)
+        - Train a DNN on just the playlist?
+    - Image: use `data.csv` songs + use `spotipy` to get album cover art
+        - Can still use a random image as input to get songs that match the image!
 
-### Similarity
+### Distances
 
-- Cosine, Euclidean (L2), Manhattan (L1), dot product
-
-### Copied ideas
-
-- Correlation: https://www.tensorflow.org/probability/api_docs/python/tfp/stats/auto_correlation
-- Average/median category over time
-- Average/median category per genre
+- Cosine
+- Euclidean (L2)
+- Manhattan (L1)
+- Dot product
