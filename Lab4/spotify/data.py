@@ -12,13 +12,12 @@ class DataPath:
 def all_data(data_path):
     print(f"\nLoading data from {data_path}")
     
-    data = pd.read_csv(data_path)
+    all_features = pd.read_csv(data_path)
 
-    print(f"Data shape: {data.shape}")
-    print(f"Data head: {data.head()}")
-    print(f"Data info: {data.info()}")
+    print(f"Data shape: {all_features.shape}")
+    print(f"Data head:\n{all_features.head()}")
     print("Loaded data\n")
-    return data
+    return all_features
 # ---------------------------------------------------------------------------- #
 
 
@@ -27,42 +26,42 @@ def scale(data_features, category):
     low = data_features[category].min()
     high = data_features[category].max()
     data_features[category] = (data_features[category] - low) / (high - low)
-    return data_features
+
+
+def input_data_features(all_features):
+    # 13 input categories as a pandas.DataFrame
+    unused_categories = ['artists', 'explicit', 'id', 'mode', 'name', 'release_date']
+    for category in unused_categories: all_features.pop(category)
+    return all_features
 
 
 def predictor_data(data_path):
     # 12 input categories, 1 output category
-    data = all_data(data_path)
+    all_features = all_data(data_path)
 
-    data_features = data.copy()
-
-    unused_category = ['artists', 'explicit', 'id', 'mode', 'name', 'release_date']
-    for category in unused_category: data_features.pop(category)
-    for category in data_features.columns: data_features = scale(data_features, category)
+    data_features = input_data_features(all_features.copy())
+    for category in data_features.columns: scale(data_features, category)
 
     # predictor target
     data_labels = data_features.pop('popularity')
 
-    print(f"\nPredictor data features head: {data_features.head()}")
-    print(f"Predictor data features info: {data_features.info()}\n")
+    print(f"\nPredictor data features shape: {data_features.shape}")
+    print(f"Predictor data features head:\n{data_features.head()}\n")
 
     data_features = np.asarray(data_features).astype(np.float32)
 
-    return data, data_features, data_labels
+    return all_features, data_features, data_labels
 
 def autoencoder_data(data_path):
     # 13 input categories
-    data = all_data(data_path)
+    all_features = all_data(data_path)
 
-    data_features = data.copy()
+    data_features = input_data_features(all_features.copy())
+    for category in data_features.columns: scale(data_features, category)
 
-    unused_category = ['artists', 'explicit', 'id', 'mode', 'name', 'release_date']
-    for category in unused_category: data_features.pop(category)
-    for category in data_features.columns: data_features = scale(data_features, category)
-
-    print(f"\nAutoencoder data features head: {data_features.head()}")
-    print(f"Autoencoder data features info: {data_features.info()}\n")
+    print(f"\nAutoencoder data features shape: {data_features.shape}")
+    print(f"Autoencoder data features head:\n{data_features.head()}\n")
 
     data_features = np.asarray(data_features).astype(np.float32)
 
-    return data, data_features
+    return all_features, data_features

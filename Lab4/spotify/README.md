@@ -29,9 +29,8 @@
 
 - Graphs:
     - Correlation between categories
-        - Cache/save results if slow?
-        - Input: (categories, target category)
-        - Output: (bar graph)
+        - Input: (method)
+        - Output: (heat map)
     - Average (mean? median?) category over time
         - Input: (categories)
         - Output: (line graph)
@@ -71,3 +70,9 @@
 - Euclidean (L2)
 - Manhattan (L1)
 - Dot product
+
+### Correlations
+
+- Pearson
+- Kendall
+- Spearman
