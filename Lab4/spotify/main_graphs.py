@@ -44,7 +44,7 @@ ap.add_argument(
 	required=False,
 	help="categories to display",
 	nargs="+",
-	default=["acousticness", "danceability", "duration_ms", "energy", "instrumentalness", "liveness", "loudness", "speechiness", "tempo", "valence", "popularity"]
+	default=["year", "popularity", "acousticness", "danceability", "duration_ms", "energy", "instrumentalness", "liveness", "loudness", "speechiness", "tempo", "valence"]
 )
 
 
