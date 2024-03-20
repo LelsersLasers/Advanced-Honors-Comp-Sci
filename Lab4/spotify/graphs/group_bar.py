@@ -8,7 +8,6 @@ def bar_full(categories, group):
 	categories.append(group)
 
 	groups, data_features = data.artist_data() if group == "artists" else data.genre_data()
-	print(groups)
 	keys = list(data_features.keys())
 	for key in keys:
 		if key not in categories:
