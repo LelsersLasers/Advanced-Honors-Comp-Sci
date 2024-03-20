@@ -31,12 +31,15 @@
     - Correlation between categories
         - Input: (method)
         - Output: (heat map)
-    - Average (mean? median?) category over time
+    - Average category over time
         - Input: (categories)
         - Output: (line graph)
-    - Average (mean? median?) category per genre
+    - Average category per genre
         - Input: (categories)
-        - Output: (bar graph)
+        - Output: (group bar graph)
+    - Average category per artist
+        - Input: (categories)
+        - Output: (group bar graph)
 - Similarities:
     - Base:
         - Distance between 13 input features
