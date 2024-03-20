@@ -62,3 +62,25 @@ plt.title("Category Over Time")
 plt.legend()
 plt.show()
 # ---------------------------------------------------------------------------- #
+
+
+# ---------------------------------------------------------------------------- #
+genres, data_features = data.genre_data()
+
+x = np.arange(len(genres))
+width = 0.035
+
+fig, ax = plt.subplots()
+
+for (i, (attribute, measurement)) in enumerate(data_features.items()):
+    offset = width * (i - 4.5)
+    rects = ax.bar(x + offset, measurement, width, label=attribute)
+    ax.bar_label(rects)
+
+ax.set_title('Category Per Genre')
+ax.set_xticks(x + width, genres)
+ax.legend(loc='upper left', ncols=len(data_features))
+ax.set_ylim(0, 1.1)
+
+plt.show()
+# ---------------------------------------------------------------------------- #
