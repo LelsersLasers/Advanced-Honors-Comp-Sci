@@ -4,8 +4,8 @@ MODEL_PATH = 'output/fullsave'
 
 # ---------------------------------------------------------------------------- #
 import data
-all_data, data_features, data_labels = data.load_data()
-# all_data, data_features = data.load_data()
+all_data, data_features, data_labels = data.predictor_data(data.DataPath.SONG)
+# all_data, data_features = data.autoencoder_data(data.DataPath.SONG)
 # ---------------------------------------------------------------------------- #
 
 
