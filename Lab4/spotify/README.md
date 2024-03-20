@@ -44,17 +44,17 @@
     - Predictor style:
         - Distance between embeddings layer of a DNN with:
             - Input: 12 features (all but popularity)
-            - Hidden layers (Dense, Dropout)
+            - Hidden layers (Normalization, Dense, Dropout)
             - Output: 1 feature (popularity)
     - Autoencoder style:
         - Distance between embeddings layer of a DNN with:
             - Input: 13 features
-            - Hidden layers (Dense, Dropout)
+            - Hidden layers (Normalization, Dense, Dropout)
             - Output: 13 features
     - Image:
         - Distance between embeddings layer of a CNN with:
             - Input: image
-            - Hidden layers (Conv2D, MaxPooling2D, Flatten, Dense, Dropout)
+            - Hidden layers (Conv2D, BatchNormalization, MaxPooling2D, Flatten, Dense, Dropout)
             - Output: 13 features
 - Similarity inputs:
     - Song: use `data.csv`
