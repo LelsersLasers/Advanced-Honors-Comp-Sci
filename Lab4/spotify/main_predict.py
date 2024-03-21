@@ -3,6 +3,6 @@
 
 
 import styles.predictor
-# styles.predictortrain()
-# styles.predictor.embeddings()
+# styles.predictor.train()
+styles.predictor.embeddings()
 styles.predictor.predict()

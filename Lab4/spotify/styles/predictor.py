@@ -32,23 +32,26 @@ def make_model(data_features):
     normalize.adapt(data_features)
     
     # predictor style: inputs (12) -> hidden -> output (1) is single value from original inputs
+    # model = keras.Sequential([
+    #     normalize,
+    #     layers.Dense(8),
+    #     layers.LeakyReLU(),
+    #     layers.Dense(4),
+    #     layers.LeakyReLU(),
+    #     layers.Dense(1),
+    # ])
     model = keras.Sequential([
         normalize,
-        layers.Dense(8),
+        layers.Dense(50),
         layers.LeakyReLU(),
-        layers.Dense(4),
+        layers.Dropout(0.3),
+        layers.Dense(50),
+        layers.LeakyReLU(),
+        layers.Dropout(0.3),
+        layers.Dense(25),
         layers.LeakyReLU(),
         layers.Dense(1),
     ])
-    # model = keras.Sequential([
-    #     normalize,
-    #     layers.Dense(50),
-    #     layers.Dropout(0.3),
-    #     layers.Dense(50),
-    #     layers.Dropout(0.3),
-    #     layers.Dense(25),
-    #     layers.Dense(1),
-    # ])
 
     loss = losses.MeanSquaredError()
     optimizer = optimizers.Adam(learning_rate=LEARNING_RATE)
