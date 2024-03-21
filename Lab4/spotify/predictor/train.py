@@ -7,14 +7,15 @@ import tensorflow.keras.optimizers as optimizers
 
 print(f"\n\nTensorflow version: {tf.__version__}")
 
-# TODO: argparse/inputs: epochs, activations
 
-
+import json
 import data
 
 
 EPOCHS = 10
-MODEL_PATH = 'output/fullsave'
+LEARNING_RATE = 0.0001
+MODEL_PATH = 'output/save-predictor'
+HISTORY_PATH = 'output/save-predictor/history.json'
 # ---------------------------------------------------------------------------- #
 
 
@@ -43,7 +44,7 @@ def make_model(data_features):
     # ])
 
     loss = losses.MeanSquaredError()
-    optimizer = optimizers.Adam()
+    optimizer = optimizers.Adam(learning_rate=LEARNING_RATE)
 
     model.compile(optimizer=optimizer, loss=loss)
     print(model.summary())
@@ -51,13 +52,14 @@ def make_model(data_features):
     return model
 
 def train(epochs):
-    data_features, data_labels = data.predictor_data()
+    _all_data, data_features, data_labels = data.predictor_data()
 
     model = make_model(data_features)
 
-    model.fit(data_features, data_labels, epochs=epochs)
+    history = model.fit(data_features, data_labels, epochs=epochs)
 
     print(f"\nSaving model to {MODEL_PATH}...")
     model.save(MODEL_PATH)
-    print("Model saved")
+    json.dump(history.history, open(HISTORY_PATH, 'w'))
+    print("Model saved\n")
 # ---------------------------------------------------------------------------- #

@@ -67,15 +67,9 @@
     - Image: use `data.csv` songs + use `spotipy` to get album cover art
         - Can still use a random image as input to get songs that match the image!
 
-### Distances
+## COME BACK TOO
 
-- Cosine
-- Euclidean (L2)
-- Manhattan (L1)
-- Dot product
-
-### Correlations
-
-- Pearson
-- Kendall
-- Spearman
+- predictor:
+    - argparse/inputs: epochs, activations, learning rate, optimizer, loss
+- multiprocessing pool map
+    - how does it play with the alive bar?
