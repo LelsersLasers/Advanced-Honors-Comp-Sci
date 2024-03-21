@@ -6,12 +6,12 @@ import json
 
 # ---------------------------------------------------------------------------- #
 class DistFn:
-	def __init__(self, fn, reverse_sort):
-		self.fn = fn
-		self.reverse_sort = reverse_sort
-	def __call__(self, a, b):
-		return self.fn(a, b)
-	
+    def __init__(self, fn, reverse_sort):
+        self.fn = fn
+        self.reverse_sort = reverse_sort
+    def __call__(self, a, b):
+        return self.fn(a, b)
+    
 cos_dist       = DistFn(lambda a, b: np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)), True)
 euclidean_dist = DistFn(lambda a, b: np.linalg.norm(a - b), False)
 manhattan_dist = DistFn(lambda a, b: np.sum(np.abs(a - b)), False)
@@ -21,8 +21,8 @@ dot_product    = DistFn(lambda a, b: np.dot(a, b), True)
 
 # ---------------------------------------------------------------------------- #
 def cos_to_angle(cos):
-	cos = clamp(cos, -1, 1)
-	return np.arccos(cos) * 180 / np.pi
+    cos = clamp(cos, -1, 1)
+    return np.arccos(cos) * 180 / np.pi
 
 def clamp(x, a, b):
     return max(a, min(b, x))
@@ -46,37 +46,42 @@ def load_embeddings(embeddings_path):
     return all_data_and_embeddings
 
 
-def predict(target_idx, embeddings_path, dist_fn):   
-	all_data_and_embeddings = load_embeddings(embeddings_path)
-	
-	target_data_and_embedding = all_data_and_embeddings[target_idx]
-	target_data = target_data_and_embedding[0]
-	target_embedding = target_data_and_embedding[1]
+def predict(target_idx, dist_fn, embeddings_path=None, all_data_and_embeddings=None):
+    if embeddings_path is None and all_data_and_embeddings is None:
+        raise ValueError("You must provide either embeddings_path or all_data_and_embeddings")
+    elif embeddings_path is not None and all_data_and_embeddings is not None:
+        raise ValueError("You must provide either embeddings_path or all_data_and_embeddings, not both")
+    elif embeddings_path is not None:
+        all_data_and_embeddings = load_embeddings(embeddings_path)
+    
+    target_data_and_embedding = all_data_and_embeddings[target_idx]
+    target_data = target_data_and_embedding[0]
+    target_embedding = target_data_and_embedding[1]
 
-	# ------------------------------------------------------------------------ #
-	print("Calculating distances...")
-	dists = []
-	song_count = len(all_data_and_embeddings)
-	with alive_progress.alive_bar(song_count) as bar:
-		for i in range(song_count):
-			all_data_and_embedding = all_data_and_embeddings[i]
-			other_embedding = all_data_and_embedding[1]
-			all_data = all_data_and_embedding[0]
-			dist = dist_fn(target_embedding, other_embedding)
-			dists.append((dist, all_data))
-			bar()
-	dists.sort(key=lambda x: x[0], reverse=dist_fn.reverse_sort)
-	# ------------------------------------------------------------------------ #
+    # ------------------------------------------------------------------------ #
+    print("Calculating distances...")
+    dists = []
+    song_count = len(all_data_and_embeddings)
+    with alive_progress.alive_bar(song_count) as bar:
+        for i in range(song_count):
+            all_data_and_embedding = all_data_and_embeddings[i]
+            other_embedding = all_data_and_embedding[1]
+            all_data = all_data_and_embedding[0]
+            dist = dist_fn(target_embedding, other_embedding)
+            dists.append((dist, all_data))
+            bar()
+    dists.sort(key=lambda x: x[0], reverse=dist_fn.reverse_sort)
+    # ------------------------------------------------------------------------ #
 
-	# ------------------------------------------------------------------------ #
-	print("Top 10 most similar songs:")
-	print("BASE SONG:", target_data['name'], "by", target_data['artists'])
-	for i in range(10):
-		dist, song = dists[i]
-		print(f"{i + 1}) {song['name']} by {song['artists']} (dist value: {dist:.3f})")
-	# ------------------------------------------------------------------------ #
+    # ------------------------------------------------------------------------ #
+    print("Top 10 most similar songs:")
+    print("BASE SONG:", target_data['name'], "by", target_data['artists'])
+    for i in range(10):
+        dist, song = dists[i]
+        print(f"{i + 1}) {song['name']} by {song['artists']} (dist value: {dist:.3f})")
+    # ------------------------------------------------------------------------ #
 # ---------------------------------------------------------------------------- #
-		
+        
 
 # ---------------------------------------------------------------------------- #
 def emeddings(intermediate_model, all_data, data_features, embeddings_path):

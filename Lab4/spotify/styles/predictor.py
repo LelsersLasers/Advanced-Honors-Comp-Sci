@@ -95,5 +95,5 @@ def embeddings():
 
 # ---------------------------------------------------------------------------- #
 def predict():
-	distances.predict(TEST_INDEX, EMBEDDINGS_PATH, distances.cos_dist)
+	distances.predict(TEST_INDEX, distances.cos_dist, embeddings_path=EMBEDDINGS_PATH)
 # ---------------------------------------------------------------------------- #
