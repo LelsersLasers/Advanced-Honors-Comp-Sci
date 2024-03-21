@@ -20,4 +20,3 @@ def time_line_full(categories):
 		plt.plot(x_axis, data_features_year[y_axis], label=y_axis)
 	plt.title("Category Over Time")
 	plt.legend()
-	plt.show()

@@ -33,5 +33,3 @@ def bar_full(categories, group):
 	ax.set_xticks(x + width, groups)
 	ax.legend(loc='upper left', ncols=len(data_features))
 	ax.set_ylim(0, 1.1)
-
-	plt.show()

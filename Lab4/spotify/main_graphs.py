@@ -1,11 +1,13 @@
+import argparse
+
+import matplotlib.pyplot as plt
+
 import graphs.heat_map
 import graphs.time_line
 import graphs.group_bar
 
 
 # ---------------------------------------------------------------------------- #
-import argparse
-
 ap = argparse.ArgumentParser()
 
 
@@ -70,3 +72,7 @@ for arg, value in args.items():
 			graphs.group_bar.bar_full(args["categories_values"], "genres")
 		elif arg == "artists":
 			graphs.group_bar.bar_full(args["categories_values"], "artists")
+
+if any([args["correlation"], args["time_line"], args["genre_bar"], args["artists"]]):
+	plt.show()
+# ---------------------------------------------------------------------------- #

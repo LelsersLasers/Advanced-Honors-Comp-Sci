@@ -27,7 +27,6 @@ def heat_map(corr, data_features, method):
 
 	fig.tight_layout()
 	plt.colorbar()
-	plt.show()
 
 def full_heat_map(categories, method):
 	data_features = data.input_data_features(data.all_data(data.DataPath.SONG))
