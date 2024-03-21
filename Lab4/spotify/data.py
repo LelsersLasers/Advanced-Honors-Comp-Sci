@@ -101,10 +101,10 @@ def artist_data():
 # ---------------------------------------------------------------------------- #
 def predictor_data():
     # 12 input categories, 1 output category
-    all_features = all_data(DataPath.SONG)
+    data_features = all_data(DataPath.SONG)
 
-    data_features = remove_columns(
-        all_features.copy(),
+    remove_columns(
+        data_features,
         ['explicit', 'id', 'mode', 'name', 'release_date', 'artists', 'genre']
     )
     for category in data_features.columns: scale(data_features, category)
@@ -117,7 +117,7 @@ def predictor_data():
 
     data_features = np.asarray(data_features).astype(np.float32)
 
-    return all_features, data_features, data_labels
+    return data_features, data_labels
 
 def autoencoder_data():
     # 13 input categories
