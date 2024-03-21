@@ -2,6 +2,10 @@ import alive_progress
 import numpy as np
 import json
 
+# import tqdm
+# import multiprocessing
+# CHUNK_SIZE = 1000
+
 # ---------------------------------------------------------------------------- #
 def load_embeddings(embeddings_path):
     print("\nLoading embeddings...")
@@ -54,11 +58,27 @@ def predict(target_idx, dist_fn, embeddings_path=None, all_data_and_embeddings=N
         
 
 # ---------------------------------------------------------------------------- #
-def emeddings(intermediate_model, all_data, data_features, embeddings_path):
+def extract_embedding(intermediate_model_and_data_feature):
+    intermediate_model, data_feature = intermediate_model_and_data_feature
+    x = np.expand_dims(data_feature, axis=0)
+    embedding = intermediate_model(x)
+    embedding = np.squeeze(embedding.numpy(), axis=0)
+    return embedding
+
+    
+def embeddings(intermediate_model, all_data, data_features, embeddings_path):
     # ------------------------------------------------------------------------ #
     print("\nCalculating all embeddings...")
-    all_embeddings = []
     song_count = all_data.shape[0]
+    # with multiprocessing.Pool(processes=1) as pool:
+    #     pairs = [(intermediate_model, data_features[i]) for i in range(song_count)]
+    #     all_embeddings = list(
+    #         tqdm.tqdm(
+    #             pool.imap(extract_embedding, pairs, CHUNK_SIZE),
+    #             total=song_count
+    #         )
+    #     )
+    all_embeddings = []
     with alive_progress.alive_bar(song_count) as bar:
         for i in range(song_count):
             x = np.expand_dims(data_features[i], axis=0)
@@ -66,8 +86,7 @@ def emeddings(intermediate_model, all_data, data_features, embeddings_path):
             embedding = intermediate_model(x)
             embedding = np.squeeze(embedding.numpy(), axis=0)
             
-            pair = (all_data.iloc[i], embedding)
-            all_embeddings.append(pair)
+            all_embeddings.append(embedding)
             bar()
     print("Calculated all embeddings\n")
     # ------------------------------------------------------------------------ #
@@ -78,7 +97,8 @@ def emeddings(intermediate_model, all_data, data_features, embeddings_path):
         with open(embeddings_path, 'w') as file:
             file.write("id ^^ embedding\n")
             for i in range(song_count):
-                song, embedding = all_embeddings[i]
+                song = all_data.iloc[i]
+                embedding = all_embeddings[i]
                 song_dict = song.to_dict()
                 song_str = json.dumps(song_dict)
                 embedding_str = json.dumps(embedding.tolist())

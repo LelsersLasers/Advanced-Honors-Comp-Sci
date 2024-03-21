@@ -20,9 +20,9 @@ TEST_INDEX = 17424 - 2
 EPOCHS = 10
 LEARNING_RATE = 0.0001
 
-MODEL_PATH      = 'output/save-predictor'
-HISTORY_PATH    = 'output/save-predictor/history.json'
-EMBEDDINGS_PATH = 'output/save-predictor/embeddings.txt'
+MODEL_PATH      = 'output/save-autoencoder'
+HISTORY_PATH    = 'output/save-autoencoder/history.json'
+EMBEDDINGS_PATH = 'output/save-autoencoder/embeddings.txt'
 # ---------------------------------------------------------------------------- #
 
 
@@ -31,27 +31,29 @@ def make_model(data_features):
     normalize = layers.Normalization()
     normalize.adapt(data_features)
     
-    # predictor style: inputs (12) -> hidden -> output (1) is single value from original inputs
-    # model = keras.Sequential([
-    #     normalize,
-    #     layers.Dense(8),
-    #     layers.LeakyReLU(),
-    #     layers.Dense(4),
-    #     layers.LeakyReLU(),
-    #     layers.Dense(1),
-    # ])
+    # autoencoder style: inputs -> hidden -> output is same shape as inputs
     model = keras.Sequential([
         normalize,
-        layers.Dense(50),
+        layers.Dense(8),
         layers.LeakyReLU(),
-        layers.Dropout(0.3),
-        layers.Dense(50),
+        layers.Dense(4),
+    	layers.LeakyReLU(),
+        layers.Dense(8),
         layers.LeakyReLU(),
-        layers.Dropout(0.3),
-        layers.Dense(25),
-        layers.LeakyReLU(),
-        layers.Dense(1),
+        layers.Dense(13),
     ])
+    # model = keras.Sequential([
+    #     normalize,
+    #     layers.Dense(25),
+    #     layers.LeakyReLU(),
+    #     layers.Dropout(0.3),
+    #     layers.Dense(50),
+    #     layers.LeakyReLU(),
+    #     layers.Dropout(0.3),
+    #     layers.Dense(25),
+    #     layers.LeakyReLU(),
+    #     layers.Dense(13),
+    # ])
 
     loss = losses.MeanSquaredError()
     optimizer = optimizers.Adam(learning_rate=LEARNING_RATE)
@@ -62,11 +64,11 @@ def make_model(data_features):
     return model
 
 def train():
-    _all_data, data_features, data_labels = data.predictor_data()
+    all_data, data_features = data.autoencoder_data()
 
     model = make_model(data_features)
 
-    history = model.fit(data_features, data_labels, epochs=EPOCHS)
+    history = model.fit(data_features, data_features, epochs=EPOCHS)
 
     print(f"\nSaving model to {MODEL_PATH}...")
     model.save(MODEL_PATH)
@@ -91,7 +93,7 @@ def create_intermediate_model():
 
 def embeddings():
     intermediate_model = create_intermediate_model()
-    all_data, data_features, _data_labels = data.predictor_data()
+    all_data, data_features = data.autoencoder_data()
     
     similarity.embeddings(intermediate_model, all_data, data_features, EMBEDDINGS_PATH)
 # ---------------------------------------------------------------------------- #
@@ -99,5 +101,5 @@ def embeddings():
 
 # ---------------------------------------------------------------------------- #
 def predict():
-	similarity.predict(TEST_INDEX, distances.cos_dist, embeddings_path=EMBEDDINGS_PATH)
+    similarity.predict(TEST_INDEX, distances.cos_dist, embeddings_path=EMBEDDINGS_PATH)
 # ---------------------------------------------------------------------------- #
