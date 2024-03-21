@@ -24,6 +24,7 @@
 - Correlation: 
     - Auto: https://www.tensorflow.org/probability/api_docs/python/tfp/stats/auto_correlation
     - Pearson: https://www.tensorflow.org/probability/api_docs/python/tfp/stats/correlation
+- Multiprocessing + status bar: https://stackoverflow.com/questions/5666576/show-the-progress-of-a-python-multiprocessing-pool-imap-unordered-call
 
 ## Ideas
 
@@ -60,12 +61,21 @@
             - Output: 13 features
 - Similarity inputs:
     - Song (text, direct id): use `data.csv`
-    - Artist (text, direct id): use `data.csv`
+    - **Artist (text, direct id): use `data_by_artist.csv`**
     - Playlist (direct id):
         - For every song in playlist, use `data.csv` (filter out duplicates, etc)
         - Do average embedding for songs in playlist + closest song to each individual song
     - Image (text search, file path): use `data.csv` songs + use `spotipy` to get album cover art
         - Can still use a random image as input to get songs that match the image!
+
+## Run
+
+```
+main graphs <args...>
+main [predictor, autoencoder, cnn] [train, embeddings] <args...>
+main [predictor, autoencoder, cnn, simple] predict [song, artist] [search, id] (input)
+TODO: image input!
+```
 
 ## COME BACK TOO
 
