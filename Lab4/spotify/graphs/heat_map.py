@@ -29,7 +29,11 @@ def heat_map(corr, data_features, method):
 	plt.colorbar()
 
 def full_heat_map(categories, method):
-	data_features = data.input_data_features(data.all_data(data.DataPath.SONG))
+	data_features = data.all_data(data.DataPath.SONG)
+	data.remove_columns(
+		data_features,
+		['explicit', 'id', 'mode', 'name', 'release_date']
+	)
 	for category in data_features.columns:
 		if category not in categories:
 			data_features = data_features.drop(columns=category)

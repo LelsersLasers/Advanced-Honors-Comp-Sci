@@ -33,9 +33,8 @@ def scale(data_features, category):
         pass
 
 
-def input_data_features(all_features):
-    # 13 input categories as a pandas.DataFrame
-    unused_categories = ['explicit', 'id', 'mode', 'name', 'release_date']
+def remove_columns(all_features, unused_categories):
+    # 13 input categories as a pandas.DataFrame + genre and artists
     for category in unused_categories: 
         try:
             all_features.pop(category)
@@ -49,8 +48,10 @@ def input_data_features(all_features):
 def year_data():
     all_features = all_data(DataPath.YEAR)
 
-    data_features = input_data_features(all_features.copy())
-    data_features.pop('key')
+    data_features = remove_columns(
+        all_features.copy(),
+        ['explicit', 'id', 'mode', 'name', 'release_date', 'key', 'artists']
+    )
     for category in data_features.columns: scale(data_features, category)
 
     print(f"\nYear data features shape: {data_features.shape}")
@@ -61,7 +62,11 @@ def year_data():
 
 def group_bar_graph_data(data_path, target):
     all_features = all_data(data_path)
-    data_features = input_data_features(all_features.copy())
+    
+    data_features = remove_columns(
+        all_features.copy(),
+        ['explicit', 'id', 'mode', 'name', 'release_date']
+    )
     for category in data_features.columns: scale(data_features, category)
 
     category_idxs = [np.random.randint(1, data_features.shape[0]) for _ in range(BAR_GROUPS)]
@@ -94,11 +99,14 @@ def artist_data():
 
 
 # ---------------------------------------------------------------------------- #
-def predictor_data(data_path):
+def predictor_data():
     # 12 input categories, 1 output category
-    all_features = all_data(data_path)
+    all_features = all_data(DataPath.SONG)
 
-    data_features = input_data_features(all_features.copy())
+    data_features = remove_columns(
+        all_features.copy(),
+        ['explicit', 'id', 'mode', 'name', 'release_date', 'artists', 'genre']
+    )
     for category in data_features.columns: scale(data_features, category)
 
     # predictor target
@@ -111,11 +119,14 @@ def predictor_data(data_path):
 
     return all_features, data_features, data_labels
 
-def autoencoder_data(data_path):
+def autoencoder_data():
     # 13 input categories
-    all_features = all_data(data_path)
+    all_features = all_data(DataPath.SONG)
 
-    data_features = input_data_features(all_features.copy())
+    data_features = remove_columns(
+        all_features.copy(),
+        ['explicit', 'id', 'mode', 'name', 'release_date', 'artists', 'genre']
+    )
     for category in data_features.columns: scale(data_features, category)
 
     print(f"\nAutoencoder data features shape: {data_features.shape}")
