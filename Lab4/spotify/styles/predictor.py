@@ -12,6 +12,7 @@ import json
 
 import data
 import distances
+import similarity
 
 # ---------------------------------------------------------------------------- #
 TEST_INDEX = 17424 - 2
@@ -89,11 +90,11 @@ def embeddings():
     intermediate_model = create_intermediate_model()
     all_data, data_features, _data_labels = data.predictor_data()
     
-    distances.emeddings(intermediate_model, all_data, data_features, EMBEDDINGS_PATH)
+    similarity.emeddings(intermediate_model, all_data, data_features, EMBEDDINGS_PATH)
 # ---------------------------------------------------------------------------- #
 
 
 # ---------------------------------------------------------------------------- #
 def predict():
-	distances.predict(TEST_INDEX, distances.cos_dist, embeddings_path=EMBEDDINGS_PATH)
+	similarity.predict(TEST_INDEX, distances.cos_dist, embeddings_path=EMBEDDINGS_PATH)
 # ---------------------------------------------------------------------------- #
