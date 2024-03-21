@@ -3,3 +3,5 @@
 **/__pycache__
 *.pyc
 learning_tensorflow/defungi.zip
+
+**embeddings.txt
