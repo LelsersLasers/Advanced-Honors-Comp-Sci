@@ -26,7 +26,6 @@ def load_embeddings():
 def predict(target_idx):
 	all_data_and_embeddings = load_embeddings()
 	target_data_and_embedding = all_data_and_embeddings[target_idx]
-    
 
 	distances.predict(
         target_data_and_embedding,
