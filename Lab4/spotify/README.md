@@ -59,17 +59,19 @@
             - Hidden layers (Conv2D, BatchNormalization, MaxPooling2D, Flatten, Dense, Dropout)
             - Output: 13 features
 - Similarity inputs:
-    - Song: use `data.csv`
-    - Artist: use `data.csv`
-    - Playlist:
+    - Song (text, direct id): use `data.csv`
+    - Artist (text, direct id): use `data.csv`
+    - Playlist (direct id):
         - For every song in playlist, use `data.csv` (filter out duplicates, etc)
-        - Train a DNN on just the playlist?
-    - Image: use `data.csv` songs + use `spotipy` to get album cover art
+        - Do average embedding for songs in playlist + closest song to each individual song
+    - Image (text search, file path): use `data.csv` songs + use `spotipy` to get album cover art
         - Can still use a random image as input to get songs that match the image!
 
 ## COME BACK TOO
 
 - predictor:
-    - argparse/inputs: epochs, activations, learning rate, optimizer, loss
+    - argparse/inputs: epochs, activation, learning rate, optimizer, loss
+- embeddings:
+    - How many layers from the end to use
 - multiprocessing pool map
     - how does it play with the alive bar?
