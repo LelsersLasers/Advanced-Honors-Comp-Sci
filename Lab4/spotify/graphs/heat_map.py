@@ -12,11 +12,19 @@ def correlations(data_features, method):
 	return corr
 
 def heat_map(corr, data_features, method):
-	fig = plt.figure(figsize=(8, 8))
+	fig, ax = plt.subplots()
+	fig.set_figwidth(10)
+	fig.set_figheight(8)
+
 	plt.title(f"{method.upper()} Correlation Heat Map")
 	plt.imshow(corr, cmap='plasma', origin='upper')
+
 	plt.xticks(range(len(data_features.columns)), data_features.columns, rotation=90)
 	plt.yticks(range(len(data_features.columns)), data_features.columns)
+
+	for (i, j), val in np.ndenumerate(corr):
+		ax.text(j, i, f"{val:.2f}", ha='center', va='center', color='black')
+
 	fig.tight_layout()
 	plt.colorbar()
 	plt.show()
