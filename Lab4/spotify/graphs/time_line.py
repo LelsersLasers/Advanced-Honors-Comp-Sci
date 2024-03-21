@@ -14,7 +14,7 @@ def time_line_full(categories):
 	x_axis = data_features_year["year"]
 	y_axises = data_features_year.columns[1:]
 
-	plt.figure()
+	plt.figure(figsize=(10, 8))
 
 	for y_axis in y_axises:
 		plt.plot(x_axis, data_features_year[y_axis], label=y_axis)

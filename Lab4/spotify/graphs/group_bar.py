@@ -16,7 +16,9 @@ def bar_full(categories, group):
 	x = np.arange(len(groups))
 	width = 0.05
 
-	_fig, ax = plt.subplots()
+	fig, ax = plt.subplots()
+	fig.set_figwidth(10)
+	fig.set_figheight(8)
 
 	overall_offset = len(data_features.keys()) / 2 - 1.5
 
