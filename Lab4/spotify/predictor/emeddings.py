@@ -5,9 +5,7 @@ import numpy as np
 
 import json
 import data
-
-MODEL_PATH = 'output/save-predictor'
-EMBEDDINGS_PATH = 'output/save-predictor/embeddings.txt'
+import predictor.consts
 # ---------------------------------------------------------------------------- #
 
 
@@ -24,7 +22,7 @@ def create_intermediate_model(model):
 
 
 def emeddings():
-    model = keras.models.load_model(MODEL_PATH)
+    model = keras.models.load_model(predictor.consts.MODEL_PATH)
     intermediate_model = create_intermediate_model(model)
 
     all_data, data_features, _data_labels = data.predictor_data()
@@ -49,7 +47,7 @@ def emeddings():
     # ------------------------------------------------------------------------ #
     print("\nWriting embeddings to file...")
     with alive_progress.alive_bar(song_count) as bar:
-        with open(EMBEDDINGS_PATH, 'w') as file:
+        with open(predictor.consts.EMBEDDINGS_PATH, 'w') as file:
             file.write("id ^^ embedding\n")
             for i in range(song_count):
                 song, embedding = all_embeddings[i]

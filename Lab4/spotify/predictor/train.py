@@ -9,13 +9,9 @@ print(f"\n\nTensorflow version: {tf.__version__}")
 
 
 import json
+
 import data
-
-
-EPOCHS = 10
-LEARNING_RATE = 0.0001
-MODEL_PATH = 'output/save-predictor'
-HISTORY_PATH = 'output/save-predictor/history.json'
+import predictor.consts
 # ---------------------------------------------------------------------------- #
 
 
@@ -44,7 +40,7 @@ def make_model(data_features):
     # ])
 
     loss = losses.MeanSquaredError()
-    optimizer = optimizers.Adam(learning_rate=LEARNING_RATE)
+    optimizer = optimizers.Adam(learning_rate=predictor.consts.LEARNING_RATE)
 
     model.compile(optimizer=optimizer, loss=loss)
     print(model.summary())
@@ -58,8 +54,8 @@ def train(epochs):
 
     history = model.fit(data_features, data_labels, epochs=epochs)
 
-    print(f"\nSaving model to {MODEL_PATH}...")
-    model.save(MODEL_PATH)
-    json.dump(history.history, open(HISTORY_PATH, 'w'))
+    print(f"\nSaving model to {predictor.consts.MODEL_PATH}...")
+    model.save(predictor.consts.MODEL_PATH)
+    json.dump(history.history, open(predictor.consts.HISTORY_PATH, 'w'))
     print("Model saved\n")
 # ---------------------------------------------------------------------------- #
