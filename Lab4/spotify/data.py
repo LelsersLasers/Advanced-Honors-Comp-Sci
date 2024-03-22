@@ -156,6 +156,8 @@ def cnn_data():
 
     song_count = data_features.shape[0]
 
+
+    print(f"\nLoading album art for {song_count} songs...")
     album_art = []
 
     if os.path.exists(IMAGE_DIR) and os.path.isdir(IMAGE_DIR) and len(os.listdir(IMAGE_DIR)) == song_count:
@@ -180,6 +182,7 @@ def cnn_data():
                 arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
                 img = cv2.imdecode(arr, -1)
                 img = cv2.resize(img, IMAGE_SIZE)
+                cv2.imwrite(f"{IMAGE_DIR}/{i}.jpg", img)
                 album_art.append(img)
                 bar()
 
