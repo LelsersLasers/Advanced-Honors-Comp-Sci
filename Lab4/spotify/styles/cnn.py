@@ -42,7 +42,7 @@ def make_model():
 			filters = 10,
 			kernel_size = 3,
 			strides = 1,
-			input_shape = IMAGE_SIZE,
+			input_shape = IMAGE_SIZE + (3,),
 			activation = activations.relu,
 			padding = "same",
 		),
@@ -65,7 +65,7 @@ def make_model():
 		),
 		layers.BatchNormalization(),
         
-		layers.maxPooling2D(
+		layers.MaxPool2D(
 			pool_size = 2,
 			strides = 2,
 		),
@@ -102,7 +102,7 @@ def make_model():
 def train():
     _all_data, album_art, data_features = data.cnn_data()
 
-    model = make_model(data_features)
+    model = make_model()
 
     history = model.fit(album_art, data_features, epochs=EPOCHS)
 
