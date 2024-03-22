@@ -1,7 +1,19 @@
+import alive_progress
+
 import pandas as pd
 import numpy as np
 
+import spotipy
+import spotipy.oauth2
+import urllib
+import cv2
+import os
+
 BAR_GROUPS = 6
+
+IMAGE_SIZE = (128, 128)
+
+IMAGE_DIR = 'output/save-cnn/images'
 
 
 # ---------------------------------------------------------------------------- #
@@ -135,4 +147,41 @@ def autoencoder_data():
     data_features = np.asarray(data_features).astype(np.float32)
 
     return all_features, data_features
+
+def cnn_data():
+    client_credentials_manager = spotipy.oauth2.SpotifyClientCredentials(SPOTIPY_CLIENT, SPOTIPY_SECRET)
+    spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+
+    all_features, data_features = autoencoder_data()
+
+    song_count = data_features.shape[0]
+
+    album_art = []
+
+    if os.path.exists(IMAGE_DIR) and os.path.isdir(IMAGE_DIR) and len(os.listdir(IMAGE_DIR)) == song_count:
+        with alive_progress.alive_bar(song_count) as bar:
+            for i in range(song_count):
+                img = cv2.imread(f"{IMAGE_DIR}/{i}.jpg")
+                album_art.append(img)
+                bar()
+        return all_features, album_art, data_features
+    else:
+        if not os.path.exists(IMAGE_DIR):
+            os.makedirs(IMAGE_DIR)
+        for file in os.listdir(IMAGE_DIR):
+            os.remove(f"{IMAGE_DIR}/{file}")
+        
+        with alive_progress.alive_bar(song_count) as bar:
+            for i in range(song_count):
+                id = all_features.iloc[i]['id']
+                track = spotify.track(id)
+                url = track['album']['images'][0]['url']
+                req = urllib.request.urlopen(url)
+                arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
+                img = cv2.imdecode(arr, -1)
+                img = cv2.resize(img, IMAGE_SIZE)
+                album_art.append(img)
+                bar()
+
+        return all_features, album_art, data_features
 # ---------------------------------------------------------------------------- #

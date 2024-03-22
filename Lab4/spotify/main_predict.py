@@ -8,7 +8,15 @@
 # styles.predictor.predict()
 
 
-import styles.autoencoder
+# import styles.autoencoder
 # styles.autoencoder.train()
-styles.autoencoder.embeddings()
-styles.autoencoder.predict()
+# styles.autoencoder.embeddings()
+# styles.autoencoder.predict()
+
+import styles.cnn
+# styles.cnn.train()
+# styles.cnn.embeddings()
+# styles.cnn.predict()
+
+import data
+data.cnn_data()
