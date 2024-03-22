@@ -15,10 +15,10 @@ import distances
 import similarity
 
 # ---------------------------------------------------------------------------- #
-TEST_INDEX = 17424 - 2
+TEST_INDEX = 616 - 2
 
 EPOCHS = 10
-LEARNING_RATE = 0.0001
+LEARNING_RATE = 0.0003
 
 IMAGE_SIZE = (128, 128)
 
@@ -122,7 +122,7 @@ def create_intermediate_model():
     # skip any Dropout layers
     intermediate_model = keras.Sequential()
     for (i, layer) in enumerate(model.layers):
-        if not isinstance(layer, keras.layers.Dropout) and i < len(model.layers) - 1:
+        if not isinstance(layer, keras.layers.Dropout) and i < len(model.layers) - 4:
             intermediate_model.add(layer)
     print(intermediate_model.summary())
     return intermediate_model

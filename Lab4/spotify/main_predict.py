@@ -1,3 +1,7 @@
+# import data
+# data.cnn_data()
+
+
 # import styles.simple
 # styles.simple.predict()
 
@@ -13,10 +17,8 @@
 # styles.autoencoder.embeddings()
 # styles.autoencoder.predict()
 
+
 import styles.cnn
 styles.cnn.train()
-# styles.cnn.embeddings()
-# styles.cnn.predict()
-
-# import data
-# data.cnn_data()
+styles.cnn.embeddings()
+styles.cnn.predict()
