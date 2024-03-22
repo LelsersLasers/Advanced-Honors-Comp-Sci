@@ -15,9 +15,9 @@ import distances
 import similarity
 
 # ---------------------------------------------------------------------------- #
-TEST_INDEX = 616 - 2
+TEST_INDEX = 17424 - 2
 
-EPOCHS = 10
+EPOCHS = 25
 LEARNING_RATE = 0.0003
 
 IMAGE_SIZE = (128, 128)

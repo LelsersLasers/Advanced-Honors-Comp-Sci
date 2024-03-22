@@ -9,9 +9,9 @@ import urllib
 import cv2
 import os
 
-import tqdm
-import multiprocessing
-CHUNK_SIZE = 1000
+# import tqdm
+# import multiprocessing
+# CHUNK_SIZE = 1000
 
 BAR_GROUPS = 6
 
@@ -153,37 +153,36 @@ def autoencoder_data():
     return all_features, data_features
 
 
-def download_album_art(i_and_id):
+# def download_album_art(i_and_id):
+#     client_credentials_manager = spotipy.oauth2.SpotifyClientCredentials(SPOTIPY_CLIENT, SPOTIPY_SECRET)
+#     spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+
+#     i, id = i_and_id.split('-')
+#     i = int(i)
+
+#     track = spotify.track(id)
+#     url = track['album']['images'][0]['url']
+#     req = urllib.request.urlopen(url)
+#     arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
+#     img = cv2.imdecode(arr, -1)
+#     img = cv2.resize(img, IMAGE_SIZE)
+#     cv2.imwrite(f"{IMAGE_DIR}/{i}.jpg", img)
+#     return img
+
+def cnn_data():
     client_credentials_manager = spotipy.oauth2.SpotifyClientCredentials(SPOTIPY_CLIENT, SPOTIPY_SECRET)
     spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
-    i, id = i_and_id.split('-')
-    i = int(i)
-
-    track = spotify.track(id)
-    url = track['album']['images'][0]['url']
-    req = urllib.request.urlopen(url)
-    arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
-    img = cv2.imdecode(arr, -1)
-    img = cv2.resize(img, IMAGE_SIZE)
-    cv2.imwrite(f"{IMAGE_DIR}/{i}.jpg", img)
-    return img
-
-def cnn_data():
-    # client_credentials_manager = spotipy.oauth2.SpotifyClientCredentials(SPOTIPY_CLIENT, SPOTIPY_SECRET)
-    # spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-
     all_features, data_features = autoencoder_data()
 
-    # song_count = data_features.shape[0]
-    song_count = 1430
+    song_count = data_features.shape[0]
 
 
     print(f"\nLoading album art for {song_count} songs...")
     album_art = []
 
     if os.path.exists(IMAGE_DIR) and os.path.isdir(IMAGE_DIR) and len(os.listdir(IMAGE_DIR)) == song_count:
-        print("Album art already downloaded")
+        print("Album art already downloaded. Loading from files...")
         with alive_progress.alive_bar(song_count) as bar:
             for i in range(song_count):
                 img = cv2.imread(f"{IMAGE_DIR}/{i}.jpg")
@@ -201,25 +200,26 @@ def cnn_data():
             os.remove(f"{IMAGE_DIR}/{file}")
 
         
-        with multiprocessing.Pool(processes=8) as pool:
-            print("Preparing album art...")
-            args = [f"{i}-{all_features.iloc[i]['id']}" for i in range(song_count)]
-            print("Downloading album art...")
-            # album_art = pool.map(download_album_art, args)
-            album_art = list(tqdm.tqdm(pool.imap(download_album_art, args), total=song_count))
+        # with multiprocessing.Pool(processes=8) as pool:
+        #     print("Preparing album art...")
+        #     args = [f"{i}-{all_features.iloc[i]['id']}" for i in range(song_count)]
+        #     print("Downloading album art...")
+        #     # album_art = pool.map(download_album_art, args)
+        #     album_art = list(tqdm.tqdm(pool.imap(download_album_art, args), total=song_count))
         
-        # with alive_progress.alive_bar(song_count) as bar:
-        #     for i in range(song_count):
-        #         id = all_features.iloc[i]['id']
-        #         track = spotify.track(id)
-        #         url = track['album']['images'][0]['url']
-        #         req = urllib.request.urlopen(url)
-        #         arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
-        #         img = cv2.imdecode(arr, -1)
-        #         img = cv2.resize(img, IMAGE_SIZE)
-        #         cv2.imwrite(f"{IMAGE_DIR}/{i}.jpg", img)
-        #         album_art.append(img)
-        #         bar()
+        print("Downloading album art...")
+        with alive_progress.alive_bar(song_count) as bar:
+            for i in range(song_count):
+                id = all_features.iloc[i]['id']
+                track = spotify.track(id)
+                url = track['album']['images'][0]['url']
+                req = urllib.request.urlopen(url)
+                arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
+                img = cv2.imdecode(arr, -1)
+                img = cv2.resize(img, IMAGE_SIZE)
+                cv2.imwrite(f"{IMAGE_DIR}/{i}.jpg", img)
+                album_art.append(img)
+                bar()
 
         return all_features, album_art, data_features
 # ---------------------------------------------------------------------------- #
