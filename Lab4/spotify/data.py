@@ -8,6 +8,7 @@ import spotipy.oauth2
 import urllib
 import cv2
 import os
+import dotenv
 
 # import tqdm
 # import multiprocessing
@@ -170,7 +171,10 @@ def autoencoder_data():
 #     return img
 
 def cnn_data():
-    client_credentials_manager = spotipy.oauth2.SpotifyClientCredentials(SPOTIPY_CLIENT, SPOTIPY_SECRET)
+    env = dotenv.dotenv_values('.env')
+    spotify_client = env['SPOTIPY_CLIENT']
+    spotify_secret = env['SPOTIPY_SECRET']
+    client_credentials_manager = spotipy.oauth2.SpotifyClientCredentials(spotify_client, spotify_secret)
     spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
     all_features, data_features = autoencoder_data()

@@ -5,3 +5,5 @@
 learning_tensorflow/defungi.zip
 
 **embeddings.txt
+**.env
+**.cache
