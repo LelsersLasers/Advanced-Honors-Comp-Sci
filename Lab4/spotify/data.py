@@ -12,7 +12,9 @@ import dotenv
 
 import tqdm
 import multiprocessing
+import math
 CHUNK_SIZE = 100
+MAX_TRACKS = 50
 
 BAR_GROUPS = 6
 
@@ -202,7 +204,13 @@ def cnn_data():
         print("Reading song ids...")
         ids = [all_features.iloc[i]['id'] for i in range(song_count)]
         print("Fetching art urls...")
-        tracks = spotify.tracks(ids)
+        tracks = []
+        track_chunk_count = math.ceil(song_count / MAX_TRACKS)
+        with alive_progress.alive_bar(track_chunk_count) as bar:
+            for i in range(0, song_count, MAX_TRACKS):
+                print(f"Fetching {i} to {i + MAX_TRACKS}...")
+                tracks += spotify.tracks(ids[i:i + MAX_TRACKS])
+                bar()
         print("Preparing urls...")
         i_and_urls = [f"{i} ^^ {track['album']['images'][0]['url']}" for i, track in enumerate(tracks['tracks'])]
         
