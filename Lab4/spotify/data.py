@@ -12,6 +12,7 @@ import dotenv
 
 import tqdm
 import multiprocessing
+CHUNK_SIZE = 100
 
 BAR_GROUPS = 6
 
@@ -195,7 +196,7 @@ def cnn_data():
             img = cv2.imdecode(arr, -1)
             img = cv2.resize(img, IMAGE_SIZE)
             cv2.imwrite(f"{IMAGE_DIR}/{i}.jpg", img)
-            return img
+            return (i, img)
 
         
         print("Fetching art urls...")
@@ -210,7 +211,11 @@ def cnn_data():
 
         with multiprocessing.Pool(processes=8) as pool:
             print("Downloading album art...")
-            album_art = list(tqdm.tqdm(pool.imap(download_album_art, i_and_urls), total=song_count))
+            # TODO: imap_unordered + sort + map vs just imap
+            album_art = list(tqdm.tqdm(pool.imap_unordered(download_album_art, i_and_urls, CHUNK_SIZE), total=song_count))
+            print("Sorting album art...")
+            album_art.sort(key=lambda x: x[0])
+            album_art = pool.map(lambda x: x[1], album_art)
 
         # print("Downloading album art...")
         # with alive_progress.alive_bar(song_count) as bar:
