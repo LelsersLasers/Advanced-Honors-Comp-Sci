@@ -10,9 +10,8 @@ import cv2
 import os
 import dotenv
 
-# import tqdm
-# import multiprocessing
-# CHUNK_SIZE = 1000
+import tqdm
+import multiprocessing
 
 BAR_GROUPS = 6
 
@@ -153,23 +152,6 @@ def autoencoder_data():
 
     return all_features, data_features
 
-
-# def download_album_art(i_and_id):
-#     client_credentials_manager = spotipy.oauth2.SpotifyClientCredentials(SPOTIPY_CLIENT, SPOTIPY_SECRET)
-#     spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-
-#     i, id = i_and_id.split('-')
-#     i = int(i)
-
-#     track = spotify.track(id)
-#     url = track['album']['images'][0]['url']
-#     req = urllib.request.urlopen(url)
-#     arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
-#     img = cv2.imdecode(arr, -1)
-#     img = cv2.resize(img, IMAGE_SIZE)
-#     cv2.imwrite(f"{IMAGE_DIR}/{i}.jpg", img)
-#     return img
-
 def cnn_data():
     env = dotenv.dotenv_values('.env')
     spotify_client = env['SPOTIPY_CLIENT']
@@ -203,27 +185,46 @@ def cnn_data():
         for file in os.listdir(IMAGE_DIR):
             os.remove(f"{IMAGE_DIR}/{file}")
 
+
+        def download_album_art(i_and_url):
+            i, url = i_and_url.split('-')
+            i = int(i)
+
+            req = urllib.request.urlopen(url)
+            arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
+            img = cv2.imdecode(arr, -1)
+            img = cv2.resize(img, IMAGE_SIZE)
+            cv2.imwrite(f"{IMAGE_DIR}/{i}.jpg", img)
+            return img
+
         
-        # with multiprocessing.Pool(processes=8) as pool:
-        #     print("Preparing album art...")
-        #     args = [f"{i}-{all_features.iloc[i]['id']}" for i in range(song_count)]
-        #     print("Downloading album art...")
-        #     # album_art = pool.map(download_album_art, args)
-        #     album_art = list(tqdm.tqdm(pool.imap(download_album_art, args), total=song_count))
-        
-        print("Downloading album art...")
+        print("Fetching art urls...")
+        i_and_urls = []
         with alive_progress.alive_bar(song_count) as bar:
             for i in range(song_count):
                 id = all_features.iloc[i]['id']
                 track = spotify.track(id)
                 url = track['album']['images'][0]['url']
-                req = urllib.request.urlopen(url)
-                arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
-                img = cv2.imdecode(arr, -1)
-                img = cv2.resize(img, IMAGE_SIZE)
-                cv2.imwrite(f"{IMAGE_DIR}/{i}.jpg", img)
-                album_art.append(img)
+                i_and_urls.append(f"{i}-{url}")
                 bar()
+
+        with multiprocessing.Pool(processes=8) as pool:
+            print("Downloading album art...")
+            album_art = list(tqdm.tqdm(pool.imap(download_album_art, i_and_urls), total=song_count))
+
+        # print("Downloading album art...")
+        # with alive_progress.alive_bar(song_count) as bar:
+        #     for i in range(song_count):
+        #         id = all_features.iloc[i]['id']
+        #         track = spotify.track(id)
+        #         url = track['album']['images'][0]['url']
+        #         req = urllib.request.urlopen(url)
+        #         arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
+        #         img = cv2.imdecode(arr, -1)
+        #         img = cv2.resize(img, IMAGE_SIZE)
+        #         cv2.imwrite(f"{IMAGE_DIR}/{i}.jpg", img)
+        #         album_art.append(img)
+        #         bar()
 
         return all_features, album_art, data_features
 # ---------------------------------------------------------------------------- #
