@@ -20,7 +20,9 @@
 - Google Similarity overview:
     - https://developers.google.com/machine-learning/clustering/similarity/supervised-similarity
 - ChatGPT: https://chat.openai.com/share/d170d9be-4828-4f9f-a6cb-6e378c113590
-- spotipy: https://spotipy.readthedocs.io/en/2.22.1/
+- spotipy:
+    - https://spotipy.readthedocs.io/en/2.22.1/
+    - https://developer.spotify.com/documentation/web-api/reference/get-several-tracks
 - Correlation: 
     - Auto: https://www.tensorflow.org/probability/api_docs/python/tfp/stats/auto_correlation
     - Pearson: https://www.tensorflow.org/probability/api_docs/python/tfp/stats/correlation

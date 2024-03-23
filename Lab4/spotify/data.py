@@ -188,7 +188,7 @@ def cnn_data():
 
 
         def download_album_art(i_and_url):
-            i, url = i_and_url.split('-')
+            i, url = i_and_url.split(" ^^ ")
             i = int(i)
 
             req = urllib.request.urlopen(url)
@@ -199,15 +199,21 @@ def cnn_data():
             return (i, img)
 
         
+        print("Reading song ids...")
+        ids = [all_features.iloc[i]['id'] for i in range(song_count)]
         print("Fetching art urls...")
-        i_and_urls = []
-        with alive_progress.alive_bar(song_count) as bar:
-            for i in range(song_count):
-                id = all_features.iloc[i]['id']
-                track = spotify.track(id)
-                url = track['album']['images'][0]['url']
-                i_and_urls.append(f"{i}-{url}")
-                bar()
+        tracks = spotify.tracks(ids)
+        print("Preparing urls...")
+        i_and_urls = [f"{i} ^^ {track['album']['images'][0]['url']}" for i, track in enumerate(tracks['tracks'])]
+        
+        # i_and_urls = []
+        # with alive_progress.alive_bar(song_count) as bar:
+        #     for i in range(song_count):
+        #         id = all_features.iloc[i]['id']
+        #         track = spotify.track(id)
+        #         url = track['album']['images'][0]['url']
+        #         i_and_urls.append(f"{i}-{url}")
+        #         bar()
 
         with multiprocessing.Pool(processes=8) as pool:
             print("Downloading album art...")
