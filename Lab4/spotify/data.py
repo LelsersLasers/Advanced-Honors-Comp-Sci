@@ -20,7 +20,9 @@ BAR_GROUPS = 6
 
 IMAGE_SIZE = (128, 128)
 
+BASE_DIR  = 'output/save-cnn'
 IMAGE_DIR = 'output/save-cnn/images'
+URL_FILE  = 'output/save-cnn/urls.txt'
 
 
 # ---------------------------------------------------------------------------- #
@@ -154,24 +156,90 @@ def autoencoder_data():
     data_features = np.asarray(data_features).astype(np.float32)
 
     return all_features, data_features
+# ---------------------------------------------------------------------------- #
 
-def cnn_data():
+
+# ---------------------------------------------------------------------------- #
+def get_urls(all_features, song_count):
+    print("Trying to load album art urls...")
+
+    if os.path.exists(URL_FILE) and os.path.isfile(URL_FILE):
+        print("URL file already exists. Loading...")
+        with open(URL_FILE, 'r') as f:
+            urls = enumerate(f.readlines())
+            i_and_urls = [f"{i} ^^ {url}" for i, url in urls if url != '']
+            if len(i_and_urls) == song_count:
+                return i_and_urls
+    else:
+        os.makedirs(BASE_DIR, exist_ok=True)
+
+    print("URL file does not exist or does not match song count. Fetching...")
+    
     env = dotenv.dotenv_values('.env')
     spotify_client = env['SPOTIPY_CLIENT']
     spotify_secret = env['SPOTIPY_SECRET']
     client_credentials_manager = spotipy.oauth2.SpotifyClientCredentials(spotify_client, spotify_secret)
     spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
-    all_features, data_features = autoencoder_data()
+    print("Reading song ids...")
+    ids = [all_features.iloc[i]['id'] for i in range(song_count)]
 
-    song_count = data_features.shape[0]
+    print("Fetching art urls from Spotify...")
+    i_and_urls = []
+    track_chunk_count = math.ceil(song_count / MAX_TRACKS)
+    with open(URL_FILE, 'w') as f:
+        with alive_progress.alive_bar(track_chunk_count) as bar:
+            for i in range(0, song_count, MAX_TRACKS):
+                tracks = spotify.tracks(ids[i:i + MAX_TRACKS])
+                
+                for track in tracks['tracks']:
+                    try:
+                        url = track['album']['images'][0]['url']
+                    except IndexError:
+                        print(f"No album art for {track['name']} ({track['id']} {track['album']['id']}). Using random image.")
+                        url = '????'
+                    f.write(f"{url}\n")
+                    i_and_urls.append(f"{i} ^^ {url}")
+                
+                bar()
 
+    return i_and_urls
 
-    print(f"\nLoading album art for {song_count} songs...")
-    album_art = []
+def download_all_album_art(i_and_urls, song_count):
+    if not os.path.exists(IMAGE_DIR):
+        os.makedirs(IMAGE_DIR)
+    for file in os.listdir(IMAGE_DIR):
+        os.remove(f"{IMAGE_DIR}/{file}")
+
+    print("Downloading album art...")
+    with multiprocessing.Pool(processes=8) as pool:
+        album_art = list(tqdm.tqdm(pool.imap_unordered(download_album_art, i_and_urls, CHUNK_SIZE), total=song_count))
+        print("Sorting album art...")
+        album_art.sort(key=lambda x: x[0])
+        album_art = pool.map(lambda x: x[1], album_art)
+
+    return album_art
+
+def download_album_art(i_and_url):
+    i, url = i_and_url.split(" ^^ ")
+    i = int(i)
+
+    if url == '????':
+        img = np.random.randint(0, 256, (IMAGE_SIZE[0], IMAGE_SIZE[1], 3), dtype=np.uint8)
+    else:
+        req = urllib.request.urlopen(url)
+        arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
+        img = cv2.imdecode(arr, -1)
+        img = cv2.resize(img, IMAGE_SIZE)
+        
+    cv2.imwrite(f"{IMAGE_DIR}/{i}.jpg", img)
+    return i, img
+
+def load_art_from_files(song_count):
+    print("Trying to load album art from files...")
 
     if os.path.exists(IMAGE_DIR) and os.path.isdir(IMAGE_DIR) and len(os.listdir(IMAGE_DIR)) == song_count:
-        print("Album art already downloaded. Loading from files...")
+        print("Loading from files...")
         with alive_progress.alive_bar(song_count) as bar:
             for i in range(song_count):
                 img = cv2.imread(f"{IMAGE_DIR}/{i}.jpg")
@@ -183,67 +251,19 @@ def cnn_data():
         data_features = data_features[:song_count]
         return all_features, album_art, data_features
     else:
-        if not os.path.exists(IMAGE_DIR):
-            os.makedirs(IMAGE_DIR)
-        for file in os.listdir(IMAGE_DIR):
-            os.remove(f"{IMAGE_DIR}/{file}")
+        print("Album art not found or does not match song count. Fetching...")
+        return None
 
+def cnn_data():
+    all_features, data_features = autoencoder_data()
+    song_count = data_features.shape[0]
 
-        def download_album_art(i_and_url):
-            i, url = i_and_url.split(" ^^ ")
-            i = int(i)
+    print(f"\nLoading album art for {song_count} songs...")
 
-            req = urllib.request.urlopen(url)
-            arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
-            img = cv2.imdecode(arr, -1)
-            img = cv2.resize(img, IMAGE_SIZE)
-            cv2.imwrite(f"{IMAGE_DIR}/{i}.jpg", img)
-            return (i, img)
+    album_art = load_art_from_files(song_count)
+    if album_art is None:
+        i_and_urls = get_urls(all_features, song_count)
+        album_art = download_all_album_art(i_and_urls, song_count)
 
-        
-        print("Reading song ids...")
-        ids = [all_features.iloc[i]['id'] for i in range(song_count)]
-        print("Fetching art urls...")
-        tracks = []
-        track_chunk_count = math.ceil(song_count / MAX_TRACKS)
-        with alive_progress.alive_bar(track_chunk_count) as bar:
-            for i in range(0, song_count, MAX_TRACKS):
-                print(f"Fetching {i} to {i + MAX_TRACKS}...")
-                tracks += spotify.tracks(ids[i:i + MAX_TRACKS])
-                bar()
-        print("Preparing urls...")
-        i_and_urls = [f"{i} ^^ {track['album']['images'][0]['url']}" for i, track in enumerate(tracks['tracks'])]
-        
-        # i_and_urls = []
-        # with alive_progress.alive_bar(song_count) as bar:
-        #     for i in range(song_count):
-        #         id = all_features.iloc[i]['id']
-        #         track = spotify.track(id)
-        #         url = track['album']['images'][0]['url']
-        #         i_and_urls.append(f"{i}-{url}")
-        #         bar()
-
-        with multiprocessing.Pool(processes=8) as pool:
-            print("Downloading album art...")
-            # TODO: imap_unordered + sort + map vs just imap
-            album_art = list(tqdm.tqdm(pool.imap_unordered(download_album_art, i_and_urls, CHUNK_SIZE), total=song_count))
-            print("Sorting album art...")
-            album_art.sort(key=lambda x: x[0])
-            album_art = pool.map(lambda x: x[1], album_art)
-
-        # print("Downloading album art...")
-        # with alive_progress.alive_bar(song_count) as bar:
-        #     for i in range(song_count):
-        #         id = all_features.iloc[i]['id']
-        #         track = spotify.track(id)
-        #         url = track['album']['images'][0]['url']
-        #         req = urllib.request.urlopen(url)
-        #         arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
-        #         img = cv2.imdecode(arr, -1)
-        #         img = cv2.resize(img, IMAGE_SIZE)
-        #         cv2.imwrite(f"{IMAGE_DIR}/{i}.jpg", img)
-        #         album_art.append(img)
-        #         bar()
-
-        return all_features, album_art, data_features
+    return all_features, album_art, data_features
 # ---------------------------------------------------------------------------- #

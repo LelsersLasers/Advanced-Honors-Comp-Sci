@@ -1,5 +1,5 @@
 import data
-_ = data.cnn_data()
+data.cnn_data()
 
 
 # import styles.simple
