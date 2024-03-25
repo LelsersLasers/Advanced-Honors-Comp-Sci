@@ -100,11 +100,11 @@ def make_model():
     return model
 
 def train():
-    _all_data, album_art, data_features = data.cnn_data()
+    _all_data, data_set, _data_features = data.cnn_data()
 
     model = make_model()
 
-    history = model.fit(album_art, data_features, epochs=EPOCHS)
+    history = model.fit(data_set, epochs=EPOCHS)
 
     print(f"\nSaving model to {MODEL_PATH}...")
     model.save(MODEL_PATH)

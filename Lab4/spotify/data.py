@@ -3,6 +3,8 @@ import alive_progress
 import pandas as pd
 import numpy as np
 
+import PIL
+
 import spotipy
 import spotipy.oauth2
 import urllib
@@ -10,12 +12,14 @@ import cv2
 import os
 import dotenv
 
-import math
-import tensorflow.keras.preprocessing.image as image
+import tensorflow as tf
+import tensorflow.data as data
 
 # import tqdm
 # import multiprocessing
 # CHUNK_SIZE = 100
+
+import math
 MAX_TRACKS = 50
 
 BAR_GROUPS = 6
@@ -211,8 +215,6 @@ def get_urls(all_features, song_count):
 def download_all_album_art(i_and_urls, song_count):
     if not os.path.exists(IMAGE_DIR):
         os.makedirs(IMAGE_DIR)
-    # for file in os.listdir(IMAGE_DIR):
-    #     os.remove(f"{IMAGE_DIR}/{file}")
 
     print("Downloading album art...")
     with alive_progress.alive_bar(song_count) as bar:
@@ -246,22 +248,23 @@ def load_art_from_files(song_count):
 
     if os.path.exists(IMAGE_DIR) and os.path.isdir(IMAGE_DIR) and len(os.listdir(IMAGE_DIR)) == song_count:
         print("Loading from files...")
-        train_gen = image.ImageDataGenerator().flow_from_directory(
-            IMAGE_DIR,
-            # target_size=IMAGE_SIZE,
-            class_mode=None,
-        )
-        return train_gen
 
+        def load_file(x):
+            return tf.expand_dims(tf.constant(np.array(PIL.Image.open(x.numpy()).convert("RGB"))), axis=0)
+       
+        train = data.Dataset.list_files(f"{IMAGE_DIR}/*.jpg")
+        train = train.map(lambda x: tf.py_function(load_file, [x], [tf.uint8]))
+        print(train)
+        print(type(train))
+       
+        return train
+
+        # album_art = []
         # with alive_progress.alive_bar(song_count) as bar:
         #     for i in range(song_count):
         #         img = cv2.imread(f"{IMAGE_DIR}/{i}.jpg")
         #         album_art.append(img)
         #         bar()
-
-        # all_features = all_features[:song_count]
-        # album_art = np.asarray(album_art)
-        # data_features = data_features[:song_count]
         # return album_art
     else:
         print("Album art not found or does not match song count. Fetching...")
@@ -273,11 +276,17 @@ def cnn_data():
 
     print(f"\nLoading album art for {song_count} songs...")
 
-    album_art = load_art_from_files(song_count)
-    if album_art is None:
+    train = load_art_from_files(song_count)
+
+    if train is None:
         i_and_urls = get_urls(all_features, song_count)
         download_all_album_art(i_and_urls, song_count)
-        album_art = load_art_from_files(song_count)
+        train = load_art_from_files(song_count)
+        
+    data_labels = data.Dataset.from_tensor_slices(data_features)
+    data_set = data.Dataset.zip((train, data_labels))
+    
+    print(data_set)
 
-    return all_features, album_art, data_features
+    return all_features, data_set, data_features
 # ---------------------------------------------------------------------------- #
