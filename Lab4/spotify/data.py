@@ -16,7 +16,7 @@ import tensorflow.keras.preprocessing.image as image
 # import tqdm
 # import multiprocessing
 # CHUNK_SIZE = 100
-# MAX_TRACKS = 50
+MAX_TRACKS = 50
 
 BAR_GROUPS = 6
 
@@ -168,13 +168,13 @@ def get_urls(all_features, song_count):
     if os.path.exists(URL_FILE) and os.path.isfile(URL_FILE):
         print("URL file already exists. Loading...")
         with open(URL_FILE, 'r') as f:
-            urls = enumerate(f.readlines())
-            i_and_urls = [f"{i} ^^ {url}" for i, url in urls if url != '']
-            if len(i_and_urls) == song_count:
+            all_lines = f.readlines()
+            
+            if len(all_lines) == song_count:
+                i_and_urls = enumerate(all_lines)
                 return i_and_urls
             else:
-                print(f"Expected {song_count} urls, found {len(i_and_urls)} urls. Fetching...")
-                input("Press Enter to continue...")
+                print(f"Expected {song_count} urls, found {len(all_lines)} urls. Fetching...")
     else:
         os.makedirs(BASE_DIR, exist_ok=True)
     
@@ -216,8 +216,8 @@ def download_all_album_art(i_and_urls, song_count):
 
     print("Downloading album art...")
     with alive_progress.alive_bar(song_count) as bar:
-        for i in range(song_count):
-            download_album_art(i_and_urls[i])
+        for i_and_url in i_and_urls:
+            download_album_art(i_and_url)
             bar()
 
     # with multiprocessing.Pool(processes=8) as pool:
@@ -228,6 +228,7 @@ def download_all_album_art(i_and_urls, song_count):
 
 def download_album_art(i_and_url):
     i, url = i_and_url
+    url = url.strip()
 
     try:
         req = urllib.request.urlopen(url)
