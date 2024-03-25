@@ -10,11 +10,13 @@ import cv2
 import os
 import dotenv
 
-import tqdm
-import multiprocessing
 import math
-CHUNK_SIZE = 100
-MAX_TRACKS = 50
+import tensorflow.keras.preprocessing.image as image
+
+# import tqdm
+# import multiprocessing
+# CHUNK_SIZE = 100
+# MAX_TRACKS = 50
 
 BAR_GROUPS = 6
 
@@ -170,10 +172,11 @@ def get_urls(all_features, song_count):
             i_and_urls = [f"{i} ^^ {url}" for i, url in urls if url != '']
             if len(i_and_urls) == song_count:
                 return i_and_urls
+            else:
+                print(f"Expected {song_count} urls, found {len(i_and_urls)} urls. Fetching...")
+                input("Press Enter to continue...")
     else:
         os.makedirs(BASE_DIR, exist_ok=True)
-
-    print("URL file does not exist or does not match song count. Fetching...")
     
     env = dotenv.dotenv_values('.env')
     spotify_client = env['SPOTIPY_CLIENT']
@@ -199,7 +202,7 @@ def get_urls(all_features, song_count):
                         print(f"No album art for {track['name']} ({track['id']} {track['album']['id']}). Using random image.")
                         url = '????'
                     f.write(f"{url}\n")
-                    i_and_urls.append(f"{i} ^^ {url}")
+                    i_and_urls.append((i, url))
                 
                 bar()
 
@@ -208,48 +211,57 @@ def get_urls(all_features, song_count):
 def download_all_album_art(i_and_urls, song_count):
     if not os.path.exists(IMAGE_DIR):
         os.makedirs(IMAGE_DIR)
-    for file in os.listdir(IMAGE_DIR):
-        os.remove(f"{IMAGE_DIR}/{file}")
+    # for file in os.listdir(IMAGE_DIR):
+    #     os.remove(f"{IMAGE_DIR}/{file}")
 
     print("Downloading album art...")
-    with multiprocessing.Pool(processes=8) as pool:
-        album_art = list(tqdm.tqdm(pool.imap_unordered(download_album_art, i_and_urls, CHUNK_SIZE), total=song_count))
-        print("Sorting album art...")
-        album_art.sort(key=lambda x: x[0])
-        album_art = pool.map(lambda x: x[1], album_art)
+    with alive_progress.alive_bar(song_count) as bar:
+        for i in range(song_count):
+            download_album_art(i_and_urls[i])
+            bar()
 
-    return album_art
+    # with multiprocessing.Pool(processes=8) as pool:
+    #     album_art = list(tqdm.tqdm(pool.imap_unordered(download_album_art, i_and_urls, CHUNK_SIZE), total=song_count))
+    #     print("Sorting album art...")
+    #     album_art.sort(key=lambda x: x[0])
+    #     album_art = pool.map(lambda x: x[1], album_art)
 
 def download_album_art(i_and_url):
-    i, url = i_and_url.split(" ^^ ")
-    i = int(i)
+    i, url = i_and_url
 
-    if url == '????':
-        img = np.random.randint(0, 256, (IMAGE_SIZE[0], IMAGE_SIZE[1], 3), dtype=np.uint8)
-    else:
+    try:
         req = urllib.request.urlopen(url)
         arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
         img = cv2.imdecode(arr, -1)
         img = cv2.resize(img, IMAGE_SIZE)
+    except (urllib.error.HTTPError, cv2.error, ValueError) as e:
+        print(f"{e}: Error downloading image {i} from {url}. Using random image.")
+        img = np.random.randint(0, 256, (IMAGE_SIZE[0], IMAGE_SIZE[1], 3), dtype=np.uint8)        
         
     cv2.imwrite(f"{IMAGE_DIR}/{i}.jpg", img)
-    return i, img
 
 def load_art_from_files(song_count):
     print("Trying to load album art from files...")
 
     if os.path.exists(IMAGE_DIR) and os.path.isdir(IMAGE_DIR) and len(os.listdir(IMAGE_DIR)) == song_count:
         print("Loading from files...")
-        with alive_progress.alive_bar(song_count) as bar:
-            for i in range(song_count):
-                img = cv2.imread(f"{IMAGE_DIR}/{i}.jpg")
-                album_art.append(img)
-                bar()
+        train_gen = image.ImageDataGenerator().flow_from_directory(
+            IMAGE_DIR,
+            # target_size=IMAGE_SIZE,
+            class_mode=None,
+        )
+        return train_gen
 
-        all_features = all_features[:song_count]
-        album_art = np.asarray(album_art)
-        data_features = data_features[:song_count]
-        return all_features, album_art, data_features
+        # with alive_progress.alive_bar(song_count) as bar:
+        #     for i in range(song_count):
+        #         img = cv2.imread(f"{IMAGE_DIR}/{i}.jpg")
+        #         album_art.append(img)
+        #         bar()
+
+        # all_features = all_features[:song_count]
+        # album_art = np.asarray(album_art)
+        # data_features = data_features[:song_count]
+        # return album_art
     else:
         print("Album art not found or does not match song count. Fetching...")
         return None
@@ -263,7 +275,8 @@ def cnn_data():
     album_art = load_art_from_files(song_count)
     if album_art is None:
         i_and_urls = get_urls(all_features, song_count)
-        album_art = download_all_album_art(i_and_urls, song_count)
+        download_all_album_art(i_and_urls, song_count)
+        album_art = load_art_from_files(song_count)
 
     return all_features, album_art, data_features
 # ---------------------------------------------------------------------------- #
