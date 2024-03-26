@@ -14,6 +14,8 @@ import dotenv
 
 import tensorflow as tf
 import tensorflow.data as data
+BUFFER_SIZE = 2000
+BATCH_SIZE = 64
 
 # import tqdm
 # import multiprocessing
@@ -284,7 +286,12 @@ def cnn_data():
         train = load_art_from_files(song_count)
         
     data_labels = data.Dataset.from_tensor_slices(data_features)
-    data_set = data.Dataset.zip((train, data_labels))
+    data_set = (data.Dataset.zip((train, data_labels))
+        .shuffle(BUFFER_SIZE, reshuffle_each_iteration=True)
+        .batch(BATCH_SIZE)
+        .prefetch(BUFFER_SIZE))
+
+    # data_set = data_set.shuffle(BUFFER_SIZE, reshuffle_each_iteration=True).batch(BATCH_SIZE).prefetch(BUFFER_SIZE)
     
     print(data_set)
 
