@@ -17,8 +17,8 @@ import similarity
 # ---------------------------------------------------------------------------- #
 TEST_INDEX = 17424 - 2
 
-EPOCHS = 8
-LEARNING_RATE = 0.0003
+EPOCHS = 4
+LEARNING_RATE = 0.00001
 
 IMAGE_SIZE = (128, 128)
 

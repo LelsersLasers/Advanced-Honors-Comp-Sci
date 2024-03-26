@@ -16,6 +16,7 @@ import tensorflow as tf
 import tensorflow.data as data
 BUFFER_SIZE = 2000
 BATCH_SIZE = 64
+PREFETCH_SIZE = 2
 
 # import tqdm
 # import multiprocessing
@@ -252,13 +253,10 @@ def load_art_from_files(song_count):
         print("Loading from files...")
 
         def load_file(x):
-            return tf.expand_dims(tf.constant(np.array(PIL.Image.open(x.numpy()).convert("RGB"))), axis=0)
+            return tf.constant(np.array(PIL.Image.open(x.numpy()).convert("RGB")))
        
         train = data.Dataset.list_files(f"{IMAGE_DIR}/*.jpg")
         train = train.map(lambda x: tf.py_function(load_file, [x], [tf.uint8]))
-        print(train)
-        print(type(train))
-       
         return train
 
         # album_art = []
@@ -289,9 +287,7 @@ def cnn_data():
     data_set = (data.Dataset.zip((train, data_labels))
         .shuffle(BUFFER_SIZE, reshuffle_each_iteration=True)
         .batch(BATCH_SIZE)
-        .prefetch(BUFFER_SIZE))
-
-    # data_set = data_set.shuffle(BUFFER_SIZE, reshuffle_each_iteration=True).batch(BATCH_SIZE).prefetch(BUFFER_SIZE)
+        .prefetch(PREFETCH_SIZE))
     
     print(data_set)
 
