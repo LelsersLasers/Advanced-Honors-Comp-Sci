@@ -1,6 +1,5 @@
-import data
+# import data
 # data.cnn_data()
-data.fix_file_names()
 
 
 # import styles.simple
@@ -19,7 +18,7 @@ data.fix_file_names()
 # styles.autoencoder.predict()
 
 
-# import styles.cnn
-# styles.cnn.train()
+import styles.cnn
+styles.cnn.train()
 # styles.cnn.embeddings()
 # styles.cnn.predict()

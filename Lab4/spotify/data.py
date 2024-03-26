@@ -264,7 +264,7 @@ def load_art_from_files(song_count):
         # album_art = []
         # with alive_progress.alive_bar(song_count) as bar:
         #     for i in range(song_count):
-        #         img = cv2.imread(f"{IMAGE_DIR}/{i}.jpg")
+        #         img = cv2.imread(f"{IMAGE_DIR}/{i:06}.jpg")
         #         album_art.append(img)
         #         bar()
         # return album_art
@@ -297,14 +297,3 @@ def cnn_data():
     
     return all_features, train_ds, images
 # ---------------------------------------------------------------------------- #
-
-def fix_file_names():
-    _all_features, data_features = autoencoder_data()
-    song_count = data_features.shape[0]
-
-    with alive_progress.alive_bar(song_count) as bar:
-        for i in range(song_count):
-            img = cv2.imread(f"{IMAGE_DIR}/{i}.jpg")
-            os.remove(f"{IMAGE_DIR}/{i}.jpg")
-            cv2.imwrite(f"{IMAGE_DIR}/{i:06}.jpg", img)
-            bar()
