@@ -291,5 +291,5 @@ def cnn_data():
     
     print(data_set)
 
-    return all_features, data_set, data_features
+    return all_features, train, data_set
 # ---------------------------------------------------------------------------- #

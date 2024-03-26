@@ -17,7 +17,7 @@ import similarity
 # ---------------------------------------------------------------------------- #
 TEST_INDEX = 17424 - 2
 
-EPOCHS = 4
+EPOCHS = 15
 LEARNING_RATE = 0.00001
 
 IMAGE_SIZE = (128, 128)
@@ -100,7 +100,7 @@ def make_model():
     return model
 
 def train():
-    _all_data, data_set, _data_features = data.cnn_data()
+    _all_data, train, data_set = data.cnn_data()
 
     model = make_model()
 
@@ -129,9 +129,9 @@ def create_intermediate_model():
 
 def embeddings():
     intermediate_model = create_intermediate_model()
-    all_data, album_art, _data_features = data.cnn_data()
+    all_data, train, _data_set = data.cnn_data()
     
-    similarity.embeddings(intermediate_model, all_data, album_art, EMBEDDINGS_PATH)
+    similarity.embeddings(intermediate_model, all_data, train, EMBEDDINGS_PATH)
 # ---------------------------------------------------------------------------- #
 
 
