@@ -255,9 +255,9 @@ def load_art_from_files(song_count):
         def load_file(x):
             return tf.constant(np.array(PIL.Image.open(x.numpy()).convert("RGB")))
        
-        train = data.Dataset.list_files(f"{IMAGE_DIR}/*.jpg")
-        train = train.map(lambda x: tf.py_function(load_file, [x], [tf.uint8]))
-        return train
+        images_ds = data.Dataset.list_files(f"{IMAGE_DIR}/*.jpg")
+        images_ds = images_ds.map(lambda x: tf.py_function(load_file, [x], [tf.uint8]))
+        return images_ds
 
         # album_art = []
         # with alive_progress.alive_bar(song_count) as bar:
@@ -276,20 +276,22 @@ def cnn_data():
 
     print(f"\nLoading album art for {song_count} songs...")
 
-    train = load_art_from_files(song_count)
+    images_ds = load_art_from_files(song_count)
 
-    if train is None:
+    if images_ds is None:
         i_and_urls = get_urls(all_features, song_count)
         download_all_album_art(i_and_urls, song_count)
-        train = load_art_from_files(song_count)
+        images_ds = load_art_from_files(song_count)
         
     data_labels = data.Dataset.from_tensor_slices(data_features)
-    data_set = (data.Dataset.zip((train, data_labels))
+    train_ds = (data.Dataset.zip((images_ds, data_labels))
         .shuffle(BUFFER_SIZE, reshuffle_each_iteration=True)
         .batch(BATCH_SIZE)
         .prefetch(PREFETCH_SIZE))
     
-    print(data_set)
+    print(train_ds)
 
-    return all_features, train, data_set
+    images = (img[0].numpy()for img in images_ds)
+    
+    return all_features, train_ds, images
 # ---------------------------------------------------------------------------- #

@@ -30,8 +30,10 @@ def embeddings(intermediate_model, all_data, data_features, embeddings_path):
     #     )
     all_embeddings = []
     with alive_progress.alive_bar(song_count) as bar:
-        for i in range(song_count):
-            x = np.expand_dims(data_features[i], axis=0)
+        # for i in range(song_count):
+        for data_feature in data_features:
+            # x = np.expand_dims(data_features[i], axis=0)
+            x = np.expand_dims(data_feature, axis=0)
 
             embedding = intermediate_model(x)
             embedding = np.squeeze(embedding.numpy(), axis=0)
@@ -74,6 +76,7 @@ def load_embeddings(embeddings_path):
 
 
 def predict(target_idx, dist_fn, embeddings_path=None, all_data_and_embeddings=None):
+    # ------------------------------------------------------------------------ #
     if embeddings_path is None and all_data_and_embeddings is None:
         raise ValueError("You must provide either embeddings_path or all_data_and_embeddings")
     elif embeddings_path is not None and all_data_and_embeddings is not None:
@@ -84,6 +87,7 @@ def predict(target_idx, dist_fn, embeddings_path=None, all_data_and_embeddings=N
     target_data_and_embedding = all_data_and_embeddings[target_idx]
     target_data = target_data_and_embedding[0]
     target_embedding = target_data_and_embedding[1]
+    # ------------------------------------------------------------------------ #
 
     # ------------------------------------------------------------------------ #
     print("Calculating distances...")

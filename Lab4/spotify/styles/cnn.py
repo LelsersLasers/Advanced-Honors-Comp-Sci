@@ -100,11 +100,11 @@ def make_model():
     return model
 
 def train():
-    _all_data, train, data_set = data.cnn_data()
+    _all_data, train_ds, _images_ds = data.cnn_data()
 
     model = make_model()
 
-    history = model.fit(data_set, epochs=EPOCHS)
+    history = model.fit(train_ds, epochs=EPOCHS)
 
     print(f"\nSaving model to {MODEL_PATH}...")
     model.save(MODEL_PATH)
@@ -129,9 +129,9 @@ def create_intermediate_model():
 
 def embeddings():
     intermediate_model = create_intermediate_model()
-    all_data, train, _data_set = data.cnn_data()
+    all_data, _train_ds, images = data.cnn_data()
     
-    similarity.embeddings(intermediate_model, all_data, train, EMBEDDINGS_PATH)
+    similarity.embeddings(intermediate_model, all_data, images, EMBEDDINGS_PATH)
 # ---------------------------------------------------------------------------- #
 
 
