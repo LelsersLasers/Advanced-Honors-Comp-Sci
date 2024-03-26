@@ -19,6 +19,6 @@
 
 
 import styles.cnn
-styles.cnn.train()
-# styles.cnn.embeddings()
-# styles.cnn.predict()
+# styles.cnn.train()
+styles.cnn.embeddings()
+styles.cnn.predict()
