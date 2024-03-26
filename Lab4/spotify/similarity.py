@@ -43,6 +43,8 @@ def embeddings(intermediate_model, all_data, data_features, embeddings_path):
     print("Calculated all embeddings\n")
     # ------------------------------------------------------------------------ #
 
+    # TODO: write embeddings to file as they are calculated
+
     # ------------------------------------------------------------------------ #
     print("\nWriting embeddings to file...")
     with alive_progress.alive_bar(song_count) as bar:
