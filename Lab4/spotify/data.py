@@ -244,7 +244,9 @@ def download_album_art(i_and_url):
         print(f"{e}: Error downloading image {i} from {url}. Using random image.")
         img = np.random.randint(0, 256, (IMAGE_SIZE[0], IMAGE_SIZE[1], 3), dtype=np.uint8)        
         
-    cv2.imwrite(f"{IMAGE_DIR}/{i}.jpg", img)
+    # pad with name with zeros to preserve lexicographical order
+    file_name = f"{IMAGE_DIR}/{i:06}.jpg"
+    cv2.imwrite(file_name, img)
 
 def load_art_from_files(song_count):
     print("Trying to load album art from files...")
@@ -295,3 +297,14 @@ def cnn_data():
     
     return all_features, train_ds, images
 # ---------------------------------------------------------------------------- #
+
+def fix_file_names():
+    _all_features, data_features = autoencoder_data()
+    song_count = data_features.shape[0]
+
+    with alive_progress.alive_bar(song_count) as bar:
+        for i in range(song_count):
+            img = cv2.imread(f"{IMAGE_DIR}/{i}.jpg")
+            os.remove(f"{IMAGE_DIR}/{i}.jpg")
+            cv2.imwrite(f"{IMAGE_DIR}/{i:06}.jpg", img)
+            bar()
