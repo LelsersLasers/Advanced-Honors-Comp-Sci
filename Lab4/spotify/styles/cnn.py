@@ -17,7 +17,7 @@ import similarity
 # ---------------------------------------------------------------------------- #
 TEST_INDEX = 17424 - 2
 
-EPOCHS = 12
+EPOCHS = 25
 LEARNING_RATE = 0.00001
 
 IMAGE_SIZE = (128, 128)
@@ -32,63 +32,67 @@ EMBEDDINGS_PATH = 'output/save-cnn/embeddings.txt'
 def make_model():
     # predictor style: (128x128 image) -> hidden -> output (13) is inputs
     
-	# 128 -> 42 -> 21 -> 10
+    # 128 -> 42 -> 21 -> 10
     # 1000 -> 256 -> 64 -> (13)
     # (128 - 5) / 3 + 1 = 42
     # ( 42 - 2) / 2 + 1 = 21
     # ( 21 - 3) / 2 + 1 = 10
     model = keras.Sequential([
         layers.Conv2D(
-			filters = 10,
-			kernel_size = 3,
-			strides = 1,
-			input_shape = IMAGE_SIZE + (3,),
-			activation = activations.relu,
-			padding = "same",
-		),
+            filters = 10,
+            kernel_size = 3,
+            strides = 1,
+            input_shape = IMAGE_SIZE + (3,),
+            # activation = activations.relu,
+            padding = "same",
+        ),
+        layers.LeakyReLU(),
         layers.BatchNormalization(),
 
         layers.Conv2D(
-			filters = 10,
-			kernel_size = 3,
-			strides = 1,
-			activation = activations.relu,
-			padding = "same",
-		),
+            filters = 10,
+            kernel_size = 3,
+            strides = 1,
+            # activation = activations.relu,
+            padding = "same",
+        ),
+        layers.LeakyReLU(),
         layers.BatchNormalization(),
         
-		layers.Conv2D(
-			filters = 10,
-			kernel_size = 5,
-			strides = 3,
-			activation = activations.relu,
-		),
-		layers.BatchNormalization(),
+        layers.Conv2D(
+            filters = 10,
+            kernel_size = 5,
+            strides = 3,
+            # activation = activations.relu,
+        ),
+        layers.LeakyReLU(),
+        layers.BatchNormalization(),
         
-		layers.MaxPool2D(
-			pool_size = 2,
-			strides = 2,
-		),
+        layers.MaxPool2D(
+            pool_size = 2,
+            strides = 2,
+        ),
           
-		layers.Conv2D(
-			filters = 10,
-			kernel_size = 3,
-			strides = 2,
-			activation = activations.relu,
-		),
-		layers.BatchNormalization(),
+        layers.Conv2D(
+            filters = 10,
+            kernel_size = 3,
+            strides = 2,
+            # activation = activations.relu,
+        ),
+        layers.LeakyReLU(),
+        layers.BatchNormalization(),
           
-		layers.Flatten(),
+        layers.Flatten(),
         
         layers.Dense(256),
         layers.LeakyReLU(),
         layers.Dropout(0.3),
         
-		layers.Dense(64),
+        layers.Dense(64),
         layers.LeakyReLU(),
         layers.Dropout(0.3),
         
-		layers.Dense(13),
+        layers.Dense(13),
     ])
 
     loss = losses.MeanSquaredError()
@@ -122,7 +126,7 @@ def create_intermediate_model():
     # skip any Dropout layers
     intermediate_model = keras.Sequential()
     for (i, layer) in enumerate(model.layers):
-        if not isinstance(layer, keras.layers.Dropout) and i < len(model.layers) - 1:
+        if not isinstance(layer, keras.layers.Dropout) and i < len(model.layers) - 4:
             intermediate_model.add(layer)
     print(intermediate_model.summary())
     return intermediate_model
@@ -137,5 +141,5 @@ def embeddings():
 
 # ---------------------------------------------------------------------------- #
 def predict():
-	similarity.predict(TEST_INDEX, distances.cos_dist, embeddings_path=EMBEDDINGS_PATH)
+    similarity.predict(TEST_INDEX, distances.cos_dist, embeddings_path=EMBEDDINGS_PATH)
 # ---------------------------------------------------------------------------- #
