@@ -27,7 +27,7 @@ def bar_full(categories, group):
 		rects = ax.bar(x + offset, measurement, width, label=attribute)
 		ax.bar_label(rects)
 
-	title = f'Category per {group.capitalize()}'
+	title = f"Category per {group.capitalize()}"
 	ax.set_title(title)
 
 	ax.set_xticks(x + width, groups)
