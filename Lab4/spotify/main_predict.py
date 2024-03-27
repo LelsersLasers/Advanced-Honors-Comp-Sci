@@ -1,5 +1,5 @@
-# import data
-# data.cnn_data()
+import data
+data.cnn_data()
 
 
 # import styles.simple
@@ -18,7 +18,7 @@
 # styles.autoencoder.predict()
 
 
-import styles.cnn
-styles.cnn.train()
-styles.cnn.embeddings()
-styles.cnn.predict()
+# import styles.cnn
+# styles.cnn.train()
+# styles.cnn.embeddings()
+# styles.cnn.predict()
