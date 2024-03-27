@@ -12,7 +12,8 @@ import cv2
 import os
 import dotenv
 
-import bing_image_downloader
+# import bing_image_downloader
+from bing_image_downloader import downloader
 
 import tensorflow as tf
 import tensorflow.data as data
@@ -252,16 +253,16 @@ def download_album_art(i_and_url):
     file_name = f"{IMAGE_DIR}/{i:06}.jpg"
     cv2.imwrite(file_name, img)
 
-def load_art_from_files(song_count, dir):
+def load_art_from_files(song_count, folder):
     print("Trying to load album art from files...")
 
-    if os.path.exists(dir) and os.path.isdir(dir) and len(os.listdir(dir)) == song_count:
+    if os.path.exists(folder) and os.path.isdir(folder) and len(os.listdir(folder)) == song_count:
         print("Loading from files...")
 
         def load_file(x):
             return tf.constant(np.array(PIL.Image.open(x.numpy()).convert("RGB")))
        
-        images_ds = data.Dataset.list_files(f"{dir}/*.jpg")
+        images_ds = data.Dataset.list_files(f"{folder}/*.jpg")
         images_ds = images_ds.map(lambda x: tf.py_function(load_file, [x], [tf.uint8]))
         return images_ds
 
@@ -290,33 +291,44 @@ def download_all_from_bing(all_features, song_count):
             bar()
 
 def load_art_from_bing(feature, i):
-    query = f'{feature['name']} {feature['artists'].join(" ")}'
-    print(f"Downloading art for {query}...")
-    bing_image_downloader.download(
+    artists_list = feature['artists'].replace('[', '').replace(']', '').replace("'", '').split(', ')
+    query = f"{feature['name']} {' '.join(artists_list)}"
+    downloader.download(
         query,
-        limit=1,
+        limit=2,
         output_dir=BING_TEMP_DIR,
         adult_filter_off=False,
         filter='photo',
         force_replace=True,
         timeout=10,
-        verbose=True
+        verbose=False,
     )
 
-    files_in_dir = os.listdir(dir)
-    if len(files_in_dir) == 0:
-        print(f"No album art found for {query}. Using random image.")
+    folder_path = f"{BING_TEMP_DIR}/{query}"
+    files_in_dir = os.listdir(folder_path)
+
+    imgs = []
+    for file in files_in_dir:
+        img = cv2.imread(f"{folder_path}/{file}")
+        imgs.append(img)
+        os.remove(f"{folder_path}/{file}")
+    
+    valid_img = None
+    for img in imgs:
+        try:
+            img = cv2.resize(img, IMAGE_SIZE)
+            valid_img = img
+            break
+        except cv2.error: pass
+
+    if valid_img is None:
+        print(f"No art: '{query}'. Using random image.")
         img = np.random.randint(0, 256, (IMAGE_SIZE[0], IMAGE_SIZE[1], 3), dtype=np.uint8)
-    else:
-        print(f"{files_in_dir[0]} found for {query}. Using...")
-        img = cv2.imread(f"{dir}/{files_in_dir[0]}")
-        img = cv2.resize(img, IMAGE_SIZE)
+
+    os.rmdir(folder_path)
 
     file_name = f"{BING_IMAGE_DIR}/{i:06}.jpg"
     cv2.imwrite(file_name, img)
-
-    os.remove(f"{BING_TEMP_DIR}/{files_in_dir[0]}")
-    os.rmdir(BING_TEMP_DIR)
 
 
 def cnn_data():
@@ -331,7 +343,7 @@ def cnn_data():
     #     download_all_album_art(i_and_urls, song_count)
     #     images_ds = load_art_from_files(song_count, IMAGE_DIR)
 
-    images_ds = load_art_from_files(song_count, IMAGE_DIR)
+    images_ds = load_art_from_files(song_count, BING_IMAGE_DIR)
     if images_ds is None:
         download_all_from_bing(all_features, song_count)
         images_ds = load_art_from_files(song_count, BING_IMAGE_DIR)
