@@ -17,8 +17,8 @@ import similarity
 # ---------------------------------------------------------------------------- #
 TEST_INDEX = 17424 - 2
 
-EPOCHS = 25
-LEARNING_RATE = 0.00001
+EPOCHS = 10
+LEARNING_RATE = 0.0003
 
 IMAGE_SIZE = (128, 128)
 
@@ -32,7 +32,7 @@ EMBEDDINGS_PATH = 'output/save-cnn/embeddings.txt'
 def make_model():
     # predictor style: (128x128 image) -> hidden -> output (13) is inputs
     
-    # 128 -> 42 -> 21 -> 10
+    # (128) -> 42 -> 21 -> 10
     # 1000 -> 256 -> 64 -> (13)
     # (128 - 5) / 3 + 1 = 42
     # ( 42 - 2) / 2 + 1 = 21
@@ -126,7 +126,7 @@ def create_intermediate_model():
     # skip any Dropout layers
     intermediate_model = keras.Sequential()
     for (i, layer) in enumerate(model.layers):
-        if not isinstance(layer, keras.layers.Dropout) and i < len(model.layers) - 4:
+        if not isinstance(layer, keras.layers.Dropout) and i < len(model.layers) - 1:
             intermediate_model.add(layer)
     print(intermediate_model.summary())
     return intermediate_model
