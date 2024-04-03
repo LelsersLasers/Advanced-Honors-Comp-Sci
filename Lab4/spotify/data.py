@@ -13,6 +13,7 @@ import os
 import dotenv
 
 import requests
+import base64
 from bs4 import BeautifulSoup
 
 import tensorflow as tf
@@ -277,8 +278,8 @@ def load_art_from_files(song_count, folder):
         return None
 
 def download_all_google_art(all_features, song_count):
-    if not os.path.exists(IMAGE_DIR):
-        os.makedirs(IMAGE_DIR)
+    if not os.path.exists(GOOGLE_DIR):
+        os.makedirs(GOOGLE_DIR)
 
     print("Downloading google art...")
     with alive_progress.alive_bar(song_count) as bar:
@@ -287,35 +288,56 @@ def download_all_google_art(all_features, song_count):
             bar()
 
 def download_google_art(name, artists, i):
-    search = f"{name} {artists} yt"
+    artists_str = artists.replace('[', '').replace(']', '').replace("'", '').replace(", ", ' ')
+    search = f"{name} {artists_str} yt"
     search = search.replace(' ', '+')
 
     url = f"https://www.google.com/search?hl=en&tbm=isch&q={search}"
     response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
 
+    file_name = f"{GOOGLE_DIR}/{i:06}.jpg"
+    img = None
+
     if response.status_code == 200:
         # Parse the HTML content
         soup = BeautifulSoup(response.text, 'html.parser')
         # Find the first image
-        first_image = soup.find("img")
+        image_eles = soup.findAll('img')
         
-        if first_image:
+        if image_eles and len(image_eles) >= 8:
             # Get the image URL
-            image_url = first_image['src']
-            # Download the image
-            img_response = requests.get(image_url)
-            if img_response.status_code == 200:
-                # Save the image
-                file_name = f"{IMAGE_DIR}/{i:06}.jpg"
-                with open(file_name, 'wb') as f:
-                    f.write(img_response.content)
-                print(f"{i}: Downloaded image from {image_url}")
-            else:
-                print(f"{i}: Failed to fetch the image. Status code: {img_response.status_code}")
+            # image_url = first_image['src']
+
+            image_ele = image_eles[8]
+            image_src = image_ele['src']
+
+            if image_src.startswith("data:image"):
+                encoded = image_src.split(',')[1]
+                nparr = np.frombuffer(base64.b64decode(encoded), np.uint8)
+                img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                
+                img = cv2.resize(img, IMAGE_SIZE)
+          
+            elif image_src.startswith("http"):
+                img_response = requests.get(image_src)
+                if img_response.status_code == 200:
+                    # Save the image
+                    file_name = f"{GOOGLE_DIR}/{i:06}.jpg"
+                    with open(file_name, 'wb') as f:
+                        f.write(img_response.content)
+                    img = cv2.imread(file_name)
+                    img = cv2.resize(img, IMAGE_SIZE)
+                else:
+                    print(f"{i}: Failed to fetch the image. Status code: {img_response.status_code}")
         else:
             print(f"{i}: No image found.")
     else:
         print(f"{i}: Failed to fetch the image. Status code: {response.status_code}")
+
+    if img is None:
+        img = np.random.randint(0, 256, (IMAGE_SIZE[0], IMAGE_SIZE[1], 3), dtype=np.uint8)
+
+    cv2.imwrite(file_name, img)
 
 
 def cnn_data():
