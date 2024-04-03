@@ -12,8 +12,8 @@ import cv2
 import os
 import dotenv
 
-# import bing_image_downloader
-from bing_image_downloader import downloader
+import requests
+from bs4 import BeautifulSoup
 
 import tensorflow as tf
 import tensorflow.data as data
@@ -34,8 +34,7 @@ IMAGE_SIZE = (128, 128)
 
 BASE_DIR  = 'output/save-cnn'
 IMAGE_DIR = 'output/save-cnn/images'
-BING_IMAGE_DIR = 'output/save-cnn/bing_images'
-BING_TEMP_DIR = 'output/save-cnn/bing_temp'
+GOOGLE_DIR = 'output/save-cnn/google'
 URL_FILE  = 'output/save-cnn/urls.txt'
 
 
@@ -276,59 +275,47 @@ def load_art_from_files(song_count, folder):
     else:
         print("Album art not found or does not match song count. Fetching...")
         return None
-    
-def download_all_from_bing(all_features, song_count):
-    print("Downloading art from Bing...")
 
-    if not os.path.exists(BING_IMAGE_DIR):
-        os.makedirs(BING_IMAGE_DIR)
-    if not os.path.exists(BING_TEMP_DIR):
-        os.makedirs(BING_TEMP_DIR)
+def download_all_google_art(all_features, song_count):
+    if not os.path.exists(IMAGE_DIR):
+        os.makedirs(IMAGE_DIR)
 
+    print("Downloading google art...")
     with alive_progress.alive_bar(song_count) as bar:
         for i, feature in all_features.iterrows():
-            load_art_from_bing(feature, i)
+            download_google_art(feature['name'], feature['artists'], i)
             bar()
 
-def load_art_from_bing(feature, i):
-    artists_list = feature['artists'].replace('[', '').replace(']', '').replace("'", '').split(', ')
-    query = f"{feature['name']} {' '.join(artists_list)}"
-    downloader.download(
-        query,
-        limit=2,
-        output_dir=BING_TEMP_DIR,
-        adult_filter_off=False,
-        filter='photo',
-        force_replace=True,
-        timeout=10,
-        verbose=False,
-    )
+def download_google_art(name, artists, i):
+    search = f"{name} {artists} yt"
+    search = search.replace(' ', '+')
 
-    folder_path = f"{BING_TEMP_DIR}/{query}"
-    files_in_dir = os.listdir(folder_path)
+    url = f"https://www.google.com/search?hl=en&tbm=isch&q={search}"
+    response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
 
-    imgs = []
-    for file in files_in_dir:
-        img = cv2.imread(f"{folder_path}/{file}")
-        imgs.append(img)
-        os.remove(f"{folder_path}/{file}")
-    
-    valid_img = None
-    for img in imgs:
-        try:
-            img = cv2.resize(img, IMAGE_SIZE)
-            valid_img = img
-            break
-        except cv2.error: pass
-
-    if valid_img is None:
-        print(f"No art: '{query}'. Using random image.")
-        img = np.random.randint(0, 256, (IMAGE_SIZE[0], IMAGE_SIZE[1], 3), dtype=np.uint8)
-
-    os.rmdir(folder_path)
-
-    file_name = f"{BING_IMAGE_DIR}/{i:06}.jpg"
-    cv2.imwrite(file_name, img)
+    if response.status_code == 200:
+        # Parse the HTML content
+        soup = BeautifulSoup(response.text, 'html.parser')
+        # Find the first image
+        first_image = soup.find("img")
+        
+        if first_image:
+            # Get the image URL
+            image_url = first_image['src']
+            # Download the image
+            img_response = requests.get(image_url)
+            if img_response.status_code == 200:
+                # Save the image
+                file_name = f"{IMAGE_DIR}/{i:06}.jpg"
+                with open(file_name, 'wb') as f:
+                    f.write(img_response.content)
+                print(f"{i}: Downloaded image from {image_url}")
+            else:
+                print(f"{i}: Failed to fetch the image. Status code: {img_response.status_code}")
+        else:
+            print(f"{i}: No image found.")
+    else:
+        print(f"{i}: Failed to fetch the image. Status code: {response.status_code}")
 
 
 def cnn_data():
@@ -337,16 +324,16 @@ def cnn_data():
 
     print(f"\nLoading album art for {song_count} songs...")
 
-    images_ds = load_art_from_files(song_count, IMAGE_DIR)
-    if images_ds is None:
-        i_and_urls = get_urls(all_features, song_count)
-        download_all_album_art(i_and_urls, song_count)
-        images_ds = load_art_from_files(song_count, IMAGE_DIR)
-
-    # images_ds = load_art_from_files(song_count, BING_IMAGE_DIR)
+    # images_ds = load_art_from_files(song_count, IMAGE_DIR)
     # if images_ds is None:
-    #     download_all_from_bing(all_features, song_count)
-    #     images_ds = load_art_from_files(song_count, BING_IMAGE_DIR)
+    #     i_and_urls = get_urls(all_features, song_count)
+    #     download_all_album_art(i_and_urls, song_count)
+    #     images_ds = load_art_from_files(song_count, IMAGE_DIR)
+
+    images_ds = load_art_from_files(song_count, GOOGLE_DIR)
+    if images_ds is None:
+        download_all_google_art(all_features, song_count)
+        images_ds = load_art_from_files(song_count, GOOGLE_DIR)
         
     data_labels = data.Dataset.from_tensor_slices(data_features)
     train_ds = (data.Dataset.zip((images_ds, data_labels))
