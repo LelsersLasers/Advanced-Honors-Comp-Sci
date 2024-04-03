@@ -305,7 +305,8 @@ def download_google_art(name, artists, i):
         # Find the first image
         image_eles = soup.findAll('img')
         
-        if image_eles and len(image_eles) >= 8:
+        # 8: magic number that tends to pick a good image tag :shrug:
+        if image_eles and len(image_eles) > 8:
             # Get the image URL
             # image_url = first_image['src']
 
