@@ -12,9 +12,6 @@ import cv2
 import os
 import dotenv
 
-import requests
-import base64
-from bs4 import BeautifulSoup
 
 import tensorflow as tf
 import tensorflow.data as data
@@ -26,6 +23,10 @@ PREFETCH_SIZE = 2
 # import multiprocessing
 # CHUNK_SIZE = 100
 
+import requests
+import base64
+from bs4 import BeautifulSoup
+
 import math
 MAX_TRACKS = 50
 
@@ -33,10 +34,10 @@ BAR_GROUPS = 6
 
 IMAGE_SIZE = (128, 128)
 
-BASE_DIR  = 'output/save-cnn'
-IMAGE_DIR = 'output/save-cnn/images'
-GOOGLE_DIR = 'output/save-cnn/google'
-URL_FILE  = 'output/save-cnn/urls.txt'
+BASE_DIR  = 'output/save-cnn/images'
+ALBUM_DIR = 'output/save-cnn/images/album'
+GOOGLE_DIR = 'output/save-cnn/images/google'
+URL_FILE  = 'output/save-cnn/images/urls.txt'
 
 
 # ---------------------------------------------------------------------------- #
@@ -221,8 +222,8 @@ def get_urls(all_features, song_count):
     return i_and_urls
 
 def download_all_album_art(i_and_urls, song_count):
-    if not os.path.exists(IMAGE_DIR):
-        os.makedirs(IMAGE_DIR)
+    if not os.path.exists(ALBUM_DIR):
+        os.makedirs(ALBUM_DIR)
 
     print("Downloading album art...")
     with alive_progress.alive_bar(song_count) as bar:
@@ -250,7 +251,7 @@ def download_album_art(i_and_url):
         img = np.random.randint(0, 256, (IMAGE_SIZE[0], IMAGE_SIZE[1], 3), dtype=np.uint8)        
         
     # pad with name with zeros to preserve lexicographical order
-    file_name = f"{IMAGE_DIR}/{i:06}.jpg"
+    file_name = f"{ALBUM_DIR}/{i:06}.jpg"
     cv2.imwrite(file_name, img)
 
 def load_art_from_files(song_count, folder):
@@ -346,11 +347,11 @@ def cnn_data():
 
     print(f"\nLoading album art for {song_count} songs...")
 
-    # images_ds = load_art_from_files(song_count, IMAGE_DIR)
+    # images_ds = load_art_from_files(song_count, ALBUM_DIR)
     # if images_ds is None:
     #     i_and_urls = get_urls(all_features, song_count)
     #     download_all_album_art(i_and_urls, song_count)
-    #     images_ds = load_art_from_files(song_count, IMAGE_DIR)
+    #     images_ds = load_art_from_files(song_count, ALBUM_DIR)
 
     images_ds = load_art_from_files(song_count, GOOGLE_DIR)
     if images_ds is None:
