@@ -17,8 +17,8 @@ import similarity
 # ---------------------------------------------------------------------------- #
 TEST_INDEX = 17424 - 2
 
-EPOCHS = 5
-LEARNING_RATE = 0.0005
+EPOCHS = 12
+LEARNING_RATE = 0.0001
 
 IMAGE_SIZE = (128, 128)
 
@@ -33,24 +33,24 @@ def make_model():
     # predictor style: (128x128 image) -> hidden -> output (13) is inputs
     
     # (128) -> 42 -> 21 -> 10
-    # 600 -> 256 -> 64 -> (13)
+    # 1000 -> 256 -> 64 -> (13)
     # (128 - 5) / 3 + 1 = 42
     # ( 42 - 2) / 2 + 1 = 21
     # ( 21 - 3) / 2 + 1 = 10
     model = keras.Sequential([
-        # layers.Conv2D(
-        #     filters = 10,
-        #     kernel_size = 3,
-        #     strides = 1,
-        #     input_shape = IMAGE_SIZE + (3,),
-        #     # activation = activations.relu,
-        #     padding = "same",
-        # ),
-        # layers.LeakyReLU(),
-        # layers.BatchNormalization(),
+        layers.Conv2D(
+            filters = 10,
+            kernel_size = 3,
+            strides = 1,
+            input_shape = IMAGE_SIZE + (3,),
+            # activation = activations.relu,
+            padding = "same",
+        ),
+        layers.LeakyReLU(),
+        layers.BatchNormalization(),
 
         layers.Conv2D(
-            filters = 6,
+            filters = 10,
             kernel_size = 3,
             strides = 1,
             input_shape = IMAGE_SIZE + (3,),
@@ -61,7 +61,7 @@ def make_model():
         layers.BatchNormalization(),
         
         layers.Conv2D(
-            filters = 6,
+            filters = 10,
             kernel_size = 5,
             strides = 3,
             # activation = activations.relu,
@@ -75,7 +75,7 @@ def make_model():
         ),
           
         layers.Conv2D(
-            filters = 6,
+            filters = 10,
             kernel_size = 3,
             strides = 2,
             # activation = activations.relu,

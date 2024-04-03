@@ -337,16 +337,16 @@ def cnn_data():
 
     print(f"\nLoading album art for {song_count} songs...")
 
-    # images_ds = load_art_from_files(song_count, IMAGE_DIR)
-    # if images_ds is None:
-    #     i_and_urls = get_urls(all_features, song_count)
-    #     download_all_album_art(i_and_urls, song_count)
-    #     images_ds = load_art_from_files(song_count, IMAGE_DIR)
-
-    images_ds = load_art_from_files(song_count, BING_IMAGE_DIR)
+    images_ds = load_art_from_files(song_count, IMAGE_DIR)
     if images_ds is None:
-        download_all_from_bing(all_features, song_count)
-        images_ds = load_art_from_files(song_count, BING_IMAGE_DIR)
+        i_and_urls = get_urls(all_features, song_count)
+        download_all_album_art(i_and_urls, song_count)
+        images_ds = load_art_from_files(song_count, IMAGE_DIR)
+
+    # images_ds = load_art_from_files(song_count, BING_IMAGE_DIR)
+    # if images_ds is None:
+    #     download_all_from_bing(all_features, song_count)
+    #     images_ds = load_art_from_files(song_count, BING_IMAGE_DIR)
         
     data_labels = data.Dataset.from_tensor_slices(data_features)
     train_ds = (data.Dataset.zip((images_ds, data_labels))
