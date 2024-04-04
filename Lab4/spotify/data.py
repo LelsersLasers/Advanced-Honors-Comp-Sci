@@ -288,54 +288,54 @@ def download_all_google_art(all_features, song_count):
             download_google_art(feature['name'], feature['artists'], i)
             bar()
 
-def download_google_art(name, artists, i):
-    artists_str = artists.replace('[', '').replace(']', '').replace("'", '').replace(", ", ' ')
-    search = f"{name} {artists_str} yt"
-    search = search.replace(' ', '+')
-
+def try_get_google_art(search, i):
     url = f"https://www.google.com/search?hl=en&tbm=isch&q={search}"
     response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
 
+    if response.status_code != 200: return None
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+    image_eles = soup.findAll('img')
+
+    if not image_eles or len(image_eles) < 8: return None
+
+    # 8: magic number which is usually the first imaage tag for the search results
+    image_ele = image_eles[8]
+    image_src = image_ele['src']
+
+    if image_src.startswith("data:image"):
+        encoded = image_src.split(',')[1]
+        nparr = np.frombuffer(base64.b64decode(encoded), np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        return img
+    elif image_src.startswith("http"):
+        img_response = requests.get(image_src)
+        if img_response.status_code != 200: return None
+        img = cv2.imdecode(np.frombuffer(img_response.content, np.uint8), cv2.IMREAD_COLOR)
+
+    img = cv2.resize(img, IMAGE_SIZE)
+    return img
+
+def download_google_art(name, artists, i):
+    artists_str = artists.replace('[', '').replace(']', '').replace("'", '').replace(", ", ' ')
+    searches = [
+        f"{name} {artists_str} yt",
+        f"{name} {artists_str}",
+        f"{name} yt",
+        f"{name}",
+        f"{artists_str}",
+    ]
+
     file_name = f"{GOOGLE_DIR}/{i:06}.jpg"
+
     img = None
-
-    if response.status_code == 200:
-        # Parse the HTML content
-        soup = BeautifulSoup(response.text, 'html.parser')
-        # Find the first image
-        image_eles = soup.findAll('img')
-        
-        if image_eles and len(image_eles) >= 8:
-            # Get the image URL
-            # image_url = first_image['src']
-
-            image_ele = image_eles[8]
-            image_src = image_ele['src']
-
-            if image_src.startswith("data:image"):
-                encoded = image_src.split(',')[1]
-                nparr = np.frombuffer(base64.b64decode(encoded), np.uint8)
-                img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-                
-                img = cv2.resize(img, IMAGE_SIZE)
-          
-            elif image_src.startswith("http"):
-                img_response = requests.get(image_src)
-                if img_response.status_code == 200:
-                    # Save the image
-                    file_name = f"{GOOGLE_DIR}/{i:06}.jpg"
-                    with open(file_name, 'wb') as f:
-                        f.write(img_response.content)
-                    img = cv2.imread(file_name)
-                    img = cv2.resize(img, IMAGE_SIZE)
-                else:
-                    print(f"{i}: Failed to fetch the image. Status code: {img_response.status_code}")
-        else:
-            print(f"{i}: No image found.")
-    else:
-        print(f"{i}: Failed to fetch the image. Status code: {response.status_code}")
+    for search in searches:
+        search = search.replace(' ', '+')
+        img = try_get_google_art(search, i)
+        if img is not None: break
 
     if img is None:
+        print(f"Error downloading image {i} from google. Using random image.")
         img = np.random.randint(0, 256, (IMAGE_SIZE[0], IMAGE_SIZE[1], 3), dtype=np.uint8)
 
     cv2.imwrite(file_name, img)
