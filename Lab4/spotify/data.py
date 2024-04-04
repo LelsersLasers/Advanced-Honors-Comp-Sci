@@ -288,7 +288,7 @@ def download_all_google_art(all_features, song_count):
             download_google_art(feature['name'], feature['artists'], i)
             bar()
 
-def try_get_google_art(search, i):
+def try_get_google_art(search):
     url = f"https://www.google.com/search?hl=en&tbm=isch&q={search}"
     response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
 
@@ -297,9 +297,9 @@ def try_get_google_art(search, i):
     soup = BeautifulSoup(response.text, 'html.parser')
     image_eles = soup.findAll('img')
 
-    if not image_eles or len(image_eles) < 8: return None
+    if not image_eles or len(image_eles) < 9: return None
 
-    # 8: magic number which is usually the first imaage tag for the search results
+    # 8: magic number which is usually the first image tag for the search results
     image_ele = image_eles[8]
     image_src = image_ele['src']
 
@@ -331,7 +331,7 @@ def download_google_art(name, artists, i):
     img = None
     for search in searches:
         search = search.replace(' ', '+')
-        img = try_get_google_art(search, i)
+        img = try_get_google_art(search)
         if img is not None: break
 
     if img is None:
@@ -366,7 +366,7 @@ def cnn_data():
     
     print(train_ds)
 
-    images = (img[0].numpy()for img in images_ds)
+    images = (img[0].numpy() for img in images_ds)
     
     return all_features, train_ds, images
 # ---------------------------------------------------------------------------- #

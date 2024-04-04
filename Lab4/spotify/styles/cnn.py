@@ -105,7 +105,7 @@ def make_model():
     return model
 
 def train():
-    _all_data, train_ds, _images_ds = data.cnn_data()
+    _all_data, train_ds, _images = data.cnn_data()
 
     model = make_model()
 
