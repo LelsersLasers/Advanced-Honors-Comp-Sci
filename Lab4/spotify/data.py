@@ -255,7 +255,7 @@ def download_album_art(i_and_url):
     cv2.imwrite(file_name, img)
 
 def load_art_from_files(song_count, folder):
-    print("Trying to load album art from files...")
+    print("Trying to load art from files...")
 
     if os.path.exists(folder) and os.path.isdir(folder) and len(os.listdir(folder)) == song_count:
         print("Loading from files...")
