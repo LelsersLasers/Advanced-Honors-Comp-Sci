@@ -19,9 +19,6 @@ BUFFER_SIZE = 2000
 BATCH_SIZE = 64
 PREFETCH_SIZE = 2
 
-# import tqdm
-# import multiprocessing
-# CHUNK_SIZE = 100
 
 import requests
 import base64
@@ -227,18 +224,13 @@ def download_all_album_art(i_and_urls, song_count):
 
     print("Downloading album art...")
     with alive_progress.alive_bar(song_count) as bar:
-        for i_and_url in i_and_urls:
-            download_album_art(i_and_url)
+        for (i, url) in i_and_urls:
+            file_name = f"{ALBUM_DIR}/{i:06}.jpg"
+            if not os.path.exists(file_name):
+                download_album_art(url, file_name)
             bar()
 
-    # with multiprocessing.Pool(processes=8) as pool:
-    #     album_art = list(tqdm.tqdm(pool.imap_unordered(download_album_art, i_and_urls, CHUNK_SIZE), total=song_count))
-    #     print("Sorting album art...")
-    #     album_art.sort(key=lambda x: x[0])
-    #     album_art = pool.map(lambda x: x[1], album_art)
-
-def download_album_art(i_and_url):
-    i, url = i_and_url
+def download_album_art(url, file_name):
     url = url.strip()
 
     try:
@@ -247,11 +239,10 @@ def download_album_art(i_and_url):
         img = cv2.imdecode(arr, -1)
         img = cv2.resize(img, IMAGE_SIZE)
     except (urllib.error.HTTPError, cv2.error, ValueError) as e:
-        print(f"{e}: Error downloading image {i} from {url}. Using random image.")
+        print(f"{e}: Error downloading image {file_name} from {url}. Using random image.")
         img = np.random.randint(0, 256, (IMAGE_SIZE[0], IMAGE_SIZE[1], 3), dtype=np.uint8)        
         
     # pad with name with zeros to preserve lexicographical order
-    file_name = f"{ALBUM_DIR}/{i:06}.jpg"
     cv2.imwrite(file_name, img)
 
 def load_art_from_files(song_count, folder):
@@ -266,14 +257,6 @@ def load_art_from_files(song_count, folder):
         images_ds = data.Dataset.list_files(f"{folder}/*.jpg")
         images_ds = images_ds.map(lambda x: tf.py_function(load_file, [x], [tf.uint8]))
         return images_ds
-
-        # album_art = []
-        # with alive_progress.alive_bar(song_count) as bar:
-        #     for i in range(song_count):
-        #         img = cv2.imread(f"{dir}/{i:06}.jpg")
-        #         album_art.append(img)
-        #         bar()
-        # return album_art
     else:
         print("Album art not found or does not match song count. Fetching...")
         return None
@@ -285,7 +268,9 @@ def download_all_google_art(all_features, song_count):
     print("Downloading google art...")
     with alive_progress.alive_bar(song_count) as bar:
         for i, feature in all_features.iterrows():
-            download_google_art(feature['name'], feature['artists'], i)
+            file_name = f"{GOOGLE_DIR}/{i:06}.jpg"
+            if not os.path.exists(file_name):
+                download_google_art(feature['name'], feature['artists'], file_name)
             bar()
 
 def try_get_google_art(search):
@@ -316,7 +301,7 @@ def try_get_google_art(search):
     img = cv2.resize(img, IMAGE_SIZE)
     return img
 
-def download_google_art(name, artists, i):
+def download_google_art(name, artists, file_name):
     artists_str = artists.replace('[', '').replace(']', '').replace("'", '').replace(", ", ' ')
     searches = [
         f"{name} {artists_str} yt",
@@ -326,8 +311,6 @@ def download_google_art(name, artists, i):
         f"{artists_str}",
     ]
 
-    file_name = f"{GOOGLE_DIR}/{i:06}.jpg"
-
     img = None
     for search in searches:
         search = search.replace(' ', '+')
@@ -335,7 +318,7 @@ def download_google_art(name, artists, i):
         if img is not None: break
 
     if img is None:
-        print(f"Error downloading image {i} from google. Using random image.")
+        print(f"Error downloading image {file_name} from google. Using random image.")
         img = np.random.randint(0, 256, (IMAGE_SIZE[0], IMAGE_SIZE[1], 3), dtype=np.uint8)
 
     cv2.imwrite(file_name, img)
