@@ -13,8 +13,8 @@ import os
 import dotenv
 
 
-import tensorflow as tf
-import tensorflow.data as data
+# import tensorflow as tf
+# import tensorflow.data as data
 BUFFER_SIZE = 2000
 BATCH_SIZE = 64
 PREFETCH_SIZE = 2
