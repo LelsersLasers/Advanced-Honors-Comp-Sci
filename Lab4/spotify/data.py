@@ -222,6 +222,9 @@ def download_all_album_art(i_and_urls, song_count):
     if not os.path.exists(ALBUM_DIR):
         os.makedirs(ALBUM_DIR)
 
+    # TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # TODO: Make like download_all_google_art() to try to scan for existing files
+
     print("Downloading album art...")
     with alive_progress.alive_bar(song_count) as bar:
         for (i, url) in i_and_urls:
@@ -265,13 +268,28 @@ def download_all_google_art(all_features, song_count):
     if not os.path.exists(GOOGLE_DIR):
         os.makedirs(GOOGLE_DIR)
 
-    print("Downloading google art...")
+    print("Checking for existing google art files...")
+    highest_existing_id = -1
     with alive_progress.alive_bar(song_count) as bar:
+        for i in range(song_count):
+            file_name = f"{GOOGLE_DIR}/{i:06}.jpg"
+            if os.path.exists(file_name):
+                highest_existing_id = i
+            else:
+                break
+            bar()
+
+    if highest_existing_id > -1:
+        print(f"Found {highest_existing_id + 1} existing google art files.")
+
+    new_songs = song_count - highest_existing_id - 1
+    print("Downloading google art...")
+    with alive_progress.alive_bar(new_songs) as bar:
         for i, feature in all_features.iterrows():
             file_name = f"{GOOGLE_DIR}/{i:06}.jpg"
-            if not os.path.exists(file_name):
+            if i > highest_existing_id:
                 download_google_art(feature['name'], feature['artists'], file_name)
-            bar()
+                bar()
 
 def try_get_google_art(search):
     url = f"https://www.google.com/search?hl=en&tbm=isch&q={search}"
