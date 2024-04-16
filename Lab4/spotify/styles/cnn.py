@@ -17,11 +17,13 @@ import similarity
 # ---------------------------------------------------------------------------- #
 TEST_INDEX = 17424 - 2
 
-EPOCHS = 12
-LEARNING_RATE = 0.0001
+EPOCHS = 24
+LEARNING_RATE = 0.00003
 
 IMAGE_SIZE = (128, 128)
 
+
+# TODO: enable saving for google vs album art models
 MODEL_PATH      = 'output/save-cnn'
 HISTORY_PATH    = 'output/save-cnn/history.json'
 EMBEDDINGS_PATH = 'output/save-cnn/embeddings.txt'
