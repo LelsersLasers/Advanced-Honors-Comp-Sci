@@ -23,19 +23,14 @@ LEARNING_RATE = 0.00003
 IMAGE_SIZE = (128, 128)
 
 
-GOOGLE_MODE = False
-
 GOOGLE_MODEL_PATH    = 'output/save-cnn/google/model'
 ALBUM_ART_MODEL_PATH = 'output/save-cnn/album_art/model'
-MODEL_PATH = GOOGLE_MODEL_PATH if GOOGLE_MODE else ALBUM_ART_MODEL_PATH
 
 GOOGLE_HISTORY_PATH    = 'output/save-cnn/google/history.json'
 ALBUM_ART_HISTORY_PATH = 'output/save-cnn/album_art/history.json'
-HISTORY_PATH = GOOGLE_HISTORY_PATH if GOOGLE_MODE else ALBUM_ART_HISTORY_PATH
 
 GOOGLE_EMBEDDINGS_PATH    = 'output/save-cnn/google/embeddings.txt'
 ALBUM_ART_EMBEDDINGS_PATH = 'output/save-cnn/album_art/embeddings.txt'
-EMBEDDINGS_PATH = GOOGLE_EMBEDDINGS_PATH if GOOGLE_MODE else ALBUM_ART_EMBEDDINGS_PATH
 # ---------------------------------------------------------------------------- #
 
 
@@ -115,24 +110,29 @@ def make_model():
 
     return model
 
-def train():
-    _all_data, train_ds, _images = data.cnn_data(GOOGLE_MODE)
+def train(google_mode):
+    _all_data, train_ds, _images = data.cnn_data(google_mode)
 
     model = make_model()
 
     history = model.fit(train_ds, epochs=EPOCHS)
 
-    print(f"\nSaving model to {MODEL_PATH}...")
-    model.save(MODEL_PATH)
-    json.dump(history.history, open(HISTORY_PATH, 'w'))
+    model_path = GOOGLE_MODEL_PATH if google_mode else ALBUM_ART_MODEL_PATH
+    print(f"\nSaving model to {model_path}...")
+    model.save(model_path)
+
+    history_path = GOOGLE_HISTORY_PATH if google_mode else ALBUM_ART_HISTORY_PATH
+    json.dump(history.history, open(history_path, 'w'))
     print("Model saved\n")
 # ---------------------------------------------------------------------------- #
 
 
 # ---------------------------------------------------------------------------- #
-def create_intermediate_model():
+def create_intermediate_model(google_mode):
     # TODO: should also skip the normalization layer?
-    model = keras.models.load_model(MODEL_PATH)
+
+    model_path = GOOGLE_MODEL_PATH if google_mode else ALBUM_ART_MODEL_PATH
+    model = keras.models.load_model(model_path)
     # forward pass until the very last layer
     # skip any Dropout layers
     intermediate_model = keras.Sequential()
@@ -142,15 +142,17 @@ def create_intermediate_model():
     print(intermediate_model.summary())
     return intermediate_model
 
-def embeddings():
+def embeddings(google_mode):
     intermediate_model = create_intermediate_model()
     all_data, _train_ds, images = data.cnn_data()
     
-    similarity.embeddings(intermediate_model, all_data, images, EMBEDDINGS_PATH)
+    embeddings_path = GOOGLE_EMBEDDINGS_PATH if google_mode else ALBUM_ART_EMBEDDINGS_PATH
+    similarity.embeddings(intermediate_model, all_data, images, embeddings_path)
 # ---------------------------------------------------------------------------- #
 
 
 # ---------------------------------------------------------------------------- #
-def predict():
-    similarity.predict(TEST_INDEX, distances.cos_dist, embeddings_path=EMBEDDINGS_PATH)
+def predict(google_mode):
+    embeddings_path = GOOGLE_EMBEDDINGS_PATH if google_mode else ALBUM_ART_EMBEDDINGS_PATH
+    similarity.predict(TEST_INDEX, distances.cos_dist, embeddings_path=embeddings_path)
 # ---------------------------------------------------------------------------- #
