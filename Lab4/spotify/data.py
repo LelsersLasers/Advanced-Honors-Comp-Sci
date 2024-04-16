@@ -13,8 +13,8 @@ import os
 import dotenv
 
 
-# import tensorflow as tf
-# import tensorflow.data as data
+import tensorflow as tf
+import tensorflow.data as data
 BUFFER_SIZE = 2000
 BATCH_SIZE = 64
 PREFETCH_SIZE = 2
@@ -287,7 +287,7 @@ def download_all_google_art(all_features, song_count):
     with alive_progress.alive_bar(new_songs) as bar:
         for i, feature in all_features.iterrows():
             file_name = f"{GOOGLE_DIR}/{i:06}.jpg"
-            if i > highest_existing_id:
+            if i > highest_existing_id and not os.path.exists(file_name):
                 download_google_art(feature['name'], feature['artists'], file_name)
                 bar()
 
