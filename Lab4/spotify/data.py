@@ -380,6 +380,7 @@ def cnn_data(google_mode):
     
     print(train_ds)
 
+    # Note: generator is used to avoid loading all images into memory
     images = (img[0].numpy() for img in images_ds)
     
     return all_features, train_ds, images
