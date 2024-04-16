@@ -75,7 +75,7 @@
 ```
 main graphs <args...>
 main [predictor, autoencoder, cnn] [train, embeddings] <args...>
-main [predictor, autoencoder, cnn, simple] predict [song, artist] [search, id] (input)
+main [predictor, autoencoder, cnn, simple] predict [search, id] (input)
 TODO: image input!
 ```
 

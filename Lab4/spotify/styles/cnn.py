@@ -137,14 +137,15 @@ def create_intermediate_model(google_mode):
     # skip any Dropout layers
     intermediate_model = keras.Sequential()
     for (i, layer) in enumerate(model.layers):
+        # and not isinstance(layer, keras.layers.BatchNormalization)
         if not isinstance(layer, keras.layers.Dropout) and i < len(model.layers) - 1:
             intermediate_model.add(layer)
     print(intermediate_model.summary())
     return intermediate_model
 
 def embeddings(google_mode):
-    intermediate_model = create_intermediate_model()
-    all_data, _train_ds, images = data.cnn_data()
+    intermediate_model = create_intermediate_model(google_mode)
+    all_data, _train_ds, images = data.cnn_data(google_mode)
     
     embeddings_path = GOOGLE_EMBEDDINGS_PATH if google_mode else ALBUM_ART_EMBEDDINGS_PATH
     similarity.embeddings(intermediate_model, all_data, images, embeddings_path)

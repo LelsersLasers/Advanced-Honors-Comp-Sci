@@ -18,11 +18,11 @@ styles.autoencoder.embeddings()
 styles.autoencoder.predict()
 
 
-import styles.cnn
-styles.cnn.train(True)
-styles.cnn.embeddings(True)
-styles.cnn.predict(True)
+# import styles.cnn
+# styles.cnn.train(True)
+# styles.cnn.embeddings(True)
+# styles.cnn.predict(True)
 
-styles.cnn.train(False)
-styles.cnn.embeddings(False)
-styles.cnn.predict(False)
+# styles.cnn.train(False)
+# styles.cnn.embeddings(False)
+# styles.cnn.predict(False)
