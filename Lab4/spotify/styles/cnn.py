@@ -23,10 +23,19 @@ LEARNING_RATE = 0.00003
 IMAGE_SIZE = (128, 128)
 
 
-# TODO: enable saving for google vs album art models
-MODEL_PATH      = 'output/save-cnn'
-HISTORY_PATH    = 'output/save-cnn/history.json'
-EMBEDDINGS_PATH = 'output/save-cnn/embeddings.txt'
+GOOGLE_MODE = False
+
+GOOGLE_MODEL_PATH    = 'output/save-cnn/google/model'
+ALBUM_ART_MODEL_PATH = 'output/save-cnn/album_art/model'
+MODEL_PATH = GOOGLE_MODEL_PATH if GOOGLE_MODE else ALBUM_ART_MODEL_PATH
+
+GOOGLE_HISTORY_PATH    = 'output/save-cnn/google/history.json'
+ALBUM_ART_HISTORY_PATH = 'output/save-cnn/album_art/history.json'
+HISTORY_PATH = GOOGLE_HISTORY_PATH if GOOGLE_MODE else ALBUM_ART_HISTORY_PATH
+
+GOOGLE_EMBEDDINGS_PATH    = 'output/save-cnn/google/embeddings.txt'
+ALBUM_ART_EMBEDDINGS_PATH = 'output/save-cnn/album_art/embeddings.txt'
+EMBEDDINGS_PATH = GOOGLE_EMBEDDINGS_PATH if GOOGLE_MODE else ALBUM_ART_EMBEDDINGS_PATH
 # ---------------------------------------------------------------------------- #
 
 
@@ -107,7 +116,7 @@ def make_model():
     return model
 
 def train():
-    _all_data, train_ds, _images = data.cnn_data()
+    _all_data, train_ds, _images = data.cnn_data(GOOGLE_MODE)
 
     model = make_model()
 
@@ -123,7 +132,6 @@ def train():
 # ---------------------------------------------------------------------------- #
 def create_intermediate_model():
     # TODO: should also skip the normalization layer?
-    
     model = keras.models.load_model(MODEL_PATH)
     # forward pass until the very last layer
     # skip any Dropout layers

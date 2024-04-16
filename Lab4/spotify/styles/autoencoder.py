@@ -20,7 +20,7 @@ TEST_INDEX = 17424 - 2
 EPOCHS = 10
 LEARNING_RATE = 0.0001
 
-MODEL_PATH      = 'output/save-autoencoder'
+MODEL_PATH      = 'output/save-autoencoder/model'
 HISTORY_PATH    = 'output/save-autoencoder/history.json'
 EMBEDDINGS_PATH = 'output/save-autoencoder/embeddings.txt'
 # ---------------------------------------------------------------------------- #

@@ -354,22 +354,23 @@ def download_google_art(name, artists, file_name):
     cv2.imwrite(file_name, img)
 
 
-def cnn_data():
+def cnn_data(google_mode):
     all_features, data_features = autoencoder_data()
     song_count = data_features.shape[0]
 
     print(f"\nLoading album art for {song_count} songs...")
 
-    # images_ds = load_art_from_files(song_count, ALBUM_DIR)
-    # if images_ds is None:
-    #     i_and_urls = get_urls(all_features, song_count)
-    #     download_all_album_art(i_and_urls, song_count)
-    #     images_ds = load_art_from_files(song_count, ALBUM_DIR)
-
-    images_ds = load_art_from_files(song_count, GOOGLE_DIR)
-    if images_ds is None:
-        download_all_google_art(all_features, song_count)
+    if google_mode:
         images_ds = load_art_from_files(song_count, GOOGLE_DIR)
+        if images_ds is None:
+            download_all_google_art(all_features, song_count)
+            images_ds = load_art_from_files(song_count, GOOGLE_DIR)
+    else:
+        images_ds = load_art_from_files(song_count, ALBUM_DIR)
+        if images_ds is None:
+            i_and_urls = get_urls(all_features, song_count)
+            download_all_album_art(i_and_urls, song_count)
+            images_ds = load_art_from_files(song_count, ALBUM_DIR)
         
     data_labels = data.Dataset.from_tensor_slices(data_features)
     train_ds = (data.Dataset.zip((images_ds, data_labels))

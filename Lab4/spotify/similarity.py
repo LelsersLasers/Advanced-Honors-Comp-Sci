@@ -111,6 +111,6 @@ def predict(target_idx, dist_fn, embeddings_path=None, all_data_and_embeddings=N
     print("BASE SONG:", target_data['name'], "by", target_data['artists'])
     for i in range(10):
         dist, song = dists[i]
-        print(f"{i + 1}) {song['name']} by {song['artists']} (dist value: {dist:.4f})")
+        print(f"{(i + 1):2}) {song['name']} by {song['artists']} (dist value: {dist:.4f})")
     # ------------------------------------------------------------------------ #
 # ---------------------------------------------------------------------------- #
