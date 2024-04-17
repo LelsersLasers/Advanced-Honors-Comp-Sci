@@ -26,7 +26,7 @@
 - Correlation: 
     - Auto: https://www.tensorflow.org/probability/api_docs/python/tfp/stats/auto_correlation
     - Pearson: https://www.tensorflow.org/probability/api_docs/python/tfp/stats/correlation
-- Multiprocessing + status bar: https://stackoverflow.com/questions/5666576/show-the-progress-of-a-python-multiprocessing-pool-imap-unordered-call
+- shadcn-svelte: https://www.shadcn-svelte.com/
 
 ## Ideas
 
