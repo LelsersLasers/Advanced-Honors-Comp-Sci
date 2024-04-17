@@ -3,7 +3,7 @@ import tensorflow.keras as keras
 import tensorflow.keras.layers as layers
 import tensorflow.keras.losses as losses
 import tensorflow.keras.optimizers as optimizers
-import tensorflow.keras.activations as activations
+# import tensorflow.keras.activations as activations
 
 print(f"\n\nTensorflow version: {tf.__version__}")
 
@@ -17,8 +17,8 @@ import similarity
 # ---------------------------------------------------------------------------- #
 TEST_INDEX = 17424 - 2
 
-EPOCHS = 24
-LEARNING_RATE = 0.00003
+EPOCHS = 8
+LEARNING_RATE = 0.0003
 
 IMAGE_SIZE = (128, 128)
 
