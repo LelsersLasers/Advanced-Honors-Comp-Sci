@@ -8,7 +8,7 @@ import cv2
 
 import data
 
-SAVE_PATH = "output/temp/"
+SAVE_PATH = "output/temp/heat_map-"
 
 
 def correlations(data_features, method):
