@@ -1,5 +1,5 @@
 <script>
-	import { getContext } from 'svelte';
+	import { getContext, onMount } from 'svelte';
 	const FLASK_URL = getContext('flask_url');
 
 	let checked_values = {
@@ -15,11 +15,7 @@
 		speechiness: true,
 		tempo: true,
 		valence: true,
-		correlation_active: true,
 		correlation_method: "pearson",
-		timeline_active: true,
-		genre_bar_active: true,
-		artists_active: true
 	};
 	function updated_checked_values() {
 		checked_values.year = document.querySelector('input[name="year_checkbox"]').checked;
@@ -34,15 +30,8 @@
 		checked_values.speechiness = document.querySelector('input[name="speechiness_checkbox"]').checked;
 		checked_values.tempo = document.querySelector('input[name="tempo_checkbox"]').checked;
 		checked_values.valence = document.querySelector('input[name="valence_checkbox"]').checked;
-		checked_values.correlation_active = document.querySelector('input[name="correlation_active"]').checked;
 		checked_values.correlation_method = document.querySelector('select[name="correlation_method"]').value;
-		checked_values.timeline_active = document.querySelector('input[name="timeline_active"]').checked;
-		checked_values.genre_bar_active = document.querySelector('input[name="genre_bar_active"]').checked;
-		checked_values.artists_active = document.querySelector('input[name="artists_active"]').checked;
-	}
 
-	$: {
-		console.log(checked_values);
 		fetch(FLASK_URL + "/graphs", {
 			method: 'POST',
 			headers: {
@@ -64,7 +53,29 @@
 			});
 	}
 
+	onMount(() => {
+		updated_checked_values();
+	});
+
 </script>
+
+<style>
+	div {
+		padding: 1em;
+	}
+
+	#holder {
+		display: flex;
+	}
+
+	#left {
+		width: 25%;
+	}
+
+	#right {
+		width: 75%;
+	}
+</style>
 
 
 <div id="holder">
@@ -124,12 +135,7 @@
 		<br />
 
 
-
 		<h2>Correlation</h2>
-
-		<input type="checkbox" name="correlation_active" checked="checked" on:input={updated_checked_values} />
-		<label for="correlation_active">Active</label>
-		<br />
 
 		<label for="correlation_method">Correlation Method:</label>
 		<select name="correlation_method" on:input={updated_checked_values}>
@@ -141,32 +147,10 @@
 		<br />
 
 
-		<h2>Timeline</h2>
-
-		<input type="checkbox" name="timeline_active" checked="checked" on:input={updated_checked_values} />
-		<label for="timeline_active">Active</label>
-
 		<br />
-
-
-		<h2>Genre Bar</h2>
-
-		<input type="checkbox" name="genre_bar_active" checked="checked" on:input={updated_checked_values} />
-		<label for="genre_bar_active">Active</label>
-
+		<hr />
 		<br />
-
-
-		<h2>Artists</h2>
-
-		<input type="checkbox" name="artists_active" checked="checked" />
-		<label for="artists_active">Active</label>
-
-		<br />
-
-
-		<br />
-
+		
 		<a href="/">
 			<button>Back to Home</button>
 		</a>
@@ -176,18 +160,3 @@
 
 	</div>
 </div>
-
-
-<style>
-	#holder {
-		display: flex;
-	}
-
-	#left {
-		width: 33%;
-	}
-
-	#right {
-		width: 66%;
-	}
-</style>
