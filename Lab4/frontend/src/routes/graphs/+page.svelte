@@ -75,6 +75,20 @@
 	#right {
 		width: 75%;
 	}
+
+	#graph_holder {
+		display: grid;
+		gap: 0;
+
+		grid-template-columns: repeat(2, 1fr);
+		grid-template-columns: repeat(2, 1fr);
+
+		width: 100%;
+		height: 100%;
+
+		justify-self: center;
+		align-self: center;
+	}
 </style>
 
 
@@ -156,7 +170,13 @@
 		</a>
 
 	</div>
-	<div id="right">
 
+	<div id="right">
+		<div id="graph_holder">
+			<div id="graph1"></div>
+			<div id="graph2"></div>
+			<div id="graph3"></div>
+			<div id="graph4"></div>
+		</div>
 	</div>
 </div>
