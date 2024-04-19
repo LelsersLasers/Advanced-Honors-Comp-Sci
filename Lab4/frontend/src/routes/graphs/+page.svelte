@@ -34,10 +34,6 @@
 		id: ID,
 	};
 	function update_and_fetch() {
-		for (let key in loading) {
-			loading[key] = true;
-		}
-
 		request_dict.year = document.querySelector('input[name="year_checkbox"]').checked;
 		request_dict.popularity = document.querySelector('input[name="popularity_checkbox"]').checked;
 		request_dict.acousticness = document.querySelector('input[name="acousticness_checkbox"]').checked;
@@ -52,52 +48,32 @@
 		request_dict.valence = document.querySelector('input[name="valence_checkbox"]').checked;
 		request_dict.correlation_method = document.querySelector('select[name="correlation_method"]').value;
 
-		let url = FLASK_URL + "/all_graphs" + "?";
-		for (let key in request_dict) {
-			url += key + "=" + request_dict[key] + "&";
-		}
+		for (let key in loading) {
+			loading[key] = true;
 
-		fetch(url)
-			.then(response => response.json())
-			.then(data => {
-				for (let ele_id in data) {
-					const ele = document.getElementById(ele_id);
-					const graph_b64 = data[ele_id];
+			let url = FLASK_URL + "graphs_bs64/" + key + "?";
+
+			for (let key in request_dict) {
+				url += key + "=" + request_dict[key] + "&";
+			}
+
+			fetch(url)
+				.then(response => response.json())
+				.then(data => {
+					const ele = document.getElementById(key);
+					const graph_b64 = data["graph"];
 					ele.src = "data:image/jpeg;base64," + graph_b64;
 					ele.style.display = "block";
 
-					loading[ele_id] = false;
-					loading_initial[ele_id] = false;
-				}
-			})
-			.catch((error) => {
-				console.error('Error:', error);
-				loading = false;
-				for (let key in loading) {
 					loading[key] = false;
 					loading_initial[key] = false;
-				}
-			});
-
-		// fetch(FLASK_URL + "/graphs", {
-		// 	method: 'POST',
-		// 	headers: {
-		// 		'Content-Type': 'application/json'
-		// 	},
-		// 	body: JSON.stringify(checked_values)
-		// })
-		// 	.then(response => response.json())
-		// 	.then(data => {
-		// 		console.log(data);
-		// 		for (let key in data) {
-		// 			console.log(key);
-		// 			console.log(data[key]);
-		// 		}
-		// 		// document.getElementById('right').innerHTML = data.html;
-		// 	})
-		// 	.catch((error) => {
-		// 		console.error('Error:', error);
-		// 	});
+				})
+				.catch((error) => {
+					console.error('Error:', error);
+					loading[key] = false;
+					loading_initial[key] = false;
+				});
+		}
 	}
 
 	onMount(() => {
