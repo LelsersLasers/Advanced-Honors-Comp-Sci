@@ -20,4 +20,5 @@ def graph_to_b64(id, save_path):
 	time.sleep(0.1)
 
 	os.remove(file_path)
+
 	return b64

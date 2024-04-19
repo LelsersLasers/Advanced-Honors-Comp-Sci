@@ -27,14 +27,14 @@ def all_graphs():
 
     heat_map = graphs.heat_map.full_heat_map(categories_values, correlation_method, id)
     time_line = graphs.time_line.time_line_full(categories_values, id)
-    # graphs.group_bar.bar_full(categories_values, "genres")
-    # graphs.group_bar.bar_full(categories_values, "artists")
+    genre_bar = graphs.group_bar.bar_full(categories_values, "genres", id)
+    artists = graphs.group_bar.bar_full(categories_values, "artists", id)
 
     response_dict = {
         "heat_map": heat_map,
         "time_line": time_line,
-        "genre_bar": "",
-        "artists": ""
+        "genre_bar": genre_bar,
+        "artists": artists,
     }
     return create_response(response_dict)
 

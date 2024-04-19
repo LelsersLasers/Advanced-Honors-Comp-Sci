@@ -1,10 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+import graphs.save_graph
 import data
 
 
-def bar_full(categories, group):
+SAVE_PATH = "output/temp/bar-"
+
+
+def bar_full(categories, group, id=None):
 	categories.append(group)
 
 	groups, data_features = data.artist_data() if group == "artists" else data.genre_data()
@@ -33,3 +37,9 @@ def bar_full(categories, group):
 	ax.set_xticks(x + width, groups)
 	ax.legend(loc='upper left', ncols=len(data_features))
 	ax.set_ylim(0, 1.1)
+
+	if id is not None:
+		save_path = SAVE_PATH + group + "-"
+		return graphs.save_graph.graph_to_b64(id, save_path)
+	else:
+		return None
