@@ -3,7 +3,19 @@
 	const FLASK_URL = getContext('flask_url');
 	const ID = getContext('id');
 
-	let loading = false;
+	let loading_initial = {
+		"heat_map": true,
+		"time_line": true,
+		"artists": true,
+		"genre_bar": true,
+	};
+	
+	let loading = {
+		"heat_map": true,
+		"time_line": true,
+		"artists": true,
+		"genre_bar": true,
+	};
 
 	let request_dict = {
 		year: true,
@@ -22,7 +34,9 @@
 		id: ID,
 	};
 	function update_and_fetch() {
-		loading = true;
+		for (let key in loading) {
+			loading[key] = true;
+		}
 
 		request_dict.year = document.querySelector('input[name="year_checkbox"]').checked;
 		request_dict.popularity = document.querySelector('input[name="popularity_checkbox"]').checked;
@@ -46,17 +60,23 @@
 		fetch(url)
 			.then(response => response.json())
 			.then(data => {
-				console.log(data);
 				for (let ele_id in data) {
 					const ele = document.getElementById(ele_id);
 					const graph_b64 = data[ele_id];
 					ele.src = "data:image/jpeg;base64," + graph_b64;
+					ele.style.display = "block";
+
+					loading[ele_id] = false;
+					loading_initial[ele_id] = false;
 				}
-				loading = false;
 			})
 			.catch((error) => {
 				console.error('Error:', error);
 				loading = false;
+				for (let key in loading) {
+					loading[key] = false;
+					loading_initial[key] = false;
+				}
 			});
 
 		// fetch(FLASK_URL + "/graphs", {
@@ -127,6 +147,26 @@
 
 		justify-self: center;
 		align-self: center;
+	}
+
+	.image_placeholder {
+		display: flex;
+		justify-content: center;
+	}
+
+	.loader {
+		border: 16px solid #f3f3f3;
+		border-top: 16px solid #3498db;
+		border-radius: 50%;
+		width: 80px;
+		height: 80px;
+		animation: spin 2s linear infinite;
+		margin: 2em;
+	}
+
+	@keyframes spin {
+		0% { transform: rotate(0deg); }
+		100% { transform: rotate(360deg); }
 	}
 
 
@@ -205,7 +245,13 @@
 		<br />
 		<hr />
 
-		<p>Loading: {loading}</p>
+		<h3>Loading</h3>
+		<ul>
+			<li>Heat Map: {loading["heat_map"]}</li>
+			<li>Time Line: {loading["time_line"]}</li>
+			<li>Artists: {loading["artists"]}</li>
+			<li>Genres: {loading["genre_bar"]}</li>
+		</ul>
 
 
 		<hr />
@@ -219,10 +265,33 @@
 
 	<div id="right">
 		<div id="graph_holder">
-			<img id="heat_map" alt="Heat Map" />
-			<img id="time_line" alt="Time Line" />
-			<img id="artists" alt="Artists Bar Graph" />
-			<img id="genre_bar" alt="Genre Bar Graph" />
+			{#if loading_initial["heat_map"]}
+				<div class="image_placeholder">
+					<div class="loader"></div>
+				</div>
+			{/if}
+			<img id="heat_map" alt="Heat Map" style="display: none" />
+
+			{#if loading_initial["time_line"]}
+			<div class="image_placeholder">
+				<div class="loader"></div>
+			</div>
+			{/if}
+			<img id="time_line" alt="Heat Map" style="display: none" />
+
+			{#if loading_initial["artists"]}
+			<div class="image_placeholder">
+				<div class="loader"></div>
+			</div>
+			{/if}
+			<img id="artists" alt="Heat Map" style="display: none" />
+
+			{#if loading_initial["genre_bar"]}
+			<div class="image_placeholder">
+				<div class="loader"></div>
+			</div>
+			{/if}
+			<img id="genre_bar" alt="Heat Map" style="display: none" />
 		</div>
 	</div>
 </div>
