@@ -7,7 +7,8 @@ import cv2
 
 
 def graph_to_b64(id, save_path):
-	os.makedirs(save_path, exist_ok=True)
+	folder_path = "/".join(save_path.split("/")[:-1])
+	os.makedirs(folder_path, exist_ok=True)
 
 	file_path = f"{save_path}{id}.png"
 	plt.savefig(file_path)
