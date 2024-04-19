@@ -1,12 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-import os
-import time
-import base64
-import cv2
-
+import graphs.save_graph
 import data
+
 
 SAVE_PATH = "output/temp/heat_map-"
 
@@ -36,18 +33,7 @@ def heat_map(corr, data_features, method, id):
 	plt.colorbar()
 
 	if id is not None:
-		os.makedirs(SAVE_PATH, exist_ok=True)
-
-		file_path = f"{SAVE_PATH}{id}.png"
-		plt.savefig(file_path)
-		plt.close()
-		time.sleep(0.2)
-
-		img = cv2.imread(file_path)
-		b64 = base64.b64encode(cv2.imencode('.jpg', img)[1]).decode()
-		os.remove(file_path)
-
-		return b64
+		return graphs.save_graph.graph_to_b64(id, SAVE_PATH)
 	else:
 		return None
 

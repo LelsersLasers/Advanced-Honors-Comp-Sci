@@ -26,13 +26,13 @@ def all_graphs():
 
 
     heat_map = graphs.heat_map.full_heat_map(categories_values, correlation_method, id)
-    # graphs.time_line.time_line_full(categories_values)
+    time_line = graphs.time_line.time_line_full(categories_values, id)
     # graphs.group_bar.bar_full(categories_values, "genres")
     # graphs.group_bar.bar_full(categories_values, "artists")
 
     response_dict = {
         "heat_map": heat_map,
-        "time_line": "",
+        "time_line": time_line,
         "genre_bar": "",
         "artists": ""
     }

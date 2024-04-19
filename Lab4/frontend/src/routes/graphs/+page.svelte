@@ -48,7 +48,6 @@
 			.then(data => {
 				console.log(data);
 				for (let ele_id in data) {
-					console.warn(ele_id);
 					const ele = document.getElementById(ele_id);
 					const graph_b64 = data[ele_id];
 					ele.src = "data:image/jpeg;base64," + graph_b64;
@@ -86,6 +85,11 @@
 	});
 
 </script>
+
+<svelte:head>
+	<title>Graphs</title>
+</svelte:head>
+
 
 <style>
 	div {
