@@ -137,51 +137,51 @@
 
 		<h3>Categories</h3>
 
-		<input type="checkbox" name="year_checkbox" checked="checked" on:input={update_and_fetch} />
+		<input type="checkbox" id="year_checkbox" name="year_checkbox" checked="checked" on:input={update_and_fetch} />
 		<label for="year_checkbox">Year</label>
 		<br />
 
-		<input type="checkbox" name="popularity_checkbox" checked="checked" on:input={update_and_fetch} />
+		<input type="checkbox" id="popularity_checkbox" name="popularity_checkbox" checked="checked" on:input={update_and_fetch} />
 		<label for="popularity_checkbox">Popularity</label>
 		<br />
 
-		<input type="checkbox" name="acousticness_checkbox" checked="checked" on:input={update_and_fetch} />
+		<input type="checkbox" id="acousticness_checkbox" name="acousticness_checkbox" checked="checked" on:input={update_and_fetch} />
 		<label for="acousticness_checkbox">Acousticness</label>
 		<br />
 
-		<input type="checkbox" name="danceability_checkbox" checked="checked" on:input={update_and_fetch} />
+		<input type="checkbox" id="danceability_checkbox" name="danceability_checkbox" checked="checked" on:input={update_and_fetch} />
 		<label for="danceability_checkbox">Danceability</label>
 		<br />
 
-		<input type="checkbox" name="duration_ms_checkbox" checked="checked" on:input={update_and_fetch} />
+		<input type="checkbox" id="duration_ms_checkbox" name="duration_ms_checkbox" checked="checked" on:input={update_and_fetch} />
 		<label for="duration_ms_checkbox">Duration (ms)</label>
 		<br />
 
-		<input type="checkbox" name="energy_checkbox" checked="checked" on:input={update_and_fetch} />
+		<input type="checkbox" id="energy_checkbox" name="energy_checkbox" checked="checked" on:input={update_and_fetch} />
 		<label for="energy_checkbox">Energy</label>
 		<br />
 
-		<input type="checkbox" name="instrumentalness_checkbox" checked="checked" on:input={update_and_fetch} />
+		<input type="checkbox" id="instrumentalness_checkbox" name="instrumentalness_checkbox" checked="checked" on:input={update_and_fetch} />
 		<label for="instrumentalness_checkbox">Instrumentalness</label>
 		<br />
 
-		<input type="checkbox" name="liveness_checkbox" checked="checked" on:input={update_and_fetch} />
+		<input type="checkbox" id="liveness_checkbox" name="liveness_checkbox" checked="checked" on:input={update_and_fetch} />
 		<label for="liveness_checkbox">Liveness</label>
 		<br />
 
-		<input type="checkbox" name="loudness_checkbox" checked="checked" on:input={update_and_fetch} />
+		<input type="checkbox" id="loudness_checkbox" name="loudness_checkbox" checked="checked" on:input={update_and_fetch} />
 		<label for="loudness_checkbox">Loudness</label>
 		<br />
 
-		<input type="checkbox" name="speechiness_checkbox" checked="checked" on:input={update_and_fetch} />
+		<input type="checkbox" id="speechiness_checkbox" name="speechiness_checkbox" checked="checked" on:input={update_and_fetch} />
 		<label for="speechiness_checkbox">Speechiness</label>
 		<br />
 
-		<input type="checkbox" name="tempo_checkbox" checked="checked" on:input={update_and_fetch} />
+		<input type="checkbox" id="tempo_checkbox" name="tempo_checkbox" checked="checked" on:input={update_and_fetch} />
 		<label for="tempo_checkbox">Tempo</label>
 		<br />
 
-		<input type="checkbox" name="valence_checkbox" checked="checked" on:input={update_and_fetch} />
+		<input type="checkbox" id="valence_checkbox" name="valence_checkbox" checked="checked" on:input={update_and_fetch} />
 		<label for="valence_checkbox">Valence</label>
 		<br />
 
@@ -191,7 +191,7 @@
 		<h2>Correlation</h2>
 
 		<label for="correlation_method">Method:</label>
-		<select name="correlation_method" on:input={update_and_fetch}>
+		<select id="correlation_method" name="correlation_method" on:input={update_and_fetch}>
 			<option value="pearson">Pearson</option>
 			<option value="spearman">Spearman</option>
 			<option value="kendall">Kendall</option>
