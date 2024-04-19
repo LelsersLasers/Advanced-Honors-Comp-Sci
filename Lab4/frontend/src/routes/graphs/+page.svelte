@@ -34,6 +34,8 @@
 		id: ID,
 	};
 	function update_and_fetch() {
+		let keys = Object.keys(loading);
+
 		request_dict.year = document.querySelector('input[name="year_checkbox"]').checked;
 		request_dict.popularity = document.querySelector('input[name="popularity_checkbox"]').checked;
 		request_dict.acousticness = document.querySelector('input[name="acousticness_checkbox"]').checked;
@@ -46,15 +48,21 @@
 		request_dict.speechiness = document.querySelector('input[name="speechiness_checkbox"]').checked;
 		request_dict.tempo = document.querySelector('input[name="tempo_checkbox"]').checked;
 		request_dict.valence = document.querySelector('input[name="valence_checkbox"]').checked;
-		request_dict.correlation_method = document.querySelector('select[name="correlation_method"]').value;
 
-		for (let key in loading) {
+		const old_correlation_method = request_dict.correlation_method;
+		request_dict.correlation_method = document.querySelector('select[name="correlation_method"]').value;
+		if (request_dict.correlation_method != old_correlation_method) {
+			keys = ["heat_map"];
+		}
+
+		for (let i in keys) {
+			const key = keys[i];
 			loading[key] = true;
 
 			let url = FLASK_URL + "graphs_bs64/" + key + "?";
 
-			for (let key in request_dict) {
-				url += key + "=" + request_dict[key] + "&";
+			for (let k in request_dict) {
+				url += k + "=" + request_dict[k] + "&";
 			}
 
 			fetch(url)
