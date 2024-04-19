@@ -1,4 +1,6 @@
 <script>
+	import Graph from './Graph.svelte';
+
 	import { getContext, onMount } from 'svelte';
 	const FLASK_URL = getContext('flask_url');
 	const ID = getContext('id');
@@ -8,6 +10,13 @@
 		"time_line": true,
 		"artists": true,
 		"genre_bar": true,
+	};
+
+	let graphs = {
+		"heat_map": "",
+		"time_line": "",
+		"artists": "",
+		"genre_bar": "",
 	};
 	
 	let request_dict = {
@@ -60,15 +69,12 @@
 			fetch(url)
 				.then(response => response.json())
 				.then(data => {
-					const ele = document.getElementById(key);
 					const graph_b64 = data["graph"];
-					ele.src = "data:image/jpeg;base64," + graph_b64;
-					ele.style.display = "block";
+					graphs[key] = graph_b64;
 					loading_initial[key] = false;
 				})
 				.catch((error) => {
 					console.error('Error:', error);
-					loading_initial[key] = false;
 				});
 		}
 	}
@@ -87,11 +93,6 @@
 <style>
 	div {
 		padding: 0.5em;
-	}
-
-	img {
-		width: 100%;
-		height: 100%;
 	}
 
 	#holder {
@@ -121,28 +122,6 @@
 		justify-self: center;
 		align-self: center;
 	}
-
-	.image_placeholder {
-		display: flex;
-		justify-content: center;
-	}
-
-	.loader {
-		border: 16px solid #f3f3f3;
-		border-top: 16px solid #3498db;
-		border-radius: 50%;
-		width: 80px;
-		height: 80px;
-		animation: spin 2s linear infinite;
-		margin: 2em;
-	}
-
-	@keyframes spin {
-		0% { transform: rotate(0deg); }
-		100% { transform: rotate(360deg); }
-	}
-
-
 </style>
 
 
@@ -226,33 +205,10 @@
 
 	<div id="right">
 		<div id="graph_holder">
-			{#if loading_initial["heat_map"]}
-				<div class="image_placeholder">
-					<div class="loader"></div>
-				</div>
-			{/if}
-			<img id="heat_map" alt="Heat Map" style="display: none" />
-
-			{#if loading_initial["time_line"]}
-			<div class="image_placeholder">
-				<div class="loader"></div>
-			</div>
-			{/if}
-			<img id="time_line" alt="Heat Map" style="display: none" />
-
-			{#if loading_initial["artists"]}
-			<div class="image_placeholder">
-				<div class="loader"></div>
-			</div>
-			{/if}
-			<img id="artists" alt="Heat Map" style="display: none" />
-
-			{#if loading_initial["genre_bar"]}
-			<div class="image_placeholder">
-				<div class="loader"></div>
-			</div>
-			{/if}
-			<img id="genre_bar" alt="Heat Map" style="display: none" />
+			<Graph name="heat_map"  bind:graph_b64={graphs["heat_map"]}  bind:loading_initial={loading_initial["heat_map"]}  />
+			<Graph name="time_line" bind:graph_b64={graphs["time_line"]} bind:loading_initial={loading_initial["time_line"]} />
+			<Graph name="artists"   bind:graph_b64={graphs["artists"]}   bind:loading_initial={loading_initial["artists"]}   />
+			<Graph name="genre_bar" bind:graph_b64={graphs["genre_bar"]} bind:loading_initial={loading_initial["genre_bar"]} />
 		</div>
 	</div>
 </div>
