@@ -4,7 +4,11 @@ import graphs.heat_map
 import graphs.time_line
 import graphs.group_bar
 
+import spotify
+
 app = flask.Flask(__name__)
+
+sp = spotify.create_sp()
 
 
 def create_response(value):
@@ -37,5 +41,12 @@ def graphs_bs64(graph):
         "graph": output
     }
     return create_response(response_dict)
+
+@app.route("/spotify/search/<q>", methods=["GET"])
+def search_spotify(q):
+    print("Searching for: ", q)
+    result = spotify.search_spotify(sp, q)
+    print("Result: ", result)
+    return create_response(result)
 
 app.run(debug=False, port=5000, host="0.0.0.0", threaded=False, processes=1)

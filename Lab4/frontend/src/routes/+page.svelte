@@ -1,3 +1,7 @@
+<svelte:head>
+	<title>Song Recommender</title>
+</svelte:head>
+
 
 <h1>Song Recommender</h1>
 

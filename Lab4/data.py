@@ -5,12 +5,10 @@ import numpy as np
 
 import PIL
 
-import spotipy
-import spotipy.oauth2
+import spotify
 import urllib
 import cv2
 import os
-import dotenv
 
 
 import tensorflow as tf
@@ -188,11 +186,7 @@ def get_urls(all_features, song_count):
     else:
         os.makedirs(BASE_DIR, exist_ok=True)
     
-    env = dotenv.dotenv_values('.env')
-    spotify_client = env['SPOTIPY_CLIENT']
-    spotify_secret = env['SPOTIPY_SECRET']
-    client_credentials_manager = spotipy.oauth2.SpotifyClientCredentials(spotify_client, spotify_secret)
-    spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+    sp = spotify.create_sp()
 
     print("Reading song ids...")
     ids = [all_features.iloc[i]['id'] for i in range(song_count)]
@@ -203,7 +197,7 @@ def get_urls(all_features, song_count):
     with open(URL_FILE, 'w') as f:
         with alive_progress.alive_bar(track_chunk_count) as bar:
             for i in range(0, song_count, MAX_TRACKS):
-                tracks = spotify.tracks(ids[i:i + MAX_TRACKS])
+                tracks = sp.tracks(ids[i:i + MAX_TRACKS])
                 
                 for track in tracks['tracks']:
                     try:
