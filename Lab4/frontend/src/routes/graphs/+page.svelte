@@ -10,13 +10,6 @@
 		"genre_bar": true,
 	};
 	
-	let loading = {
-		"heat_map": true,
-		"time_line": true,
-		"artists": true,
-		"genre_bar": true,
-	};
-
 	let request_dict = {
 		year: true,
 		popularity: true,
@@ -34,7 +27,7 @@
 		id: ID,
 	};
 	function update_and_fetch() {
-		let keys = Object.keys(loading);
+		let keys = Object.keys(loading_initial);
 
 		request_dict.year = document.querySelector('input[name="year_checkbox"]').checked;
 		request_dict.popularity = document.querySelector('input[name="popularity_checkbox"]').checked;
@@ -57,7 +50,6 @@
 
 		for (let i in keys) {
 			const key = keys[i];
-			loading[key] = true;
 
 			let url = FLASK_URL + "graphs_bs64/" + key + "?";
 
@@ -72,13 +64,10 @@
 					const graph_b64 = data["graph"];
 					ele.src = "data:image/jpeg;base64," + graph_b64;
 					ele.style.display = "block";
-
-					loading[key] = false;
 					loading_initial[key] = false;
 				})
 				.catch((error) => {
 					console.error('Error:', error);
-					loading[key] = false;
 					loading_initial[key] = false;
 				});
 		}
@@ -225,19 +214,7 @@
 
 		<br />
 
-
 		<br />
-		<hr />
-
-		<h3>Loading</h3>
-		<ul>
-			<li>Heat Map: {loading["heat_map"]}</li>
-			<li>Time Line: {loading["time_line"]}</li>
-			<li>Artists: {loading["artists"]}</li>
-			<li>Genres: {loading["genre_bar"]}</li>
-		</ul>
-
-
 		<hr />
 		<br />
 		
