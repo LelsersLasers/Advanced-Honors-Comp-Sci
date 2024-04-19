@@ -6,6 +6,8 @@
 
 	let search_results;
 
+	let invalid_id = false;
+
 
 	let search_term = "";
 	function search_spotify() {
@@ -24,7 +26,23 @@
 
 	let fetch_id = "";
 	function fetch_spotify() {
-		
+		const test_valid_id_url = FLASK_URL + "spotify/test/" + fetch_id;
+		fetch(test_valid_id_url)
+			.then(response => response.json())
+			.then(data => {
+				if (data.valid) {
+					/*
+					const url = FLASK_URL + "spotify/fetch/" + fetch_id;
+					fetch(url)
+						.then(response => response.json())
+						.then(data => {
+							console.log(data);
+						});
+					*/
+				} else {
+					invalid_id = true;
+				}
+			});
 	}
 	
 </script>
@@ -61,7 +79,7 @@
 			<h2>Results</h2>
 			<ul>
 				{#each search_results as result (result.id)}
-					<li>{result.name} by {result.authors}</li>
+					<li>{result.name} by {result.authors} <button on:click={() => fetch_spotify(result.id)}>Fetch</button></li>
 				{/each}
 			</ul>
 		{/if}
@@ -70,4 +88,8 @@
 	<label for="id">ID:</label>
 	<input type="text" id="id" name="id" bind:value={fetch_id} />
 	<button on:click={fetch_spotify}>Fetch</button>
+
+	{#if invalid_id}
+		<p>Invalid ID!</p>
+	{/if}
 {/if}
