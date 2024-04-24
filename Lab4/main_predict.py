@@ -1,5 +1,6 @@
 # import data
-# data.cnn_data()
+# data.cnn_data(True)
+# data.cnn_data(False)
 
 
 # import styles.simple
@@ -23,6 +24,6 @@ styles.cnn.train(True)
 styles.cnn.embeddings(True)
 styles.cnn.predict(True)
 
-styles.cnn.train(False)
-styles.cnn.embeddings(False)
-styles.cnn.predict(False)
+# styles.cnn.train(False)
+# styles.cnn.embeddings(False)
+# styles.cnn.predict(False)

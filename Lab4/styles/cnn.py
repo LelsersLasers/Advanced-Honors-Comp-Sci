@@ -18,7 +18,7 @@ import similarity
 TEST_INDEX = 17424 - 2
 
 EPOCHS = 8
-LEARNING_RATE = 0.0003
+LEARNING_RATE = 0.001
 
 IMAGE_SIZE = (128, 128)
 
@@ -102,8 +102,12 @@ def make_model():
         layers.Dense(13),
     ])
 
-    loss = losses.MeanSquaredError()
-    optimizer = optimizers.Adam(learning_rate=LEARNING_RATE)
+    # loss = losses.MeanSquaredError()
+    loss = losses.MeanAbsoluteError()
+    # loss = losses.CosineSimilarity()
+
+    # optimizer = optimizers.Adam(learning_rate=LEARNING_RATE)
+    optimizer = optimizers.RMSprop(learning_rate=LEARNING_RATE)
 
     model.compile(optimizer=optimizer, loss=loss)
     print(model.summary())
