@@ -32,7 +32,7 @@ IMAGE_SIZE = (128, 128)
 BASE_DIR  = 'output/save-cnn/images'
 ALBUM_DIR = 'output/save-cnn/images/album'
 GOOGLE_DIR = 'output/save-cnn/images/google'
-URL_FILE  = 'output/save-cnn/images/urls.txt'
+URL_AND_TRACK_POS_FILE  = 'output/save-cnn/images/urls_and_track_poses.txt'
 
 
 # ---------------------------------------------------------------------------- #
@@ -170,16 +170,20 @@ def autoencoder_data():
 
 
 # ---------------------------------------------------------------------------- #
-def get_urls(all_features, song_count):
+def get_urls_and_track_poses(all_features, song_count):
     print("Trying to load album art urls...")
 
-    if os.path.exists(URL_FILE) and os.path.isfile(URL_FILE):
+    if os.path.exists(URL_AND_TRACK_POS_FILE) and os.path.isfile(URL_AND_TRACK_POS_FILE):
         print("URL file already exists. Loading...")
-        with open(URL_FILE, 'r') as f:
+        with open(URL_AND_TRACK_POS_FILE, 'r') as f:
             all_lines = f.readlines()
             
             if len(all_lines) == song_count:
-                i_and_urls = enumerate(all_lines)
+                def parse_line(i, line):
+                    url, track_pos = line.split(" ^^ ")
+                    return i, url, int(track_pos)
+                
+                i_and_urls = map(lambda x: parse_line(*x), enumerate(all_lines))
                 return i_and_urls
             else:
                 print(f"Expected {song_count} urls, found {len(all_lines)} urls. Fetching...")
@@ -194,7 +198,7 @@ def get_urls(all_features, song_count):
     print("Fetching art urls from Spotify...")
     i_and_urls = []
     track_chunk_count = math.ceil(song_count / MAX_TRACKS)
-    with open(URL_FILE, 'w') as f:
+    with open(URL_AND_TRACK_POS_FILE, 'w') as f:
         with alive_progress.alive_bar(track_chunk_count) as bar:
             for i in range(0, song_count, MAX_TRACKS):
                 tracks = sp.tracks(ids[i:i + MAX_TRACKS])
@@ -202,17 +206,18 @@ def get_urls(all_features, song_count):
                 for track in tracks['tracks']:
                     try:
                         url = track['album']['images'][0]['url']
+                        track_pos = track['track_number']
                     except IndexError:
                         print(f"No album art for {track['name']} ({track['id']} {track['album']['id']}). Using random image.")
                         url = '????'
-                    f.write(f"{url}\n")
-                    i_and_urls.append((i, url))
+                    f.write(f"{url} ^^ {track_pos}\n")
+                    i_and_urls.append((i, url, track_pos))
                 
                 bar()
 
     return i_and_urls
 
-def download_all_album_art(i_and_urls, song_count):
+def download_all_album_art(i_urls_track_poses, song_count):
     if not os.path.exists(ALBUM_DIR):
         os.makedirs(ALBUM_DIR)
 
@@ -233,7 +238,7 @@ def download_all_album_art(i_and_urls, song_count):
     new_songs = song_count - highest_existing_id - 1
     print("Downloading album art...")
     with alive_progress.alive_bar(new_songs) as bar:
-        for (i, url) in i_and_urls:
+        for i, url, _track_pos in i_urls_track_poses:
             file_name = f"{ALBUM_DIR}/{i:06}.jpg"
             if i > highest_existing_id and not os.path.exists(file_name):
                 download_album_art(url, file_name)
@@ -254,7 +259,7 @@ def download_album_art(url, file_name):
     # pad with name with zeros to preserve lexicographical order
     cv2.imwrite(file_name, img)
 
-def load_art_from_files(song_count, folder):
+def load_art_from_files(song_count, folder, i_urls_track_poses):
     print("Trying to load art from files...")
 
     if os.path.exists(folder) and os.path.isdir(folder) and len(os.listdir(folder)) == song_count:
@@ -362,8 +367,8 @@ def cnn_data(google_mode):
     else:
         images_ds = load_art_from_files(song_count, ALBUM_DIR)
         if images_ds is None:
-            i_and_urls = get_urls(all_features, song_count)
-            download_all_album_art(i_and_urls, song_count)
+            i_urls_track_poses = get_urls_and_track_poses(all_features, song_count)
+            download_all_album_art(i_urls_track_poses, song_count)
             images_ds = load_art_from_files(song_count, ALBUM_DIR)
         
     data_labels = data.Dataset.from_tensor_slices(data_features)
