@@ -27,6 +27,8 @@
     - Auto: https://www.tensorflow.org/probability/api_docs/python/tfp/stats/auto_correlation
     - Pearson: https://www.tensorflow.org/probability/api_docs/python/tfp/stats/correlation
 - shadcn-svelte: https://www.shadcn-svelte.com/
+- https://docs.opencv.org/4.x/d1/db7/tutorial_py_histogram_begins.html
+- Non-sequential model: https://stackoverflow.com/questions/49618986/neural-network-in-keras-with-two-different-input-types-images-and-values
 
 ## Ideas
 
