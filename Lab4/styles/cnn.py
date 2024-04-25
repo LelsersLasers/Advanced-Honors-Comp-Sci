@@ -109,7 +109,11 @@ def make_model():
     # optimizer = optimizers.Adam(learning_rate=LEARNING_RATE)
     optimizer = optimizers.RMSprop(learning_rate=LEARNING_RATE)
 
-    model.compile(optimizer=optimizer, loss=loss)
+    model.compile(
+        optimizer=optimizer,
+        loss=loss,
+        metrics=['mse', 'mae', 'cosine_similarity'],
+    )
     print(model.summary())
 
     return model
