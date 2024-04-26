@@ -130,7 +130,7 @@ def train(google_mode):
     model.save(model_path)
 
     history_path = GOOGLE_HISTORY_PATH if google_mode else ALBUM_ART_HISTORY_PATH
-    json.dump(history.history, open(history_path, 'w'))
+    json.dump(history.history, open(history_path, 'w'), indent=4)
     print("Model saved\n")
 # ---------------------------------------------------------------------------- #
 
@@ -163,5 +163,5 @@ def embeddings(google_mode):
 # ---------------------------------------------------------------------------- #
 def predict(google_mode):
     embeddings_path = GOOGLE_EMBEDDINGS_PATH if google_mode else ALBUM_ART_EMBEDDINGS_PATH
-    similarity.predict(TEST_INDEX, distances.cos_dist, embeddings_path=embeddings_path)
+    similarity.predict(TEST_INDEX, distances.mae_dist, embeddings_path=embeddings_path)
 # ---------------------------------------------------------------------------- #

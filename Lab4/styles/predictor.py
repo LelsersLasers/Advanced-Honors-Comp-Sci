@@ -53,10 +53,17 @@ def make_model(data_features):
         layers.Dense(1),
     ])
 
-    loss = losses.MeanSquaredError()
-    optimizer = optimizers.Adam(learning_rate=LEARNING_RATE)
+    loss = losses.MeanAbsoluteError()
+    # loss = losses.MeanSquaredError()
+    # loss = losses.CosineSimilarity()
 
-    model.compile(optimizer=optimizer, loss=loss)
+    optimizer = optimizers.RMSprop(learning_rate=LEARNING_RATE)
+    # optimizer = optimizers.Adam(learning_rate=LEARNING_RATE)
+    model.compile(
+        optimizer=optimizer,
+        loss=loss,
+        metrics=['mae', 'mse', 'cosine_similarity'],
+    )
     print(model.summary())
 
     return model
@@ -70,7 +77,7 @@ def train():
 
     print(f"\nSaving model to {MODEL_PATH}...")
     model.save(MODEL_PATH)
-    json.dump(history.history, open(HISTORY_PATH, 'w'))
+    json.dump(history.history, open(HISTORY_PATH, 'w'), indent=4)
     print("Model saved\n")
 # ---------------------------------------------------------------------------- #
 
