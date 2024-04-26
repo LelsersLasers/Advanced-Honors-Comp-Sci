@@ -26,7 +26,7 @@
 
 	let fetch_id = "";
 	function fetch_spotify() {
-		const test_valid_id_url = FLASK_URL + "spotify/test/" + fetch_id;
+		const test_valid_id_url = FLASK_URL + "spotify/fetch/" + fetch_id;
 		fetch(test_valid_id_url)
 			.then(response => response.json())
 			.then(data => {

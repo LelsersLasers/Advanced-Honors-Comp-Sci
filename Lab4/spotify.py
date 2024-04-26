@@ -17,3 +17,7 @@ def search_spotify(sp, query):
     result = sp.search(q=query, limit=10, type='track')
     items = result['tracks']['items']
     return items
+
+def fetch_track(sp, track_id):
+    result = sp.track(track_id)
+    return result

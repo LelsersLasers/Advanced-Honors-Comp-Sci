@@ -44,9 +44,16 @@ def graphs_bs64(graph):
 
 @app.route("/spotify/search/<q>", methods=["GET"])
 def search_spotify(q):
-    print("Searching for: ", q)
+    print(f"Searching for: {q}")
     result = spotify.search_spotify(sp, q)
-    print("Result: ", result)
+    print(f"Found {len(result)} results")
+    return create_response(result)
+
+@app.route("/spotify/fetch/<id>", methods=["GET"])
+def fetch_spotify(id):
+    print(f"Fetching: {id}")
+    result = spotify.fetch_track(sp, id)
+    print(f"Found {result}")
     return create_response(result)
 
 app.run(debug=False, port=5000, host="0.0.0.0", threaded=False, processes=1)

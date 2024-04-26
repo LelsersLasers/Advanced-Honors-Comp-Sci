@@ -1,6 +1,56 @@
 <script>
+	import { getContext,  } from 'svelte';
+	const FLASK_URL = getContext('flask_url');
+
 	let method = "cnn";
 	let dist = "cos";
+	let input_type = "spotify_search";
+
+
+
+	let search_results = null;
+	let invalid_id = false;
+
+	let search_term = "";
+	function search_spotify() {
+		const url = FLASK_URL + "spotify/search/" + search_term;
+		fetch(url)
+			.then(response => response.json())
+			.then(data => {
+				search_results = data.map(item => {
+					const name = item.name;
+					const authors = item.artists.map(artist => artist.name).join(", ");
+					const id = item.id;
+					return { name, authors, id };
+				});
+			});
+	}
+
+	let fetch_id = "";
+	function fetch_spotify() {
+		const test_valid_id_url = FLASK_URL + "spotify/fetch/" + fetch_id;
+		fetch(test_valid_id_url)
+			.then(response => response.json())
+			.then(data => {
+				console.log(data);
+				// if (data.valid) {
+				// 	/*
+				// 	const url = FLASK_URL + "spotify/fetch/" + fetch_id;
+				// 	fetch(url)
+				// 		.then(response => response.json())
+				// 		.then(data => {
+				// 			console.log(data);
+				// 		});
+				// 	*/
+				// } else {
+				// 	invalid_id = true;
+				// }
+			});
+	}
+	function fetch_button(id) {
+		fetch_id = id;
+		fetch_spotify();
+	}
 
 
 </script>
@@ -40,3 +90,73 @@
 	<option value="euclidean">Euclidean Distance</option>
 	<option value="dot">Dot Product</option>
 </select>
+
+<br />
+<br />
+
+<h2>Input</h2>
+
+<label for="input">Input:</label>
+<select id="input" name="input" bind:value={input_type}>
+	<option value="spotify_search">Spotify Search</option>
+	<option value="spotify_id">Spotify ID</option>
+	<option value="upload">Image Upload (CNN only)</option>
+</select>
+
+
+{#if input_type == "spotify_search"}
+	<h2>Spotify Search</h2>
+
+	<label for="search_term">Search Term:</label>
+	<input type="text" id="search_term" name="search_term" bind:value={search_term} />
+
+	<button on:click={search_spotify}>Search</button>
+
+	{#if search_results}
+		{#if search_results.length > 0}
+			<h3>Results</h3>
+			<ul>
+				{#each search_results as result}
+					<li>
+						{result.name} by {result.authors}
+						<button on:click={() => fetch_button(result.id)}>Fetch</button>
+					</li>
+				{/each}
+			</ul>
+		{:else}
+			<p>No results found</p>
+		{/if}
+	{/if}
+{:else if input_type == "spotify_id"}
+
+	<h2>Spotify ID</h2>
+
+	<label for="fetch_id">Spotify ID:</label>
+	<input type="text" id="fetch_id" name="fetch_id" bind:value={fetch_id} />
+
+	<button on:click={fetch_spotify}>Fetch</button>
+
+	{#if invalid_id}
+		<p>Invalid ID</p>
+	{/if}
+
+{:else if input_type == "upload"}
+
+	<h2>Image Upload</h2>
+
+	<input type="file" id="file" name="file" accept="image/*" />
+
+	<button>Upload</button>
+
+{/if}
+
+
+{#if method == "cnn"}
+
+{:else if method == "autoencoder"}
+
+{:else if method == "predictor"}
+
+{:else if method == "simple"}
+
+{/if}
