@@ -34,4 +34,13 @@
 	<option value="simple">Simple</option>
 </select>
 
+<label for="dist">Distance Function:</label>
+<select id="dist" name="dist" on:input={change_method}>
+	<option value="" disabled selected="selected">Select--</option>
+	<option value="cnn">CNN</option>
+	<option value="autoencoder">Autoencoder</option>
+	<option value="predictor">Predictor</option>
+	<option value="simple">Simple</option>
+</select>
+
 <slot />

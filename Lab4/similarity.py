@@ -2,10 +2,6 @@ import alive_progress
 import numpy as np
 import json
 
-# import tqdm
-# import multiprocessing
-# CHUNK_SIZE = 1000
-
 
 # ---------------------------------------------------------------------------- #
 def extract_embedding(intermediate_model_and_data_feature):
@@ -17,49 +13,26 @@ def extract_embedding(intermediate_model_and_data_feature):
 
     
 def embeddings(intermediate_model, all_data, data_features, embeddings_path):
-    # ------------------------------------------------------------------------ #
     print("\nCalculating all embeddings...")
     song_count = all_data.shape[0]
-    # with multiprocessing.Pool(processes=1) as pool:
-    #     pairs = [(intermediate_model, data_features[i]) for i in range(song_count)]
-    #     all_embeddings = list(
-    #         tqdm.tqdm(
-    #             pool.imap(extract_embedding, pairs, CHUNK_SIZE),
-    #             total=song_count
-    #         )
-    #     )
-    all_embeddings = []
-    with alive_progress.alive_bar(song_count) as bar:
-        # for i in range(song_count):
-        for data_feature in data_features:
-            # x = np.expand_dims(data_features[i], axis=0)
-            x = np.expand_dims(data_feature, axis=0)
+    with open(embeddings_path, 'w') as file:
+        file.write("id ^^ embedding\n")
 
-            embedding = intermediate_model(x)
-            embedding = np.squeeze(embedding.numpy(), axis=0)
-            
-            all_embeddings.append(embedding)
-            bar()
-    print("Calculated all embeddings\n")
-    # ------------------------------------------------------------------------ #
+        with alive_progress.alive_bar(song_count) as bar:
+            for i, data_feature in enumerate(data_features):
+                x = np.expand_dims(data_feature, axis=0)
 
-    # TODO: write embeddings to file as they are calculated
-
-    # ------------------------------------------------------------------------ #
-    print("\nWriting embeddings to file...")
-    with alive_progress.alive_bar(song_count) as bar:
-        with open(embeddings_path, 'w') as file:
-            file.write("id ^^ embedding\n")
-            for i in range(song_count):
+                embedding = intermediate_model(x)
+                embedding = np.squeeze(embedding.numpy(), axis=0)
+                
                 song = all_data.iloc[i]
-                embedding = all_embeddings[i]
                 song_dict = song.to_dict()
                 song_str = json.dumps(song_dict)
                 embedding_str = json.dumps(embedding.tolist())
                 file.write(f"{song_str} ^^ {embedding_str}\n")
+
                 bar()
-    print("Wrote embeddings to file\n")
-    # ------------------------------------------------------------------------ #
+    print("Calculated all embeddings and wrote them to file\n")
 # ---------------------------------------------------------------------------- #
 
 
