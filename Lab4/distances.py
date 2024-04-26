@@ -4,7 +4,7 @@ import numpy as np
 class DistFn:
     def __init__(self, fn, reverse_sort):
         self.fn = fn
-        self.reverse_sort = reverse_sort
+        self.reverse_sort = reverse_sort # True: higher = better
     def __call__(self, a, b):
         return self.fn(a, b)
     
