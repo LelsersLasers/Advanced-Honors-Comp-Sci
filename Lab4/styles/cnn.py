@@ -93,11 +93,11 @@ def make_model():
         
         layers.Dense(256),
         layers.LeakyReLU(),
-        layers.Dropout(0.3),
+        # layers.Dropout(0.3),
         
         layers.Dense(64),
         layers.LeakyReLU(),
-        layers.Dropout(0.3),
+        # layers.Dropout(0.3),
         
         layers.Dense(13),
     ])
