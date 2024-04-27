@@ -17,7 +17,7 @@ import similarity
 # ---------------------------------------------------------------------------- #
 TEST_INDEX = 17424 - 2
 
-EPOCHS = 10
+EPOCHS = 20
 LEARNING_RATE = 0.0001
 
 MODEL_PATH      = 'output/save-autoencoder/model'
@@ -34,11 +34,15 @@ def make_model(data_features):
     # autoencoder style: inputs -> hidden -> output is same shape as inputs
     model = keras.Sequential([
         normalize,
-        layers.Dense(8),
+        layers.Dense(10),
         layers.LeakyReLU(),
-        layers.Dense(4),
+        layers.Dense(8),
+    	layers.LeakyReLU(),
+        layers.Dense(6),
     	layers.LeakyReLU(),
         layers.Dense(8),
+        layers.LeakyReLU(),
+        layers.Dense(10),
         layers.LeakyReLU(),
         layers.Dense(13),
     ])
@@ -94,7 +98,7 @@ def create_intermediate_model():
     # skip any Dropout layers
     intermediate_model = keras.Sequential()
     for (i, layer) in enumerate(model.layers):
-        if not isinstance(layer, keras.layers.Dropout) and i < len(model.layers) - 1:
+        if not isinstance(layer, keras.layers.Dropout) and i < len(model.layers) - 6:
             intermediate_model.add(layer)
     print(intermediate_model.summary())
     return intermediate_model

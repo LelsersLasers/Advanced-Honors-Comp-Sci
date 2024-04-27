@@ -17,7 +17,7 @@ import similarity
 # ---------------------------------------------------------------------------- #
 TEST_INDEX = 17424 - 2
 
-EPOCHS = 10
+EPOCHS = 20
 LEARNING_RATE = 0.0001
 
 MODEL_PATH      = 'output/save-predictor/model'
@@ -32,26 +32,28 @@ def make_model(data_features):
     normalize.adapt(data_features)
     
     # predictor style: inputs (12) -> hidden -> output (1) is single value from original inputs
-    # model = keras.Sequential([
-    #     normalize,
-    #     layers.Dense(8),
-    #     layers.LeakyReLU(),
-    #     layers.Dense(4),
-    #     layers.LeakyReLU(),
-    #     layers.Dense(1),
-    # ])
     model = keras.Sequential([
         normalize,
-        layers.Dense(50),
+        layers.Dense(10),
         layers.LeakyReLU(),
-        layers.Dropout(0.3),
-        layers.Dense(50),
+        layers.Dense(8),
         layers.LeakyReLU(),
-        layers.Dropout(0.3),
-        layers.Dense(25),
+        layers.Dense(6),
         layers.LeakyReLU(),
         layers.Dense(1),
     ])
+    # model = keras.Sequential([
+    #     normalize,
+    #     layers.Dense(50),
+    #     layers.LeakyReLU(),
+    #     # layers.Dropout(0.3),
+    #     layers.Dense(50),
+    #     layers.LeakyReLU(),
+    #     # layers.Dropout(0.3),
+    #     layers.Dense(25),
+    #     layers.LeakyReLU(),
+    #     layers.Dense(1),
+    # ])
 
     loss = losses.MeanAbsoluteError()
     # loss = losses.MeanSquaredError()
@@ -62,7 +64,7 @@ def make_model(data_features):
     model.compile(
         optimizer=optimizer,
         loss=loss,
-        metrics=['mae', 'mse', 'cosine_similarity'],
+        metrics=['mae', 'mse'],
     )
     print(model.summary())
 
