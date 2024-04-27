@@ -13,7 +13,8 @@ import os
 
 import tensorflow as tf
 import tensorflow.data as data
-BUFFER_SIZE = 2000
+SHUFFLE_BUFFER_SIZES = [400, 600, 900, 1350, 2500]
+SHUFFLE_BATCH_BUFFER_SIZES = [25, 35, 45, 60] 
 BATCH_SIZE = 64
 PREFETCH_SIZE = 2
 
@@ -367,10 +368,20 @@ def cnn_data(google_mode):
             images_ds = load_art_from_files(song_count, ALBUM_DIR)
         
     data_labels = data.Dataset.from_tensor_slices(data_features)
-    train_ds = (data.Dataset.zip((images_ds, data_labels))
-        .shuffle(BUFFER_SIZE, reshuffle_each_iteration=True)
-        .batch(BATCH_SIZE)
-        .prefetch(PREFETCH_SIZE))
+
+    
+    train_ds = data.Dataset.zip((images_ds, data_labels))
+    
+    for shuffle_buffer_size in SHUFFLE_BATCH_BUFFER_SIZES:
+        train_ds = train_ds.batch(BATCH_SIZE)
+        train_ds = train_ds.shuffle(shuffle_buffer_size, reshuffle_each_iteration=True)
+        train_ds = train_ds.unbatch()
+
+        for buffer_size in SHUFFLE_BUFFER_SIZES:
+            train_ds = train_ds.shuffle(buffer_size, reshuffle_each_iteration=True)
+    
+    train_ds = train_ds.batch(BATCH_SIZE)
+    train_ds = train_ds.prefetch(PREFETCH_SIZE)
     
     print(train_ds)
 
