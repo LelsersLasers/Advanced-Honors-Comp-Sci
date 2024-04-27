@@ -76,7 +76,7 @@ def make_model(data_features):
     return model
 
 def train():
-    all_data, data_features = data.autoencoder_data()
+    all_data, data_features = data.autoencoder_data(True)
 
     model = make_model(data_features)
 
@@ -105,7 +105,7 @@ def create_intermediate_model():
 
 def embeddings():
     intermediate_model = create_intermediate_model()
-    all_data, data_features = data.autoencoder_data()
+    all_data, data_features = data.autoencoder_data(False)
     
     similarity.embeddings(intermediate_model, all_data, data_features, EMBEDDINGS_PATH)
 # ---------------------------------------------------------------------------- #

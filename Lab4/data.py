@@ -131,7 +131,7 @@ def artist_data():
 
 
 # ---------------------------------------------------------------------------- #
-def predictor_data():
+def predictor_data(shuffle):
     # 12 input categories, 1 output category
     all_features = all_data(DataPath.SONG)
 
@@ -140,6 +140,10 @@ def predictor_data():
         ['explicit', 'id', 'mode', 'name', 'release_date', 'artists', 'genre']
     )
     for category in data_features.columns: scale(data_features, category)
+
+    if shuffle:
+        data_features = data_features.sample(frac=1).reset_index(drop=True)
+
 
     # predictor target
     data_labels = data_features.pop('popularity')
@@ -151,7 +155,7 @@ def predictor_data():
 
     return all_features, data_features, data_labels
 
-def autoencoder_data():
+def autoencoder_data(shuffle):
     # 13 input categories
     all_features = all_data(DataPath.SONG)
 
@@ -160,6 +164,9 @@ def autoencoder_data():
         ['explicit', 'id', 'mode', 'name', 'release_date', 'artists', 'genre']
     )
     for category in data_features.columns: scale(data_features, category)
+
+    if shuffle:
+        data_features = data_features.sample(frac=1).reset_index(drop=True)
 
     print(f"\nAutoencoder data features shape: {data_features.shape}")
     print(f"Autoencoder data features head:\n{data_features.head()}\n")
@@ -350,7 +357,7 @@ def download_google_art(name, artists, file_name):
 
 
 def cnn_data(google_mode):
-    all_features, data_features = autoencoder_data()
+    all_features, data_features = autoencoder_data(False)
     song_count = data_features.shape[0]
 
     print(f"\nLoading album art for {song_count} songs...")

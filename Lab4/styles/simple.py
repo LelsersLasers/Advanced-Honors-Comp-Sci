@@ -7,7 +7,7 @@ TEST_INDEX = 17424 - 2
 
 # ---------------------------------------------------------------------------- #
 def predict():
-	all_data, data_features = data.autoencoder_data()
+	all_data, data_features = data.autoencoder_data(False)
 
 	print("Preparing data for prediction...")
 	all_data_and_embeddings = [(all_data.iloc[i], data_features[i]) for i in range(len(all_data))]

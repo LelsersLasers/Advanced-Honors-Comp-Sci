@@ -71,7 +71,7 @@ def make_model(data_features):
     return model
 
 def train():
-    _all_data, data_features, data_labels = data.predictor_data()
+    _all_data, data_features, data_labels = data.predictor_data(True)
 
     model = make_model(data_features)
 
@@ -100,7 +100,7 @@ def create_intermediate_model():
 
 def embeddings():
     intermediate_model = create_intermediate_model()
-    all_data, data_features, _data_labels = data.predictor_data()
+    all_data, data_features, _data_labels = data.predictor_data(False)
     
     similarity.embeddings(intermediate_model, all_data, data_features, EMBEDDINGS_PATH)
 # ---------------------------------------------------------------------------- #
