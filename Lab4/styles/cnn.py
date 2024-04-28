@@ -163,5 +163,5 @@ def embeddings(google_mode):
 # ---------------------------------------------------------------------------- #
 def predict(google_mode):
     embeddings_path = GOOGLE_EMBEDDINGS_PATH if google_mode else ALBUM_ART_EMBEDDINGS_PATH
-    similarity.predict(TEST_INDEX, distances.mae_dist, embeddings_path=embeddings_path)
+    similarity.predict(TEST_INDEX, distances.cos_dist, embeddings_path=embeddings_path)
 # ---------------------------------------------------------------------------- #
