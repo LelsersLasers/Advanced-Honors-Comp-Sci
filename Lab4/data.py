@@ -407,6 +407,14 @@ def fetch_song(id):
         for i, row in all_features.iterrows():
             if row['id'] == id:
                 bar(song_count - i)
-                return i
+                return {
+                    "name": row['name'],
+                    "artists": row['artists'],
+                    "index": i
+                }
             bar()
-    return -1
+    return {
+        "name": "Unknown",
+        "artists": "Unknown",
+        "index": -1
+    }

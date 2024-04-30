@@ -8,11 +8,16 @@
 	let input_type = "spotify_id";
 	let google_mode = true;
 
+	let results = [];
 
 
 	// let search_results = null;
 	let invalid_id = true;
-	let index = -1;
+	let fetch_info = {
+		"name": "",
+		"artists": "",
+		"index": -1,
+	}
 
 
 	onMount(() => {
@@ -74,14 +79,15 @@
 		fetch(test_valid_id_url)
 			.then(response => response.json())
 			.then(data => {
-				index = data['index'];
-				invalid_id = index == -1;
+				console.log(data);
+				fetch_info = data;
+				invalid_id = fetch_info["data"] == -1;
 			});
 	}
-	function fetch_button(id) {
-		fetch_id = id;
-		fetch_spotify();
-	}
+	// function fetch_button(id) {
+	// 	fetch_id = id;
+	// 	fetch_spotify();
+	// }
 
 
 	function go_button() {
@@ -94,13 +100,13 @@
 		let url = FLASK_URL + "recommendations/";
 		url += method + "/"
 		url += dist + "/";
-		url += index + "/";
+		url += fetch_info["index"] + "/";
 		url += google_mode;
 
 		fetch(url)
 			.then(response => response.json())
 			.then(data => {
-				console.log(data);
+				results = data;
 			});
 	}
 
@@ -193,8 +199,8 @@
 	{#if invalid_id}
 		<p>Invalid ID</p>
 	{/if}
-	{#if index != -1}
-		<p>Index: {index}</p>
+	{#if fetch_info["index"] != -1}
+		<p>{fetch_info["name"]} by {fetch_info["artists"]} (index: {fetch_info["index"]})</p>
 	{/if}
 
 {:else if input_type == "upload"}
@@ -210,6 +216,20 @@
 <h1>GO</h1>
 
 <button on:click={go_button}>Go</button>
+
+<h1>Results</h1>
+
+{#if results.length > 0}
+	<ol>
+		{#each results as result}
+			<li>
+				{result["name"]} by {result["artists"]} (dist: {result["dist"]})
+			</li>
+		{/each}
+	</ol>
+{:else}
+	<p>No results</p>
+{/if}
 
 
 

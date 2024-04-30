@@ -68,9 +68,7 @@ def fetch_spotify(id):
     print(f"Fetching: {id}")
     result = data.fetch_song(id)
     print(f"{id} {result}")
-    return create_response({
-        "index": result
-    })
+    return create_response(result)
 
 @app.route("/recommendations/<method>/<dist>/<index>/<google_mode>", methods=["GET"])
 def recommendations(method, dist, index, google_mode):
