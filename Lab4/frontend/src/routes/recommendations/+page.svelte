@@ -1,6 +1,7 @@
 <script>
-	import { getContext,  } from 'svelte';
+	import { getContext, onMount } from 'svelte';
 	const FLASK_URL = getContext('flask_url');
+	let token;
 
 	let method = "cnn";
 	let dist = "cos";
@@ -11,19 +12,58 @@
 	let search_results = null;
 	let invalid_id = false;
 
-	let search_term = "";
-	function search_spotify() {
-		const url = FLASK_URL + "spotify/search/" + search_term;
+
+	onMount(() => {
+		console.log(FLASK_URL);
+		connect();
+	});
+
+	function connect() {
+		const url = FLASK_URL + "spotify/token";
 		fetch(url)
 			.then(response => response.json())
 			.then(data => {
-				search_results = data.map(item => {
+				token = data['access_token'];
+			});
+	}
+
+	let search_term = "";
+	function search_spotify() {
+		const search_query = search_term.replace(" ", "%20");
+
+		let url = "https://api.spotify.com/v1/search";
+		url += "?q=" + search_query;
+		url += "&type=track";
+		url += "&limit=10";
+
+
+		fetch(url, {
+			method: "GET",
+			headers: {
+				"Authorization": "Bearer " + token
+			},
+		})
+			.then(response => response.json())
+			.then(data => {
+				search_results = data.tracks.items.map(item => {
 					const name = item.name;
 					const authors = item.artists.map(artist => artist.name).join(", ");
 					const id = item.id;
 					return { name, authors, id };
 				});
 			});
+
+		// const url = FLASK_URL + "spotify/search/" + search_term;
+		// fetch(url)
+		// 	.then(response => response.json())
+		// 	.then(data => {
+		// 		search_results = data.map(item => {
+		// 			const name = item.name;
+		// 			const authors = item.artists.map(artist => artist.name).join(", ");
+		// 			const id = item.id;
+		// 			return { name, authors, id };
+		// 		});
+		// 	});
 	}
 
 	let fetch_id = "";

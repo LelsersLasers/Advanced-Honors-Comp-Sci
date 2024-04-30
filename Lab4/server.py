@@ -4,11 +4,12 @@ import graphs.heat_map
 import graphs.time_line
 import graphs.group_bar
 
-import spotify
+# import spotify
+import json
 
 app = flask.Flask(__name__)
 
-sp = spotify.create_sp()
+# sp = spotify.create_sp()
 
 
 def create_response(value):
@@ -42,18 +43,25 @@ def graphs_bs64(graph):
     }
     return create_response(response_dict)
 
-@app.route("/spotify/search/<q>", methods=["GET"])
-def search_spotify(q):
-    print(f"Searching for: {q}")
-    result = spotify.search_spotify(sp, q)
-    print(f"Found {len(result)} results")
-    return create_response(result)
+@app.route("/spotify/token", methods=["GET"])
+def get_token():
+    # read json from .cache
+    with open(".cache", "r") as file:
+        data = json.load(file)
+    return create_response(data)
 
-@app.route("/spotify/fetch/<id>", methods=["GET"])
-def fetch_spotify(id):
-    print(f"Fetching: {id}")
-    result = spotify.fetch_track(sp, id)
-    print(f"Found {result}")
-    return create_response(result)
+# @app.route("/spotify/search/<q>", methods=["GET"])
+# def search_spotify(q):
+#     print(f"Searching for: {q}")
+#     result = spotify.search_spotify(sp, q)
+#     print(f"Found {len(result)} results")
+#     return create_response(result)
+
+# @app.route("/spotify/fetch/<id>", methods=["GET"])
+# def fetch_spotify(id):
+#     print(f"Fetching: {id}")
+#     result = spotify.fetch_track(sp, id)
+#     print(f"Found {result}")
+#     return create_response(result)
 
 app.run(debug=False, port=5000, host="0.0.0.0", threaded=False, processes=1)
