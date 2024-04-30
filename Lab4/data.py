@@ -380,9 +380,9 @@ def cnn_data(google_mode):
     train_ds = data.Dataset.zip((images_ds, data_labels))
     
     for shuffle_buffer_size in SHUFFLE_BATCH_BUFFER_SIZES:
-        # train_ds = train_ds.batch(BATCH_SIZE)
-        # train_ds = train_ds.shuffle(shuffle_buffer_size, reshuffle_each_iteration=True)
-        # train_ds = train_ds.unbatch()
+        train_ds = train_ds.batch(BATCH_SIZE)
+        train_ds = train_ds.shuffle(shuffle_buffer_size, reshuffle_each_iteration=True)
+        train_ds = train_ds.unbatch()
 
         for buffer_size in SHUFFLE_BUFFER_SIZES:
             train_ds = train_ds.shuffle(buffer_size, reshuffle_each_iteration=True)
