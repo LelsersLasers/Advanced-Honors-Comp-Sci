@@ -397,3 +397,16 @@ def cnn_data(google_mode):
     
     return all_features, train_ds, images
 # ---------------------------------------------------------------------------- #
+
+
+# ---------------------------------------------------------------------------- #
+def fetch_song(id):
+    all_features = all_data(DataPath.SONG)
+    song_count = all_features.shape[0]
+    with alive_progress.alive_bar(song_count) as bar:
+        for i, row in all_features.iterrows():
+            if row['id'] == id:
+                bar(song_count - i)
+                return i
+            bar()
+    return -1

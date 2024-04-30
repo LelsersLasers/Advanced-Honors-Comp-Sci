@@ -4,12 +4,18 @@ import graphs.heat_map
 import graphs.time_line
 import graphs.group_bar
 
+import styles.simple
+import styles.predictor
+import styles.autoencoder
+import styles.cnn
+
+import distances
+
 # import spotify
-import json
+# import json
+import data
 
 app = flask.Flask(__name__)
-
-# sp = spotify.create_sp()
 
 
 def create_response(value):
@@ -43,12 +49,12 @@ def graphs_bs64(graph):
     }
     return create_response(response_dict)
 
-@app.route("/spotify/token", methods=["GET"])
-def get_token():
-    # read json from .cache
-    with open(".cache", "r") as file:
-        data = json.load(file)
-    return create_response(data)
+# @app.route("/spotify/token", methods=["GET"])
+# def get_token():
+#     # read json from .cache
+#     with open(".cache", "r") as file:
+#         data = json.load(file)
+#     return create_response(data)
 
 # @app.route("/spotify/search/<q>", methods=["GET"])
 # def search_spotify(q):
@@ -57,11 +63,39 @@ def get_token():
 #     print(f"Found {len(result)} results")
 #     return create_response(result)
 
-# @app.route("/spotify/fetch/<id>", methods=["GET"])
-# def fetch_spotify(id):
-#     print(f"Fetching: {id}")
-#     result = spotify.fetch_track(sp, id)
-#     print(f"Found {result}")
-#     return create_response(result)
+@app.route("/spotify/fetch/<id>", methods=["GET"])
+def fetch_spotify(id):
+    print(f"Fetching: {id}")
+    result = data.fetch_song(id)
+    print(f"{id} {result}")
+    return create_response({
+        "index": result
+    })
+
+@app.route("/recommendations/<method>/<dist>/<index>/<google_mode>", methods=["GET"])
+def recommendations(method, dist, index, google_mode):
+    google_mode = google_mode == "true"
+    index = int(index)
+    print(f"Getting recommendations for: {index} using {method} and {dist}")
+
+    method_dict = {
+        "simple":      styles.simple,
+        "predictor":   styles.predictor,
+        "autoencoder": styles.autoencoder,
+        "cnn":         styles.cnn
+    }
+    dist_dict = {
+        "cos": distances.cos_dist,
+        "mae": distances.mae_dist,
+        "mse": distances.mse_dist,
+        "euclidean": distances.euclidean_dist,
+        "dot": distances.dot_product
+    }
+
+    if method == "cnn":
+        results = (method_dict[method]).predict(google_mode, index, dist_dict[dist], False)
+    else:
+        results = (method_dict[method]).predict(index, dist_dict[dist], False)
+    return create_response(results)
 
 app.run(debug=False, port=5000, host="0.0.0.0", threaded=False, processes=1)

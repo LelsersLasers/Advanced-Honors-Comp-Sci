@@ -50,7 +50,7 @@ def load_embeddings(embeddings_path):
     return all_data_and_embeddings
 
 
-def predict(target_idx, dist_fn, embeddings_path=None, all_data_and_embeddings=None):
+def predict(target_idx, dist_fn, embeddings_path=None, all_data_and_embeddings=None, display=True):
     # ------------------------------------------------------------------------ #
     if embeddings_path is None and all_data_and_embeddings is None:
         raise ValueError("You must provide either embeddings_path or all_data_and_embeddings")
@@ -77,13 +77,25 @@ def predict(target_idx, dist_fn, embeddings_path=None, all_data_and_embeddings=N
             dists.append((dist, all_data))
             bar()
     dists.sort(key=lambda x: x[0], reverse=dist_fn.reverse_sort)
+    
+    formatted_results = []
+    for i in range(10):
+        dist, song = dists[i]
+        formatted_results.append({
+            "name": song['name'],
+            "artists": song['artists'],
+            "dist": dist
+        })
     # ------------------------------------------------------------------------ #
 
     # ------------------------------------------------------------------------ #
-    print("Top 10 most similar songs:")
-    print("BASE SONG:", target_data['name'], "by", target_data['artists'])
-    for i in range(10):
-        dist, song = dists[i]
-        print(f"{(i + 1):2}) {song['name']} by {song['artists']} (dist value: {dist:.4f})")
+    if display:
+        print("Top 10 most similar songs:")
+        print("BASE SONG:", target_data['name'], "by", target_data['artists'])
+        for result in formatted_results:
+            print(f"{(i + 1):2}) {result['name']} by {result['artists']} (dist value: {result['dist']:.4f})")
+        return None
+    else:
+        return formatted_results
     # ------------------------------------------------------------------------ #
 # ---------------------------------------------------------------------------- #

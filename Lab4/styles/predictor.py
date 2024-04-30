@@ -107,6 +107,6 @@ def embeddings():
 
 
 # ---------------------------------------------------------------------------- #
-def predict():
-	similarity.predict(TEST_INDEX, distances.cos_dist, embeddings_path=EMBEDDINGS_PATH)
+def predict(index=TEST_INDEX, dist=distances.cos_dist, display=True):
+	return similarity.predict(index, dist, embeddings_path=EMBEDDINGS_PATH, display=display)
 # ---------------------------------------------------------------------------- #
