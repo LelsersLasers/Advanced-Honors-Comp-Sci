@@ -10,6 +10,8 @@
 
 	let results = [];
 
+	let loading = false;
+
 
 	// let search_results = null;
 	let invalid_id = true;
@@ -75,6 +77,7 @@
 
 	let fetch_id = "";
 	function fetch_spotify() {
+		loading = true;
 		const test_valid_id_url = FLASK_URL + "spotify/fetch/" + fetch_id;
 		fetch(test_valid_id_url)
 			.then(response => response.json())
@@ -82,6 +85,7 @@
 				console.log(data);
 				fetch_info = data;
 				invalid_id = fetch_info["data"] == -1;
+				loading = false;
 			});
 	}
 	// function fetch_button(id) {
@@ -90,12 +94,14 @@
 	// }
 
 
-	function go_button() {
+	function go_button() {		
 		if (input_type == "spotify_id") {
 			if (invalid_id) {
 				return;
 			}
 		}
+
+		loading = true;
 
 		let url = FLASK_URL + "recommendations/";
 		url += method + "/"
@@ -107,6 +113,7 @@
 			.then(response => response.json())
 			.then(data => {
 				results = data;
+				loading = false;
 			});
 	}
 
@@ -124,6 +131,10 @@
 <a href="/">
 	<button>Back to Home</button>
 </a>
+
+{#if loading}
+	<p>Loading...</p>
+{/if}
 
 <br />
 
