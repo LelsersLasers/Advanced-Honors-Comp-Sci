@@ -3,7 +3,7 @@
 	const FLASK_URL = getContext('flask_url');
 	// let token;
 
-	let method = "cnn";
+	let model = "predictor";
 	let dist = "cos";
 	let input_type = "spotify_id";
 	let google_mode = true;
@@ -104,7 +104,7 @@
 		loading = true;
 
 		let url = FLASK_URL + "recommendations/";
-		url += method + "/"
+		url += model + "/"
 		url += dist + "/";
 		url += fetch_info["index"] + "/";
 		url += google_mode;
@@ -140,12 +140,12 @@
 
 <h2>Method</h2>
 
-<label for="method">Method:</label>
-<select id="method" name="method" bind:value={method}>
-	<option value="cnn" selected="selected">CNN</option>
+<label for="model">Model:</label>
+<select id="model" name="model" bind:value={model}>
+	<option value="predictor" selected="selected">Predictor</option>
 	<option value="autoencoder">Autoencoder</option>
-	<option value="predictor">Predictor</option>
 	<option value="simple">Simple</option>
+	<option value="cnn">CNN</option>
 </select>
 
 <br />
@@ -167,12 +167,17 @@
 <label for="input">Input:</label>
 <select id="input" name="input" bind:value={input_type}>
 	<!-- <option value="spotify_search">Spotify Search</option> -->
-	<option value="spotify_id">Spotify ID</option>
+	<option value="spotify_id" selected="selected">Spotify ID</option>
 	<option value="upload">Image Upload (CNN only)</option>
 </select>
 
-<label for="google_mode">Google Mode (CNN only):</label>
-<input type="checkbox" id="google_mode" name="google_mode" bind:checked={google_mode} />
+
+{#if model == "cnn"}
+	<br />
+
+	<label for="google_mode">Google Mode (CNN only):</label>
+	<input type="checkbox" id="google_mode" name="google_mode" bind:checked={google_mode} />
+{/if}
 
 
 <!-- {#if input_type == "spotify_search"}
@@ -244,12 +249,12 @@
 
 
 
-<!-- {#if method == "cnn"}
+<!-- {#if model == "cnn"}
 
-{:else if method == "autoencoder"}
+{:else if model == "autoencoder"}
 
-{:else if method == "predictor"}
+{:else if model == "predictor"}
 
-{:else if method == "simple"}
+{:else if model == "simple"}
 
 {/if} -->

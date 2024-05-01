@@ -70,13 +70,13 @@ def fetch_spotify(id):
     print(f"{id} {result}")
     return create_response(result)
 
-@app.route("/recommendations/<method>/<dist>/<index>/<google_mode>", methods=["GET"])
-def recommendations(method, dist, index, google_mode):
+@app.route("/recommendations/<model>/<dist>/<index>/<google_mode>", methods=["GET"])
+def recommendations(model, dist, index, google_mode):
     google_mode = google_mode == "true"
     index = int(index)
-    print(f"Getting recommendations for: {index} using {method} and {dist}")
+    print(f"Getting recommendations for: {index} using {model} and {dist}")
 
-    method_dict = {
+    model_dict = {
         "simple":      styles.simple,
         "predictor":   styles.predictor,
         "autoencoder": styles.autoencoder,
@@ -90,10 +90,10 @@ def recommendations(method, dist, index, google_mode):
         "dot": distances.dot_product
     }
 
-    if method == "cnn":
-        results = (method_dict[method]).predict(google_mode, index, dist_dict[dist], False)
+    if model == "cnn":
+        results = (model_dict[model]).predict(google_mode, index, dist_dict[dist], False)
     else:
-        results = (method_dict[method]).predict(index, dist_dict[dist], False)
+        results = (model_dict[model]).predict(index, dist_dict[dist], False)
     return create_response(results)
 
 app.run(debug=False, port=5000, host="0.0.0.0", threaded=False, processes=1)
