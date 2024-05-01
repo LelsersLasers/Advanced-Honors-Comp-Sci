@@ -1,4 +1,5 @@
 import flask
+import urllib.parse
 
 import graphs.heat_map
 import graphs.time_line
@@ -62,6 +63,14 @@ def graphs_bs64(graph):
 #     result = spotify.search_spotify(sp, q)
 #     print(f"Found {len(result)} results")
 #     return create_response(result)
+
+@app.route("/spotify/search/<q>", methods=["GET"])
+def search_spotify(q):
+    title = urllib.parse.unquote(q)
+    print(f"Searching: {title}")
+    results = data.search_song(title)
+    print(f"Best match: {results[0]}")
+    return create_response(results)
 
 @app.route("/spotify/fetch/<id>", methods=["GET"])
 def fetch_spotify(id):

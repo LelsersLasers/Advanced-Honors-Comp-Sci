@@ -4,11 +4,15 @@ import pandas as pd
 import numpy as np
 
 import PIL
+import thefuzz.fuzz
+import thefuzz.process
 
 import spotify
 import urllib
 import cv2
 import os
+
+import thefuzz
 
 
 import tensorflow as tf
@@ -418,3 +422,28 @@ def fetch_song(id):
         "artists": "Unknown",
         "index": -1
     }
+
+def search_song(title):
+    all_features = all_data(DataPath.SONG)
+    song_count = all_features.shape[0]
+
+    results = []
+    with alive_progress.alive_bar(song_count) as bar:
+        for i, row in all_features.iterrows():
+            score = thefuzz.fuzz.token_sort_ratio(title, row['name'])
+            results.append({
+                "name": row['name'],
+                "artists": row['artists'],
+                "score": score,
+                "popularity": row['popularity'],
+                "index": i
+            })
+            bar()
+
+    def key(x):
+        return x['score'] + x['popularity'] / 25
+
+    results.sort(key=key, reverse=True)
+    return results[:10]
+    
+
