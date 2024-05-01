@@ -1,11 +1,10 @@
 <script>
-	import { getContext, onMount } from 'svelte';
+	import { getContext } from 'svelte';
 	const FLASK_URL = getContext('flask_url');
-	// let token;
 
 	let model = "predictor";
 	let dist = "cos";
-	let input_type = "spotify_id";
+	let input_type = "spotify_search";
 	let google_mode = true;
 
 	let results = [];
@@ -13,7 +12,7 @@
 	let loading = false;
 
 
-	// let search_results = null;
+	let search_results = [];
 	let invalid_id = true;
 	let fetch_info = {
 		"name": "",
@@ -28,58 +27,24 @@
 	}
 
 
-	onMount(() => {
-		console.log(FLASK_URL);
-		// connect();
-	});
-
-	// function connect() {
-	// 	const url = FLASK_URL + "spotify/token";
-	// 	fetch(url)
-	// 		.then(response => response.json())
-	// 		.then(data => {
-	// 			token = data['access_token'];
-	// 		});
-	// }
-
-	// let search_term = "";
-	// function search_spotify() {
-	// 	const search_query = search_term.replace(" ", "%20");
-
-	// 	let url = "https://api.spotify.com/v1/search";
-	// 	url += "?q=" + search_query;
-	// 	url += "&type=track";
-	// 	url += "&limit=10";
+	// onMount(() => {
+	// 	console.log(FLASK_URL);
+	// });
 
 
-	// 	fetch(url, {
-	// 		method: "GET",
-	// 		headers: {
-	// 			"Authorization": "Bearer " + token
-	// 		},
-	// 	})
-	// 		.then(response => response.json())
-	// 		.then(data => {
-	// 			search_results = data.tracks.items.map(item => {
-	// 				const name = item.name;
-	// 				const authors = item.artists.map(artist => artist.name).join(", ");
-	// 				const id = item.id;
-	// 				return { name, authors, id };
-	// 			});
-	// 		});
+	let search_term = "";
+	function search_spotify() {
+		loading = true;
+		const search_query = encodeURIComponent(search_term)
 
-	// 	// const url = FLASK_URL + "spotify/search/" + search_term;
-	// 	// fetch(url)
-	// 	// 	.then(response => response.json())
-	// 	// 	.then(data => {
-	// 	// 		search_results = data.map(item => {
-	// 	// 			const name = item.name;
-	// 	// 			const authors = item.artists.map(artist => artist.name).join(", ");
-	// 	// 			const id = item.id;
-	// 	// 			return { name, authors, id };
-	// 	// 		});
-	// 	// 	});
-	// }
+		const url = FLASK_URL + "spotify/search/" + search_query;
+		fetch(url)
+			.then(response => response.json())
+			.then(data => {
+				search_results = data;
+				loading = false;
+			});
+	}
 
 	let fetch_id = "";
 	function fetch_spotify() {
@@ -94,10 +59,12 @@
 				loading = false;
 			});
 	}
-	// function fetch_button(id) {
-	// 	fetch_id = id;
-	// 	fetch_spotify();
-	// }
+	function select(id) {
+		fetch_id = id;
+		invalid_id = false;
+		fetch_info = search_results.find(x => x["id"] == id);
+		search_results = [];
+	}
 
 
 	function go_button() {		
@@ -172,8 +139,8 @@
 
 <label for="input">Input:</label>
 <select id="input" name="input" bind:value={input_type}>
-	<!-- <option value="spotify_search">Spotify Search</option> -->
-	<option value="spotify_id" selected="selected">Spotify ID</option>
+	<option value="spotify_search" selected="selected">Spotify Search</option>
+	<option value="spotify_id">Spotify ID</option>
 	<option value="upload">Image Upload (CNN only)</option>
 </select>
 
@@ -186,30 +153,26 @@
 {/if}
 
 
-<!-- {#if input_type == "spotify_search"}
+{#if input_type == "spotify_search"}
 	<h3>Spotify Search</h3>
 
-	<label for="search_term">Search Term:</label>
+	<label for="search_term">Search Title:</label>
 	<input type="text" id="search_term" name="search_term" bind:value={search_term} />
 
 	<button on:click={search_spotify}>Search</button>
 
-	{#if search_results}
-		{#if search_results.length > 0}
-			<h3>Results</h3>
-			<ul>
-				{#each search_results as result}
-					<li>
-						{result.name} by {result.authors}
-						<button on:click={() => fetch_button(result.id)}>Fetch</button>
-					</li>
-				{/each}
-			</ul>
-		{:else}
-			<p>No results found</p>
-		{/if}
-	{/if} -->
-{#if input_type == "spotify_id"}
+	{#if search_results.length > 0}
+		<h3>Search Results</h3>
+		<ul>
+			{#each search_results as result}
+				<li>
+					{result["name"]} by {result["artists"]}
+					<button on:click={() => select(result["id"])}>Select</button>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+{:else if input_type == "spotify_id"}
 
 	<h3>Spotify ID</h3>
 
@@ -217,14 +180,6 @@
 	<input type="text" id="fetch_id" name="fetch_id" bind:value={fetch_id} />
 
 	<button on:click={fetch_spotify}>Fetch</button>
-
-	{#if invalid_id}
-		<p>Invalid ID</p>
-	{/if}
-	{#if fetch_info["index"] != -1}
-		<p>{fetch_info["name"]} by {fetch_info["artists"]} (index: {fetch_info["index"]})</p>
-	{/if}
-
 {:else if input_type == "upload"}
 
 	<h3>Image Upload</h3>
@@ -232,6 +187,18 @@
 	<input type="file" id="file" name="file" accept="image/*" />
 
 	<button>Upload</button>
+{/if}
+
+
+{#if input_type == "spotify_id" || input_type == "spotify_search"}
+	<h2>Selected Song</h2>
+	
+	{#if invalid_id}
+		<p>Invalid ID</p>
+	{/if}
+	{#if fetch_info["index"] != -1}
+		<p>{fetch_info["name"]} by {fetch_info["artists"]} (index: {fetch_info["index"]})</p>
+	{/if}
 {/if}
 
 
