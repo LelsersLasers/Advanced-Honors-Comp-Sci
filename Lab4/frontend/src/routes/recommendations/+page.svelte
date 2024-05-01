@@ -21,6 +21,12 @@
 		"index": -1,
 	}
 
+	$: {
+		if (input_type == "upload" && model != "cnn") {
+			input_type = "spotify_id";
+		}
+	}
+
 
 	onMount(() => {
 		console.log(FLASK_URL);
