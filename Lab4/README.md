@@ -72,7 +72,7 @@
     - Image (text search, file path): use `data.csv` songs + use `spotipy` to get album cover art
         - Can still use a random image as input to get songs that match the image!
 
-## notes
+## Short Term Plan
 
 - Image input
 - Field for inputing number of songs to recommend
