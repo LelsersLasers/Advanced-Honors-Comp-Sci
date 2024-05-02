@@ -74,9 +74,7 @@
 
 ## notes
 
-- Title search for song
-    - Sort by popularity
-- Field for inputing number of songs to recommend
 - Image input
+- Field for inputing number of songs to recommend
 - UI/Looks/etc
 - 2 servers? 1 for graphs b/c must be single threaded, other for predict which can be multi-threaded or multi-process
