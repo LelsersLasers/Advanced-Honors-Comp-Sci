@@ -428,6 +428,7 @@ def search_song(title):
     song_count = all_features.shape[0]
 
     results = []
+    print("Searching for matching songs...")
     with alive_progress.alive_bar(song_count) as bar:
         for i, row in all_features.iterrows():
             score = thefuzz.fuzz.token_sort_ratio(title, row['name'])
@@ -440,10 +441,10 @@ def search_song(title):
             })
             bar()
 
-    def key(x):
-        return x['score'] + x['popularity'] / 25
+    def sort_ranking(x):
+        return x['score'] + x['popularity'] / 10
 
-    results.sort(key=key, reverse=True)
+    results.sort(key=sort_ranking, reverse=True)
     return results[:10]
     
 
