@@ -93,7 +93,7 @@ def create_intermediate_model():
     # skip any Dropout layers
     intermediate_model = keras.Sequential()
     for (i, layer) in enumerate(model.layers):
-        if not isinstance(layer, keras.layers.Dropout) and i < len(model.layers) - 1:
+        if not isinstance(layer, keras.layers.Dropout) and i < len(model.layers) - 3:
             intermediate_model.add(layer)
     print(intermediate_model.summary())
     return intermediate_model
