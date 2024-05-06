@@ -84,7 +84,7 @@ def predict(target_idx, dist_fn, embeddings_path=None, all_data_and_embeddings=N
         formatted_results.append({
             "name": song['name'],
             "artists": song['artists'],
-            "dist": dist
+            "dist": str(dist)
         })
     # ------------------------------------------------------------------------ #
 
