@@ -32,32 +32,32 @@ def make_model(data_features):
     normalize.adapt(data_features)
     
     # autoencoder style: inputs -> hidden -> output is same shape as inputs
-    model = keras.Sequential([
-        normalize,
-        layers.Dense(10),
-        layers.LeakyReLU(),
-        layers.Dense(8),
-    	layers.LeakyReLU(),
-        layers.Dense(6),
-    	layers.LeakyReLU(),
-        layers.Dense(8),
-        layers.LeakyReLU(),
-        layers.Dense(10),
-        layers.LeakyReLU(),
-        layers.Dense(13),
-    ])
     # model = keras.Sequential([
     #     normalize,
-    #     layers.Dense(25),
+    #     layers.Dense(10),
     #     layers.LeakyReLU(),
-    #     layers.Dropout(0.3),
-    #     layers.Dense(50),
+    #     layers.Dense(8),
+    # 	layers.LeakyReLU(),
+    #     layers.Dense(6),
+    # 	layers.LeakyReLU(),
+    #     layers.Dense(8),
     #     layers.LeakyReLU(),
-    #     layers.Dropout(0.3),
-    #     layers.Dense(25),
+    #     layers.Dense(10),
     #     layers.LeakyReLU(),
     #     layers.Dense(13),
     # ])
+    model = keras.Sequential([
+        normalize,
+        layers.Dense(25),
+        layers.LeakyReLU(),
+        layers.Dropout(0.3),
+        layers.Dense(50),
+        layers.LeakyReLU(),
+        layers.Dropout(0.3),
+        layers.Dense(25),
+        layers.LeakyReLU(),
+        layers.Dense(13),
+    ])
 
     loss = losses.MeanAbsoluteError()
     # loss = losses.MeanSquaredError()
