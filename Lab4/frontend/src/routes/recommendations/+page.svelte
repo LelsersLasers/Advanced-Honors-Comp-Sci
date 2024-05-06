@@ -26,12 +26,6 @@
 		}
 	}
 
-
-	// onMount(() => {
-	// 	console.log(FLASK_URL);
-	// });
-
-
 	let search_term = "";
 	function search_spotify() {
 		loading = true;
@@ -59,11 +53,28 @@
 				loading = false;
 			});
 	}
-	function select(id) {
-		fetch_id = id;
+	function select_song(index) {
+		fetch_info = search_results.find(x => x["index"] == index);
+		fetch_id = fetch_info["id"];
 		invalid_id = false;
-		fetch_info = search_results.find(x => x["id"] == id);
 		search_results = [];
+	}
+
+	let image_b64 = "";
+	let input_b64 = "";
+	function upload() {
+		const file = document.getElementById("file").files[0];
+		const reader = new FileReader();
+		fetch_info = {
+			"name": "Uploaded Image",
+			"artists": "",
+			"index": -1,
+		}
+		reader.onload = function() {
+			image_b64 = reader.result;
+			input_b64 = image_b64.split(",")[1];
+		}
+		reader.readAsDataURL(file);
 	}
 
 
@@ -76,18 +87,40 @@
 
 		loading = true;
 
-		let url = FLASK_URL + "recommendations/";
-		url += model + "/"
-		url += dist + "/";
-		url += fetch_info["index"] + "/";
-		url += google_mode;
-
-		fetch(url)
+		const url = FLASK_URL + "recommendations";
+		fetch(url, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				"model": model,
+				"dist": dist,
+				"input_type": input_type,
+				"google_mode": google_mode,
+				"image_b64": input_b64,
+				"index": fetch_info["index"],
+			}),
+		})
 			.then(response => response.json())
 			.then(data => {
 				results = data;
 				loading = false;
 			});
+
+		// let url = FLASK_URL + "recommendations/";
+		// url += model + "/"
+		// url += dist + "/";
+		// url += fetch_info["index"] + "/";
+		// url += google_mode;
+		// url += "?image_b64=" + input_b64;
+
+		// fetch(url)
+		// 	.then(response => response.json())
+		// 	.then(data => {
+		// 		results = data;
+		// 		loading = false;
+		// 	});
 	}
 
 </script>
@@ -167,7 +200,7 @@
 			{#each search_results as result}
 				<li>
 					{result["name"]} by {result["artists"]}
-					<button on:click={() => select(result["id"])}>Select</button>
+					<button on:click={() => select_song(result["index"])}>Select</button>
 				</li>
 			{/each}
 		</ul>
@@ -186,18 +219,24 @@
 
 	<input type="file" id="file" name="file" accept="image/*" />
 
-	<button>Upload</button>
+	<button on:click={upload}>Upload</button>
 {/if}
 
 
 {#if input_type == "spotify_id" || input_type == "spotify_search"}
 	<h2>Selected Song</h2>
-	
+
 	{#if invalid_id}
 		<p>Invalid ID</p>
 	{/if}
 	{#if fetch_info["index"] != -1}
 		<p>{fetch_info["name"]} by {fetch_info["artists"]} (index: {fetch_info["index"]})</p>
+	{/if}
+{:else if input_type == "upload"}
+	<h2>Uploaded Image</h2>
+
+	{#if image_b64 != ""}
+		<img src={image_b64} width="128" height="128" />
 	{/if}
 {/if}
 

@@ -1,4 +1,6 @@
 import flask
+import flask_cors
+
 import urllib.parse
 
 import graphs.heat_map
@@ -21,12 +23,14 @@ app = flask.Flask(__name__)
 
 def create_response(value):
     response = flask.jsonify(value)
-    response.headers.add("Access-Control-Allow-Origin", "*")
-    response.headers.add("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")
-    response.headers.add("Access-Control-Allow-Headers", "Origin, Content-Type, X-Auth-Token")
+    # flask_cors.cross_origin() does this process better
+    # response.headers.add("Access-Control-Allow-Origin", "*")
+    # response.headers.add("Access-Control-Allow-Methods", "GET, POST")
+    # response.headers.add("Access-Control-Allow-Headers", "Origin, Content-Type, X-Auth-Token")
     return response
 
 @app.route("/graphs_bs64/<graph>", methods=["GET"])
+@flask_cors.cross_origin()
 def graphs_bs64(graph):
     categories_values = []
     for arg, value in flask.request.args.items():
@@ -65,6 +69,7 @@ def graphs_bs64(graph):
 #     return create_response(result)
 
 @app.route("/spotify/search/<q>", methods=["GET"])
+@flask_cors.cross_origin()
 def search_spotify(q):
     title = urllib.parse.unquote(q)
     print(f"Searching: {title}")
@@ -73,16 +78,28 @@ def search_spotify(q):
     return create_response(results)
 
 @app.route("/spotify/fetch/<id>", methods=["GET"])
+@flask_cors.cross_origin()
 def fetch_spotify(id):
     print(f"Fetching: {id}")
     result = data.fetch_song(id)
     print(f"{id} {result}")
     return create_response(result)
 
-@app.route("/recommendations/<model>/<dist>/<index>/<google_mode>", methods=["GET"])
-def recommendations(model, dist, index, google_mode):
-    google_mode = google_mode == "true"
+@app.route("/recommendations", methods=["POST"])
+@flask_cors.cross_origin()
+# def recommendations(model, dist, index, google_mode):
+def recommendations():
+    print(flask.request.json)
+    model = flask.request.json.get("model")
+    dist = flask.request.json.get("dist")
+
+    index = flask.request.json.get("index")
     index = int(index)
+
+    google_mode = flask.request.json.get("google_mode")
+    google_mode = google_mode == "true"
+    
+    
     print(f"Getting recommendations for: {index} using {model} and {dist}")
 
     model_dict = {
@@ -100,9 +117,15 @@ def recommendations(model, dist, index, google_mode):
     }
 
     if model == "cnn":
-        results = (model_dict[model]).predict(google_mode, index, dist_dict[dist], False)
+        if index > 0:
+            results = (model_dict[model]).predict(google_mode, index, dist_dict[dist], False)
+        else:
+            image_b64 = flask.request.form.get("image_b64")
+            print(f"Image b64: {image_b64}")
+            # results = (model_dict[model]).predict(google_mode, image_b64, dist_dict[dist], False)
     else:
         results = (model_dict[model]).predict(index, dist_dict[dist], False)
     return create_response(results)
+
 
 app.run(debug=False, port=5000, host="0.0.0.0", threaded=False, processes=1)
