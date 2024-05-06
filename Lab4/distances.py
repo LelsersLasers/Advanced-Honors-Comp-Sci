@@ -10,7 +10,6 @@ class DistFn:
     
 cos_dist       = DistFn(lambda a, b: np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)), True)
 mae_dist       = DistFn(lambda a, b: np.mean(np.abs(a - b)), False)
-mse_dist       = DistFn(lambda a, b: np.mean((a - b) ** 2), False)
 euclidean_dist = DistFn(lambda a, b: np.linalg.norm(a - b), False)
 dot_product    = DistFn(lambda a, b: np.dot(a, b), True)
 # ---------------------------------------------------------------------------- #

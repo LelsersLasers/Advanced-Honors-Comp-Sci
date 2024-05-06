@@ -160,7 +160,6 @@
 <select id="dist" name="dist" bind:value={dist}>
 	<option value="cos" selected="selected">Cosine Similarity</option>
 	<option value="mae">Mean Absolute Difference</option>
-	<option value="mse">Mean Squared Difference</option>
 	<option value="euclidean">Euclidean Distance</option>
 	<option value="dot">Dot Product</option>
 </select>

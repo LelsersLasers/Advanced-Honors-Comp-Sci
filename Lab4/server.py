@@ -111,7 +111,6 @@ def recommendations():
     dist_dict = {
         "cos": distances.cos_dist,
         "mae": distances.mae_dist,
-        "mse": distances.mse_dist,
         "euclidean": distances.euclidean_dist,
         "dot": distances.dot_product
     }
