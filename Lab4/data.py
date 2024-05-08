@@ -434,8 +434,10 @@ def search_song(title, artist):
             score = 0
             if title != "":
                 title_score  = thefuzz.fuzz.token_sort_ratio(title,  row['name'])
-            artist_score = thefuzz.fuzz.token_sort_ratio(artist, row['artists'])
-            score = title_score + artist_score
+                score += title_score
+            if artist != "":
+                artist_score = thefuzz.fuzz.token_sort_ratio(artist, row['artists'])
+                score += artist_score
             results.append({
                 "name": row['name'],
                 "artists": row['artists'],
