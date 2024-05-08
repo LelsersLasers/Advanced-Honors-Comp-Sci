@@ -50,7 +50,7 @@ def load_embeddings(embeddings_path):
     return all_data_and_embeddings
 
 
-def predict(target_idx, dist_fn, embeddings_path=None, all_data_and_embeddings=None, display=True):
+def predict(dist_fn, embeddings_path=None, all_data_and_embeddings=None, display=True, target_idx=None, target_embedding=None):
     # ------------------------------------------------------------------------ #
     if embeddings_path is None and all_data_and_embeddings is None:
         raise ValueError("You must provide either embeddings_path or all_data_and_embeddings")
@@ -59,9 +59,16 @@ def predict(target_idx, dist_fn, embeddings_path=None, all_data_and_embeddings=N
     elif embeddings_path is not None:
         all_data_and_embeddings = load_embeddings(embeddings_path)
     
-    target_data_and_embedding = all_data_and_embeddings[target_idx]
-    target_data = target_data_and_embedding[0]
-    target_embedding = target_data_and_embedding[1]
+    if target_idx is None and target_embedding is None:
+        raise ValueError("You must provide either target_idx or target_data")
+    elif target_idx is not None and target_embedding is not None:
+        raise ValueError("You must provide either target_idx or target_data, not both")
+    elif target_idx is not None:
+        target_data_and_embedding = all_data_and_embeddings[target_idx]
+        target_data = target_data_and_embedding[0]
+        target_embedding = target_data_and_embedding[1]
+    elif display and target_embedding is not None:
+        raise ValueError("You must provide target_idx if you want to display the results")
     # ------------------------------------------------------------------------ #
 
     # ------------------------------------------------------------------------ #

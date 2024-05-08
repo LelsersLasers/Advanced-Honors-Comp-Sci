@@ -1,7 +1,9 @@
 import flask
 import flask_cors
 
-import urllib.parse
+import cv2
+import numpy as np
+import base64
 
 import graphs.heat_map
 import graphs.time_line
@@ -118,13 +120,26 @@ def recommendations():
 
     if model == "cnn":
         if index > 0:
-            results = (model_dict[model]).predict(google_mode, index, dist_dict[dist], False)
+            results = (model_dict[model]).predict(google_mode, index=index, dist=dist_dict[dist], display=False)
         else:
-            image_b64 = flask.request.form.get("image_b64")
-            print(f"Image b64: {image_b64}")
-            # results = (model_dict[model]).predict(google_mode, image_b64, dist_dict[dist], False)
+            input_b64 = flask.request.json.get("input_b64")
+            print(f"Received image: {input_b64[:50]}...")
+            
+            nparr = np.fromstring(base64.b64decode(input_b64), np.uint8)
+            image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            image = cv2.resize(image, (128, 128))
+
+            print(f"Image shape: {image.shape}")
+
+            intermediate_model = (model_dict[model]).create_intermediate_model(google_mode)
+
+            nn_input = np.expand_dims(image, axis=0)
+            embedding = intermediate_model(nn_input)
+            embedding = np.squeeze(embedding.numpy(), axis=0)
+
+            results = (model_dict[model]).predict(google_mode, embedding=embedding, dist=dist_dict[dist], display=False)
     else:
-        results = (model_dict[model]).predict(index, dist_dict[dist], False)
+        results = (model_dict[model]).predict(index=index, dist=dist_dict[dist], display=False)
     return create_response(results)
 
 

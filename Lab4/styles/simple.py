@@ -1,3 +1,5 @@
+import alive_progress
+
 import data
 import distances
 import similarity
@@ -10,6 +12,13 @@ def predict(index=TEST_INDEX, dist=distances.cos_dist, display=True):
 	all_data, data_features = data.autoencoder_data(False)
 
 	print("Preparing data for prediction...")
-	all_data_and_embeddings = [(all_data.iloc[i], data_features[i]) for i in range(len(all_data))]
+	all_data_and_embeddings = []
+	song_count = len(all_data)
+	with alive_progress.alive_bar(song_count) as bar:
+		for i in range(song_count):
+			song = all_data.iloc[i]
+			embedding = data_features[i]
+			all_data_and_embeddings.append((song, embedding))
+			bar()
 
-	return similarity.predict(index, dist, all_data_and_embeddings=all_data_and_embeddings, display=display)
+	return similarity.predict(dist, all_data_and_embeddings=all_data_and_embeddings, display=display, target_idx=index)

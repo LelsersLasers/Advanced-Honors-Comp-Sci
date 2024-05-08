@@ -146,7 +146,7 @@ def create_intermediate_model(google_mode):
     intermediate_model = keras.Sequential()
     for (i, layer) in enumerate(model.layers):
         # and not isinstance(layer, keras.layers.BatchNormalization)
-        if not isinstance(layer, keras.layers.Dropout) and i < len(model.layers) - 3:
+        if not isinstance(layer, keras.layers.Dropout) and i < len(model.layers) - 1:
             intermediate_model.add(layer)
     print(intermediate_model.summary())
     return intermediate_model
@@ -161,7 +161,11 @@ def embeddings(google_mode):
 
 
 # ---------------------------------------------------------------------------- #
-def predict(google_mode, index=TEST_INDEX, dist=distances.cos_dist, display=True):
+def predict(google_mode, index=TEST_INDEX, embedding=None, dist=distances.cos_dist, display=True):
     embeddings_path = GOOGLE_EMBEDDINGS_PATH if google_mode else ALBUM_ART_EMBEDDINGS_PATH
-    return similarity.predict(index, dist, embeddings_path=embeddings_path, display=display)
+
+    if embedding is not None:
+        return similarity.predict(dist, embeddings_path=embeddings_path, display=display, target_embedding=embedding)
+    else:
+        return similarity.predict(dist, embeddings_path=embeddings_path, display=display, target_idx=index)
 # ---------------------------------------------------------------------------- #

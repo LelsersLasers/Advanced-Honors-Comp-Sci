@@ -108,5 +108,5 @@ def embeddings():
 
 # ---------------------------------------------------------------------------- #
 def predict(index=TEST_INDEX, dist=distances.cos_dist, display=True):
-	return similarity.predict(index, dist, embeddings_path=EMBEDDINGS_PATH, display=display)
+	return similarity.predict(dist, embeddings_path=EMBEDDINGS_PATH, display=display, target_idx=index)
 # ---------------------------------------------------------------------------- #

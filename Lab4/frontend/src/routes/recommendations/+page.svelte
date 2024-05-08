@@ -90,7 +90,7 @@
 	function go_button() {		
 		if ((input_type == "spotify_id" || input_type == "spotify_search") && invalid_id) {
 			return;
-		} else if (input_type == "upload" && image_b64 == "") {
+		} else if (input_type == "upload" && input_b64 == "") {
 			return;
 		}
 
@@ -107,7 +107,7 @@
 				"dist": dist,
 				"input_type": input_type,
 				"google_mode": google_mode,
-				"image_b64": input_b64,
+				"input_b64": input_b64,
 				"index": fetch_info["index"],
 			}),
 		})
