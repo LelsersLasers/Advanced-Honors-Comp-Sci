@@ -71,7 +71,6 @@ def graphs_bs64(graph):
 @app.route("/spotify/search", methods=["POST"])
 @flask_cors.cross_origin()
 def search_spotify():
-    print(flask.request.json)
     title = flask.request.json.get("title", "")
     artist = flask.request.json.get("artist", "")
 
@@ -92,7 +91,6 @@ def fetch_spotify(id):
 @flask_cors.cross_origin()
 # def recommendations(model, dist, index, google_mode):
 def recommendations():
-    print(flask.request.json)
     model = flask.request.json.get("model")
     dist = flask.request.json.get("dist")
 

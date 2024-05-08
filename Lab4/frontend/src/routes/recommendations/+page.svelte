@@ -88,10 +88,10 @@
 
 
 	function go_button() {		
-		if (input_type == "spotify_id") {
-			if (invalid_id) {
-				return;
-			}
+		if ((input_type == "spotify_id" || input_type == "spotify_search") && invalid_id) {
+			return;
+		} else if (input_type == "upload" && image_b64 == "") {
+			return;
 		}
 
 		loading = true;
@@ -252,6 +252,8 @@
 
 	{#if image_b64 != ""}
 		<img src={image_b64} width="128" height="128" />
+	{:else}
+		<p>No image uploaded</p>
 	{/if}
 {/if}
 
