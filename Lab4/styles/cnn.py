@@ -146,6 +146,7 @@ def create_intermediate_model(google_mode):
     intermediate_model = keras.Sequential()
     for (i, layer) in enumerate(model.layers):
         # and not isinstance(layer, keras.layers.BatchNormalization)
+        # if not isinstance(layer, keras.layers.Dropout) and i < len(model.layers) - 3:
         if not isinstance(layer, keras.layers.Dropout) and i < len(model.layers) - 1:
             intermediate_model.add(layer)
     print(intermediate_model.summary())
