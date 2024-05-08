@@ -173,6 +173,15 @@
 	<option value="dot">Dot Product</option>
 </select>
 
+{#if model == "cnn"}
+	<br />
+
+	<label for="google_mode">Google Mode (CNN only):</label>
+	<input type="checkbox" id="google_mode" name="google_mode" bind:checked={google_mode} />
+<!-- {:else if model == "simple"}
+	<br /> -->
+{/if}
+
 <br />
 <br />
 
@@ -184,14 +193,6 @@
 	<option value="spotify_id">Spotify ID</option>
 	<option value="upload">Image Upload (CNN only)</option>
 </select>
-
-
-{#if model == "cnn"}
-	<br />
-
-	<label for="google_mode">Google Mode (CNN only):</label>
-	<input type="checkbox" id="google_mode" name="google_mode" bind:checked={google_mode} />
-{/if}
 
 
 {#if input_type == "spotify_search"}
