@@ -26,13 +26,22 @@
 		}
 	}
 
-	let search_term = "";
+	let search_title = "";
+	let search_artist = "";
 	function search_spotify() {
 		loading = true;
-		const search_query = encodeURIComponent(search_term)
 
-		const url = FLASK_URL + "spotify/search/" + search_query;
-		fetch(url)
+		const url = FLASK_URL + "spotify/search";
+		fetch(url, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				"title": search_title,
+				"artist": search_artist,
+			}),
+		})
 			.then(response => response.json())
 			.then(data => {
 				search_results = data;
@@ -188,8 +197,15 @@
 {#if input_type == "spotify_search"}
 	<h3>Spotify Search</h3>
 
-	<label for="search_term">Search Title:</label>
-	<input type="text" id="search_term" name="search_term" bind:value={search_term} />
+	<label for="search_title">Search Title:</label>
+	<input type="text" id="search_title" name="search_title" bind:value={search_title} />
+
+	<br />
+
+	<label for="search_artist">Search Artist:</label>
+	<input type="text" id="search_artist" name="search_artist" bind:value={search_artist} />
+
+	<br />
 
 	<button on:click={search_spotify}>Search</button>
 

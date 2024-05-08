@@ -68,12 +68,15 @@ def graphs_bs64(graph):
 #     print(f"Found {len(result)} results")
 #     return create_response(result)
 
-@app.route("/spotify/search/<q>", methods=["GET"])
+@app.route("/spotify/search", methods=["POST"])
 @flask_cors.cross_origin()
-def search_spotify(q):
-    title = urllib.parse.unquote(q)
-    print(f"Searching: {title}")
-    results = data.search_song(title)
+def search_spotify():
+    print(flask.request.json)
+    title = flask.request.json.get("title", "")
+    artist = flask.request.json.get("artist", "")
+
+    print(f"Searching: {title} by {artist}")
+    results = data.search_song(title, artist)
     print(f"Best match: {results[0]}")
     return create_response(results)
 

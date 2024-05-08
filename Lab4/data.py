@@ -423,15 +423,19 @@ def fetch_song(id):
         "index": -1
     }
 
-def search_song(title):
+def search_song(title, artist):
     all_features = all_data(DataPath.SONG)
     song_count = all_features.shape[0]
 
     results = []
-    print("Searching for matching songs...")
+    print("Searching for songs...")
     with alive_progress.alive_bar(song_count) as bar:
         for i, row in all_features.iterrows():
-            score = thefuzz.fuzz.token_sort_ratio(title, row['name'])
+            score = 0
+            if title != "":
+                title_score  = thefuzz.fuzz.token_sort_ratio(title,  row['name'])
+            artist_score = thefuzz.fuzz.token_sort_ratio(artist, row['artists'])
+            score = title_score + artist_score
             results.append({
                 "name": row['name'],
                 "artists": row['artists'],
