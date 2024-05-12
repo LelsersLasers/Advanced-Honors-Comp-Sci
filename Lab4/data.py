@@ -159,14 +159,15 @@ def predictor_data(shuffle):
 
     return all_features, data_features, data_labels
 
-def autoencoder_data(shuffle):
+def autoencoder_data(shuffle, extra_categories_to_remove=None):
     # 13 input categories
     all_features = all_data(DataPath.SONG)
 
-    data_features = remove_columns(
-        all_features.copy(),
-        ['explicit', 'id', 'mode', 'name', 'release_date', 'artists', 'genre']
-    )
+    categories_to_remove = ['explicit', 'id', 'mode', 'name', 'release_date', 'artists', 'genre']
+    if extra_categories_to_remove is not None:
+        categories_to_remove += extra_categories_to_remove
+    
+    data_features = remove_columns(all_features.copy(), categories_to_remove)
     for category in data_features.columns: scale(data_features, category)
 
     if shuffle:

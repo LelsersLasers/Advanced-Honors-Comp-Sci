@@ -138,6 +138,9 @@ def recommendations():
             embedding = np.squeeze(embedding.numpy(), axis=0)
 
             results = (model_dict[model]).predict(google_mode, embedding=embedding, dist=dist_dict[dist], display=False)
+    elif model == "simple":
+        extra_categories_to_remove = flask.request.json.get("extra_categories_to_remove")
+        (model_dict[model]).predict(index=index, dist=dist_dict[dist], display=False, extra_categories_to_remove=extra_categories_to_remove)
     else:
         results = (model_dict[model]).predict(index=index, dist=dist_dict[dist], display=False)
     return create_response(results)
