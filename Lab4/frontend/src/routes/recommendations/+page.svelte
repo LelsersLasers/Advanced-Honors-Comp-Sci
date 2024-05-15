@@ -86,6 +86,13 @@
 		reader.readAsDataURL(file);
 	}
 
+	let simple_ignore = [];
+
+	$: {
+		if (simple_ignore.length == 13) {
+			simple_ignore = [];
+		}
+	}
 
 	function go_button() {		
 		if ((input_type == "spotify_id" || input_type == "spotify_search") && invalid_id) {
@@ -109,6 +116,7 @@
 				"google_mode": google_mode,
 				"input_b64": input_b64,
 				"index": fetch_info["index"],
+				"extra_categories_to_remove": simple_ignore,
 			}),
 		})
 			.then(response => response.json())
@@ -148,7 +156,7 @@
 </a>
 
 {#if loading}
-	<p>Loading...</p>
+	<p>LOADING...</p>
 {/if}
 
 <br />
@@ -178,8 +186,26 @@
 
 	<label for="google_mode">Google Mode (CNN only):</label>
 	<input type="checkbox" id="google_mode" name="google_mode" bind:checked={google_mode} />
-<!-- {:else if model == "simple"}
-	<br /> -->
+{:else if model == "simple"}
+	<br />
+
+	<label for="simple_ignore">Ignore categories (press control to select multiple):</label>
+	<br />
+	<select id="simple_ignore" name="simple_ignore" multiple size="13" bind:value={simple_ignore}>
+		<option value="valence">valence</option>
+		<option value="year">year</option>
+		<option value="acousticness">acousticness</option>
+		<option value="danceability">danceability</option>
+		<option value="duration_ms">duration ms</option>
+		<option value="energy">energy</option>
+		<option value="instrumentalness">instrumentalness</option>
+		<option value="key">key</option>
+		<option value="liveness">liveness</option>
+		<option value="loudness">loudness</option>
+		<option value="popularity">popularity</option>
+		<option value="speechiness">speechiness</option>
+		<option value="tempo">tempo</option>
+	</select>
 {/if}
 
 <br />
