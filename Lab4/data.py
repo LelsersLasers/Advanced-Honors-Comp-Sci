@@ -17,8 +17,8 @@ import thefuzz
 
 import tensorflow as tf
 import tensorflow.data as data
-SHUFFLE_BUFFER_SIZES = [400, 600, 900, 1350, 2500, 3500]
-SHUFFLE_BATCH_BUFFER_SIZES = [25, 35, 45, 60, 25, 35, 45, 60]
+SHUFFLE_BUFFER_SIZES = [400, 600, 900, 1350, 2500]
+SHUFFLE_BATCH_BUFFER_SIZES = [25, 35, 45, 60]
 BATCH_SIZE = 64
 PREFETCH_SIZE = 2
 
