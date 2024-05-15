@@ -2,6 +2,13 @@
 	import { getContext } from 'svelte';
 	const FLASK_URL = getContext('flask_url');
 
+	let loading_text = "LOADING...";
+	let loading_text_animation = 0;
+	setInterval(() => {
+		loading_text_animation = (loading_text_animation + 1) % 4;
+		loading_text = "LOADING" + ".".repeat(loading_text_animation);
+	}, 100);
+
 	let model = "predictor";
 	let dist = "cos";
 	let input_type = "spotify_search";
@@ -87,7 +94,6 @@
 	}
 
 	let simple_ignore = [];
-
 	$: {
 		if (simple_ignore.length == 13) {
 			simple_ignore = [];
@@ -124,20 +130,6 @@
 				results = data;
 				loading = false;
 			});
-
-		// let url = FLASK_URL + "recommendations/";
-		// url += model + "/"
-		// url += dist + "/";
-		// url += fetch_info["index"] + "/";
-		// url += google_mode;
-		// url += "?image_b64=" + input_b64;
-
-		// fetch(url)
-		// 	.then(response => response.json())
-		// 	.then(data => {
-		// 		results = data;
-		// 		loading = false;
-		// 	});
 	}
 
 </script>
@@ -156,7 +148,7 @@
 </a>
 
 {#if loading}
-	<p>LOADING...</p>
+	<p>{loading_text}</p>
 {/if}
 
 <br />
