@@ -100,7 +100,7 @@ def predict(dist_fn, embeddings_path=None, all_data_and_embeddings=None, display
         print("Top 10 most similar songs:")
         print("BASE SONG:", target_data['name'], "by", target_data['artists'])
         for result in formatted_results:
-            print(f"{(i + 1):2}) {result['name']} by {result['artists']} (dist value: {result['dist']:.4f})")
+            print(f"{(i + 1):2}) {result['name']} by {result['artists']} (dist value: {result['dist']})")
         return None
     else:
         return formatted_results
