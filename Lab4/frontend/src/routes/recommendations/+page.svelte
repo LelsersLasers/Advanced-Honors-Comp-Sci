@@ -159,6 +159,7 @@
 <select id="model" name="model" bind:value={model}>
 	<option value="predictor" selected="selected">Predictor</option>
 	<option value="autoencoder">Autoencoder</option>
+	<option value="expansion">Expansion</option>
 	<option value="simple">Simple</option>
 	<option value="cnn">CNN</option>
 </select>
@@ -294,15 +295,3 @@
 {:else}
 	<p>No results</p>
 {/if}
-
-
-
-<!-- {#if model == "cnn"}
-
-{:else if model == "autoencoder"}
-
-{:else if model == "predictor"}
-
-{:else if model == "simple"}
-
-{/if} -->

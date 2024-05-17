@@ -20,9 +20,9 @@ TEST_INDEX = 17424 - 2
 EPOCHS = 20
 LEARNING_RATE = 0.0001
 
-MODEL_PATH      = 'output/save-autoencoder/model'
-HISTORY_PATH    = 'output/save-autoencoder/history.json'
-EMBEDDINGS_PATH = 'output/save-autoencoder/embeddings.txt'
+MODEL_PATH      = 'output/save-expansion/model'
+HISTORY_PATH    = 'output/save-expansion/history.json'
+EMBEDDINGS_PATH = 'output/save-expansion/embeddings.txt'
 # ---------------------------------------------------------------------------- #
 
 
@@ -31,18 +31,16 @@ def make_model(data_features):
     normalize = layers.Normalization()
     normalize.adapt(data_features)
     
-    # autoencoder style: inputs -> hidden -> output is same shape as inputs
+    # autoencoder style: inputs -> larger hidden -> output is same shape as inputs
     model = keras.Sequential([
         normalize,
-        layers.Dense(10),
+        layers.Dense(25),
         layers.LeakyReLU(),
-        layers.Dense(8),
-    	layers.LeakyReLU(),
-        layers.Dense(6),
-    	layers.LeakyReLU(),
-        layers.Dense(8),
+        layers.Dense(50),
         layers.LeakyReLU(),
-        layers.Dense(10),
+        layers.Dense(50),
+        layers.LeakyReLU(),
+        layers.Dense(25),
         layers.LeakyReLU(),
         layers.Dense(13),
     ])

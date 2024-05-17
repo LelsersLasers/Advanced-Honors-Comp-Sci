@@ -12,6 +12,7 @@ import graphs.group_bar
 import styles.simple
 import styles.predictor
 import styles.autoencoder
+import styles.expansion
 import styles.cnn
 
 import distances
@@ -56,19 +57,6 @@ def graphs_bs64(graph):
     }
     return create_response(response_dict)
 
-# @app.route("/spotify/token", methods=["GET"])
-# def get_token():
-#     # read json from .cache
-#     with open(".cache", "r") as file:
-#         data = json.load(file)
-#     return create_response(data)
-
-# @app.route("/spotify/search/<q>", methods=["GET"])
-# def search_spotify(q):
-#     print(f"Searching for: {q}")
-#     result = spotify.search_spotify(sp, q)
-#     print(f"Found {len(result)} results")
-#     return create_response(result)
 
 @app.route("/spotify/search", methods=["POST"])
 @flask_cors.cross_origin()
@@ -91,7 +79,6 @@ def fetch_spotify(id):
 
 @app.route("/recommendations", methods=["POST"])
 @flask_cors.cross_origin()
-# def recommendations(model, dist, index, google_mode):
 def recommendations():
     model = flask.request.json.get("model")
     dist = flask.request.json.get("dist")
@@ -109,6 +96,7 @@ def recommendations():
         "simple":      styles.simple,
         "predictor":   styles.predictor,
         "autoencoder": styles.autoencoder,
+        "expansion":   styles.expansion,
         "cnn":         styles.cnn
     }
     dist_dict = {
