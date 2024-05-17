@@ -100,10 +100,10 @@ def recommendations():
         "cnn":         styles.cnn
     }
     dist_dict = {
-        "cos": distances.cos_dist,
-        "mae": distances.mae_dist,
+        "cos":       distances.cos_dist,
+        "mae":       distances.mae_dist,
         "euclidean": distances.euclidean_dist,
-        "dot": distances.dot_product
+        "dot":       distances.dot_product
     }
 
     if model == "cnn":
