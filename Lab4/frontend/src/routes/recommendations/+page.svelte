@@ -1,6 +1,7 @@
 <script>
 	import { getContext } from 'svelte';
-	const FLASK_URL = getContext('flask_url');
+	const PORT = 5000;
+	const FLASK_URL = getContext('flask_url_base') + PORT + "/";
 
 	let loading_text = "LOADING...";
 	let loading_text_animation = 0;

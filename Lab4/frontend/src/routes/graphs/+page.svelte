@@ -2,7 +2,8 @@
 	import Graph from './Graph.svelte';
 
 	import { getContext, onMount } from 'svelte';
-	const FLASK_URL = getContext('flask_url');
+	const PORT = 5001;
+	const FLASK_URL = getContext('flask_url_base') + PORT + "/";
 	const ID = getContext('id');
 
 	let loading_initial = {
