@@ -135,7 +135,23 @@
 
 </script>
 
+<style>
+	#overlay {
+		position: fixed;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.2);
+		z-index: 2;
+	}
 
+	#overlay p {
+		color: white;
+		font-size: 24px;
+	}
+</style>
 
 
 
@@ -144,13 +160,16 @@
 </svelte:head>
 
 
+{#if loading}
+	<div id="overlay">
+		<p>{loading_text}</p>
+	</div>
+{/if}
+
+
 <a href="/">
 	<button>Back to Home</button>
 </a>
-
-{#if loading}
-	<p>{loading_text}</p>
-{/if}
 
 <br />
 
