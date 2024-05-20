@@ -1,13 +1,13 @@
 <svelte:head>
-	<title>Song Recommender</title>
+    <title>Song Recommender</title>
 </svelte:head>
 
 
 <h1>Song Recommender</h1>
 
 <a href="/graphs">
-	<button>Graphs</button>
+    <button>Graphs</button>
 </a>
 <a href="/recommendations">
-	<button>Recommendations</button>
+    <button>Recommendations</button>
 </a>

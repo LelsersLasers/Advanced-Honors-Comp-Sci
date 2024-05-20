@@ -1,5 +1,5 @@
 <script>
-	import { page } from '$app/stores';
+    import { page } from '$app/stores';
 </script>
 
 <h1>ERROR</h1>
@@ -8,5 +8,5 @@
 <p>Error message: {$page.error.message}</p>
 
 <a href="/">
-	<button>Back to Home</button>
+    <button>Back to Home</button>
 </a>
