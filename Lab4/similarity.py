@@ -40,13 +40,15 @@ def embeddings(intermediate_model, all_data, data_features, embeddings_path):
 def load_embeddings(embeddings_path):
     print("\nLoading embeddings...")
     all_data_and_embeddings = []
-    with open(embeddings_path, 'r') as file:
-        file.readline() # skip header
-        for line in file:
-            song_str, embedding_str = line.split('^^')
-            song = json.loads(song_str.strip())
-            embedding = np.array(json.loads(embedding_str.strip()))
-            all_data_and_embeddings.append((song, embedding))
+    with alive_progress.alive_bar() as bar:
+        with open(embeddings_path, 'r') as file:
+            file.readline() # skip header
+            for line in file:
+                song_str, embedding_str = line.split('^^')
+                song = json.loads(song_str.strip())
+                embedding = np.array(json.loads(embedding_str.strip()))
+                all_data_and_embeddings.append((song, embedding))
+                bar()
     return all_data_and_embeddings
 
 
