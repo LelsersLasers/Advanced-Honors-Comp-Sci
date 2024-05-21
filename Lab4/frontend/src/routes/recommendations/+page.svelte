@@ -151,6 +151,10 @@
         color: white;
         font-size: 24px;
     }
+
+    td {
+        padding: 2px;
+    }
 </style>
 
 
@@ -301,13 +305,22 @@
 <h1>Results</h1>
 
 {#if results.length > 0}
-    <ol>
-        {#each results as result}
-            <li>
-                {result["name"]} by {result["artists"]} (dist: {result["dist"]})
-            </li>
+    <table>
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Artists</th>
+            <th>Distance</th>
+        </tr>
+        {#each results as result, index}
+            <tr>
+                <td>{index + 1}</td>
+                <td>{result["name"]}</td>
+                <td>{result["artists"]}</td>
+                <td>{result["dist"]}</td>
+            </tr>
         {/each}
-    </ol>
+    </table>
 {:else}
     <p>No results</p>
 {/if}
