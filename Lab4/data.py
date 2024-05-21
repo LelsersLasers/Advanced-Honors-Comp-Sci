@@ -449,7 +449,7 @@ def search_song(title, artist):
             bar()
 
     def sort_ranking(x):
-        return x['score'] + x['popularity'] / 10
+        return x['score'] + x['popularity'] / 8
 
     results.sort(key=sort_ranking, reverse=True)
     return results[:15]
