@@ -6,6 +6,8 @@
     const FLASK_URL = getContext('flask_url_base') + PORT + "/";
     const ID = getContext('id');
 
+    let loading = 0;
+
     let loading_initial = {
         "heat_map": true,
         "time_line": true,
@@ -19,6 +21,7 @@
         "artists": "",
         "genre_bar": "",
     };
+
     
     let request_dict = {
         year: true,
@@ -58,6 +61,8 @@
             keys = ["heat_map"];
         }
 
+        loading += keys.length;
+
         for (let i in keys) {
             const key = keys[i];
 
@@ -73,6 +78,7 @@
                     const graph_b64 = data["graph"];
                     graphs[key] = graph_b64;
                     loading_initial[key] = false;
+                    loading -= 1;
                 })
                 .catch((error) => {
                     console.error('Error:', error);
@@ -129,6 +135,12 @@
 <div id="holder">
     <div id="left">
         <h1>Graphs</h1>
+
+        {#if loading > 0}
+            <p>Loading: {loading}</p>
+        {:else}
+            <p>Loaded</p>
+        {/if}
 
         <h3>Categories</h3>
 
