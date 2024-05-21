@@ -452,6 +452,6 @@ def search_song(title, artist):
         return x['score'] + x['popularity'] / 10
 
     results.sort(key=sort_ranking, reverse=True)
-    return results[:10]
+    return results[:15]
     
 

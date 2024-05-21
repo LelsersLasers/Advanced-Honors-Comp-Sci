@@ -86,7 +86,7 @@ def predict(dist_fn, embeddings_path=None, all_data_and_embeddings=None, display
     dists.sort(key=lambda x: x[0], reverse=dist_fn.reverse_sort)
     
     formatted_results = []
-    for i in range(10):
+    for i in range(15):
         dist, song = dists[i]
         formatted_results.append({
             "name": song['name'],
@@ -97,7 +97,7 @@ def predict(dist_fn, embeddings_path=None, all_data_and_embeddings=None, display
 
     # ------------------------------------------------------------------------ #
     if display:
-        print("Top 10 most similar songs:")
+        print("Top 15 most similar songs:")
         print("BASE SONG:", target_data['name'], "by", target_data['artists'])
         for result in formatted_results:
             print(f"{(i + 1):2}) {result['name']} by {result['artists']} (dist value: {result['dist']})")

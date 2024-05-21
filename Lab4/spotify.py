@@ -14,7 +14,7 @@ def create_sp():
     return sp
 
 # def search_spotify(sp, query):
-#     result = sp.search(q=query, limit=10, type='track')
+#     result = sp.search(q=query, limit=15, type='track')
 #     items = result['tracks']['items']
 #     return items
 
