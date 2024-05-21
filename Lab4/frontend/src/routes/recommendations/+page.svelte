@@ -8,7 +8,7 @@
     setInterval(() => {
         loading_text_animation = (loading_text_animation + 1) % 4;
         loading_text = "LOADING" + ".".repeat(loading_text_animation);
-    }, 100);
+    }, 300);
 
     let model = "predictor";
     let dist = "cos";
@@ -167,10 +167,6 @@
 {/if}
 
 
-<a href="/">
-    <button>Back to Home</button>
-</a>
-
 <br />
 
 <h2>Method</h2>
@@ -315,3 +311,7 @@
 {:else}
     <p>No results</p>
 {/if}
+
+<a href="/">
+    <button>Back to Home</button>
+</a>
