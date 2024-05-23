@@ -59,7 +59,8 @@ def thread():
         index = int(index)
 
         google_mode = flask.request.json.get("google_mode")
-        google_mode = google_mode == "true"
+
+        print("GOOGLE MODE:", google_mode)
         
         
         print(f"Getting recommendations for: {index} using {model} and {dist}")
